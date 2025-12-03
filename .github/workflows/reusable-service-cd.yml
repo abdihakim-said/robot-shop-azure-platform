@@ -1,0 +1,88 @@
+name: Reusable Service CD - Deploy Pre-Built Image
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+    secrets:
+      azure-credentials:
+        required: true
+
+env:
+  ACR_LOGIN_SERVER: robotshopdevacrmtttm8.azurecr.io
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.azure-credentials }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group robot-shop-${{ inputs.environment }}-rg \
+            --name robot-shop-${{ inputs.environment }}-aks \
+            --overwrite-existing
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+
+      - name: Verify image exists
+        run: |
+          az acr repository show-tags \
+            --name robotshopdevacrmtttm8 \
+            --repository ${{ inputs.service-name }} \
+            --output table | grep ${{ inputs.image-tag }}
+
+      - name: Deploy service with pre-built image
+        run: |
+          helm upgrade --install ${{ inputs.service-name }} ./helm \
+            --namespace ${{ inputs.namespace }} \
+            --create-namespace \
+            --values ./helm/values-${{ inputs.environment }}.yaml \
+            --set ${{ inputs.service-name }}.image.repository=${{ env.ACR_LOGIN_SERVER }}/${{ inputs.service-name }} \
+            --set ${{ inputs.service-name }}.image.tag=${{ inputs.image-tag }} \
+            --wait \
+            --timeout 5m \
+            --atomic
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ inputs.service-name }} -n ${{ inputs.namespace }} --timeout=300s
+          
+          echo "Verifying image tag..."
+          DEPLOYED_IMAGE=$(kubectl get deployment ${{ inputs.service-name }} -n ${{ inputs.namespace }} -o jsonpath='{.spec.template.spec.containers[0].image}')
+          echo "Deployed image: $DEPLOYED_IMAGE"
+          
+          if [[ "$DEPLOYED_IMAGE" != *"${{ inputs.image-tag }}"* ]]; then
+            echo "ERROR: Deployed image tag doesn't match!"
+            exit 1
+          fi
+          
+          echo "✅ Correct image deployed"
+
+      - name: Smoke test
+        run: |
+          echo "Running smoke test for ${{ inputs.service-name }}"
+          kubectl get pods -l service=${{ inputs.service-name }} -n ${{ inputs.namespace }}

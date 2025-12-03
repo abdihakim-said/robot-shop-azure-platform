@@ -1,0 +1,43 @@
+# Azure-specific Helm values for Robot Shop
+
+# Docker image configuration
+image:
+  repo: robotshop
+  version: latest
+  pullPolicy: IfNotPresent
+
+# EUM configuration (optional)
+eum:
+  key: null
+  url: https://eum-eu-west-1.instana.io
+
+# Pod Security Policy
+psp:
+  enabled: false
+
+# Node port (set to false for Azure LoadBalancer)
+nodeport: false
+
+# OpenShift (not applicable for Azure)
+openshift: false
+ocCreateRoute: false
+
+# Redis storage class for Azure
+redis:
+  storageClassName: managed-csi  # Azure managed disk
+
+# Payment gateway (optional)
+payment:
+  gateway: null
+
+# Service-specific configurations
+cart: {}
+catalogue: {}
+dispatch: {}
+mongodb: {}
+mysql: {}
+rabbitmq: {}
+ratings: {}
+shipping: {}
+user: {}
+web: {}

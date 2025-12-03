@@ -1,0 +1,97 @@
+name: Build & Push Images
+
+on:
+  push:
+    branches: [develop, 'release/**', main]
+    paths:
+      - 'web/**'
+      - 'cart/**'
+      - 'catalogue/**'
+      - 'user/**'
+      - 'payment/**'
+      - 'shipping/**'
+      - 'ratings/**'
+      - 'dispatch/**'
+
+env:
+  ACR_NAME: robotshopdevacrmtttm8
+  ACR_LOGIN_SERVER: robotshopdevacrmtttm8.azurecr.io
+
+jobs:
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed services
+        id: changes
+        run: |
+          CHANGED_SERVICES=""
+          for service in web cart catalogue user payment shipping ratings dispatch; do
+            if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
+              CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
+            fi
+          done
+          CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
+          echo "Changed services: $CHANGED_SERVICES"
+
+  build-and-push:
+    name: Build & Push
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-${{ matrix.service }}.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+
+      - name: Tag image as tested
+        run: |
+          docker pull ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }} \
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}

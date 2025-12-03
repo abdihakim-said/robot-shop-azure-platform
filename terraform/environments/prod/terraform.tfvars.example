@@ -1,0 +1,28 @@
+# Production Environment Configuration
+
+project_name = "robot-shop"
+location     = "eastus"
+cost_center  = "production"
+
+# Networking
+vnet_address_space        = "10.0.0.0/16"
+aks_subnet_address_prefix = "10.0.1.0/24"
+
+# AKS - Production Configuration (larger, HA)
+kubernetes_version = "1.28"
+node_count         = 5
+vm_size            = "Standard_D2s_v3"  # Production: better performance
+enable_autoscaling = true
+min_node_count     = 3
+max_node_count     = 10
+
+# Storage - Production Configuration
+acr_sku                  = "Premium"  # Production: premium tier
+storage_account_tier     = "Standard"
+storage_replication_type = "GRS"  # Production: geo-redundant
+
+# Monitoring - Production Configuration
+alert_emails            = ["ops-team@example.com", "oncall@example.com"]
+grafana_admin_password  = "SuperSecurePassword123!"
+prometheus_storage_size = "50Gi"  # Production: more storage
+grafana_storage_size    = "20Gi"  # Production: more storage

@@ -1,0 +1,170 @@
+name: Infrastructure Pipeline
+
+on:
+  push:
+    branches: [develop, 'release/**', main]
+    paths: ['terraform/**']
+  pull_request:
+    branches: [develop, 'release/**', main]
+    paths: ['terraform/**']
+
+jobs:
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.0'
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+        working-directory: terraform
+
+      - name: Terraform Init & Validate
+        run: |
+          for env in dev staging prod; do
+            echo "Validating $env environment..."
+            cd terraform/environments/$env
+            terraform init -backend=false
+            terraform validate
+            cd ../../..
+          done
+
+  terraform-plan-dev:
+    name: Plan Dev
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    needs: terraform-validate
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Plan
+        run: |
+          cd terraform/environments/dev
+          terraform init
+          terraform plan -out=tfplan
+
+  terraform-apply-dev:
+    name: Apply Dev
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    needs: terraform-plan-dev
+    environment: development
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Apply
+        run: |
+          cd terraform/environments/dev
+          terraform init
+          terraform apply -auto-approve
+
+  terraform-plan-staging:
+    name: Plan Staging
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/release/')
+    needs: terraform-validate
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Terraform Plan
+        run: |
+          cd terraform/environments/staging
+          terraform init
+          terraform plan -out=tfplan
+
+  terraform-apply-staging:
+    name: Apply Staging
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/release/') && github.event_name == 'push'
+    needs: terraform-plan-staging
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Terraform Apply
+        run: |
+          cd terraform/environments/staging
+          terraform init
+          terraform apply -auto-approve
+
+  terraform-plan-prod:
+    name: Plan Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: terraform-validate
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Terraform Plan
+        run: |
+          cd terraform/environments/prod
+          terraform init
+          terraform plan -out=tfplan
+
+  terraform-apply-prod:
+    name: Apply Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: terraform-plan-prod
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Terraform Apply
+        run: |
+          cd terraform/environments/prod
+          terraform init
+          terraform apply -auto-approve

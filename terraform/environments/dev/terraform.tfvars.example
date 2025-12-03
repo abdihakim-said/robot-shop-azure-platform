@@ -1,0 +1,28 @@
+# Development Environment Configuration
+
+project_name = "robot-shop"
+location     = "eastus"
+cost_center  = "engineering"
+
+# Networking
+vnet_address_space        = "10.0.0.0/16"
+aks_subnet_address_prefix = "10.0.1.0/24"
+
+# AKS - Dev Configuration (smaller, cost-effective)
+kubernetes_version = "1.28"
+node_count         = 2
+vm_size            = "Standard_B2s"
+enable_autoscaling = true
+min_node_count     = 1
+max_node_count     = 3
+
+# Storage - Dev Configuration
+acr_sku                  = "Basic"
+storage_account_tier     = "Standard"
+storage_replication_type = "LRS"
+
+# Monitoring - Dev Configuration
+alert_emails            = ["dev-team@example.com"]
+grafana_admin_password  = "ChangeMe123!"
+prometheus_storage_size = "10Gi"
+grafana_storage_size    = "5Gi"

@@ -1,0 +1,29 @@
+# Staging Environment Configuration
+# Production-like but smaller for pre-production testing
+
+project_name = "robot-shop"
+location     = "eastus"
+cost_center  = "engineering"
+
+# Networking
+vnet_address_space        = "10.0.0.0/16"
+aks_subnet_address_prefix = "10.0.1.0/24"
+
+# AKS - Staging Configuration (production-like but smaller)
+kubernetes_version = "1.28"
+node_count         = 3
+vm_size            = "Standard_D2s_v3"  # Staging: same as prod VM type
+enable_autoscaling = true
+min_node_count     = 2
+max_node_count     = 5
+
+# Storage - Staging Configuration
+acr_sku                  = "Standard"  # Staging: mid-tier
+storage_account_tier     = "Standard"
+storage_replication_type = "GRS"  # Staging: geo-redundant like prod
+
+# Monitoring - Staging Configuration
+alert_emails            = ["staging-team@example.com"]
+grafana_admin_password  = "ChangeMe123!"
+prometheus_storage_size = "20Gi"  # Staging: between dev and prod
+grafana_storage_size    = "10Gi"  # Staging: between dev and prod

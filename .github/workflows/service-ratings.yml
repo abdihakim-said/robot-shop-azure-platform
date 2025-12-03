@@ -1,0 +1,67 @@
+name: ratings Service Pipeline
+
+on:
+  push:
+    branches: [develop, 'release/**', main]
+    paths:
+      - 'ratings/**'
+      - 'helm/templates/ratings-**'
+  pull_request:
+    branches: [develop, 'release/**', main]
+    paths: ['ratings/**']
+
+jobs:
+  ci:
+    name: CI - ratings
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/reusable-service-ci.yml
+    with:
+      service-name: ratings
+      service-path: ratings
+
+  wait-for-build:
+    name: Wait for Build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Wait for build workflow
+        run: sleep 60
+
+  deploy-dev:
+    name: Deploy to Dev
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    needs: wait-for-build
+    uses: ./.github/workflows/reusable-service-cd.yml
+    with:
+      service-name: ratings
+      environment: dev
+      namespace: robot-shop
+      image-tag: ${{ github.sha }}
+    secrets:
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    if: startsWith(github.ref, 'refs/heads/release/') && github.event_name == 'push'
+    needs: wait-for-build
+    uses: ./.github/workflows/reusable-service-cd.yml
+    with:
+      service-name: ratings
+      environment: staging
+      namespace: robot-shop
+      image-tag: ${{ github.sha }}
+    secrets:
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+  deploy-prod:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: wait-for-build
+    uses: ./.github/workflows/reusable-service-cd.yml
+    with:
+      service-name: ratings
+      environment: production
+      namespace: robot-shop
+      image-tag: ${{ github.sha }}
+    secrets:
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS_PROD }}
