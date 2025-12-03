@@ -13,6 +13,10 @@ on:
       - 'ratings/**'
       - 'dispatch/**'
 
+permissions:
+  contents: read
+  actions: write
+
 env:
   ACR_NAME: robotshopdevacrmtttm8
   ACR_LOGIN_SERVER: robotshopdevacrmtttm8.azurecr.io
