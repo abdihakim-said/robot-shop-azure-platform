@@ -1,6 +1,6 @@
 image:
-  repository: robotshop/rs-mysql
-  tag: latest
+  repository: mysql
+  tag: "5.7"
   pullPolicy: IfNotPresent
 
 service:
@@ -14,3 +14,9 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+env:
+  - name: MYSQL_ROOT_PASSWORD
+    value: "root"
+  - name: MYSQL_DATABASE
+    value: "cities"
