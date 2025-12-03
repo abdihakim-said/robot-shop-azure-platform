@@ -1,69 +1,56 @@
 name: catalogue Service Pipeline
 
 on:
-  workflow_run:
-    workflows: ["Build & Push Images"]
-    types:
-      - completed
-    branches: [develop, 'release/**', main]
+  workflow_dispatch:
+    inputs:
+      service-name:
+        description: 'Service name'
+        required: true
+        default: 'catalogue'
+      image-tag:
+        description: 'Image tag (commit SHA)'
+        required: true
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
 
 jobs:
-  check-changes:
-    name: Check if catalogue changed
+  deploy:
+    name: Deploy catalogue to ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
-    outputs:
-      changed: ${{ steps.filter.outputs.changed }}
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Check if catalogue changed
-        id: filter
+      - name: Get AKS credentials
         run: |
-          if git diff --name-only ${{ github.event.workflow_run.head_sha }}~1 ${{ github.event.workflow_run.head_sha }} | grep -q "^catalogue/"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
+          az aks get-credentials \
+            --resource-group robot-shop-${{ inputs.environment }}-rg \
+            --name robot-shop-${{ inputs.environment }}-aks \
+            --overwrite-existing
 
-  deploy-dev:
-    name: Deploy to Dev
-    if: needs.check-changes.outputs.changed == 'true' && github.event.workflow_run.head_branch == 'develop'
-    needs: check-changes
-    uses: ./.github/workflows/reusable-service-cd.yml
-    with:
-      service-name: catalogue
-      environment: dev
-      namespace: robot-shop
-      image-tag: ${{ github.event.workflow_run.head_sha }}
-    secrets:
-      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
 
-  deploy-staging:
-    name: Deploy to Staging
-    if: needs.check-changes.outputs.changed == 'true' && startsWith(github.event.workflow_run.head_branch, 'release/')
-    needs: check-changes
-    uses: ./.github/workflows/reusable-service-cd.yml
-    with:
-      service-name: catalogue
-      environment: staging
-      namespace: robot-shop
-      image-tag: ${{ github.event.workflow_run.head_sha }}
-    secrets:
-      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Deploy service
+        run: |
+          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${{ inputs.service-name }} \
+            --namespace robot-shop \
+            --create-namespace \
+            --set image.tag=${{ inputs.image-tag }} \
+            --wait \
+            --timeout 5m
 
-  deploy-prod:
-    name: Deploy to Production
-    if: needs.check-changes.outputs.changed == 'true' && github.event.workflow_run.head_branch == 'main'
-    needs: check-changes
-    uses: ./.github/workflows/reusable-service-cd.yml
-    with:
-      service-name: catalogue
-      environment: production
-      namespace: robot-shop
-      image-tag: ${{ github.event.workflow_run.head_sha }}
-    secrets:
-      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ inputs.service-name }} -n robot-shop --timeout=300s
+          kubectl get pods -l service=${{ inputs.service-name }} -n robot-shop
+          echo "✅ ${{ inputs.service-name }} deployed successfully"

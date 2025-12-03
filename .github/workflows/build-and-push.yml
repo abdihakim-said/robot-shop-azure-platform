@@ -97,3 +97,23 @@ jobs:
           docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }} \
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
+
+  trigger-deployments:
+    name: Trigger Deployments
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-and-push]
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    steps:
+      - name: Trigger deployment workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run service-${{ matrix.service }}.yml \
+            --repo ${{ github.repository }} \
+            --ref ${{ github.ref_name }} \
+            --field service-name=${{ matrix.service }} \
+            --field image-tag=${{ github.sha }} \
+            --field environment=dev
