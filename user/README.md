@@ -2,3 +2,4 @@
 # Deploy via pipeline
 # Trigger build
 # Build trigger
+# Deploy all services
