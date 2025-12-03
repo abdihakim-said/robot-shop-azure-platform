@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/redis
+  repository: redis
   tag: latest
   pullPolicy: IfNotPresent
 service:

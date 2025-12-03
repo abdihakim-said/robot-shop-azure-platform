@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/rabbitmq
+  repository: rabbitmq
   tag: latest
   pullPolicy: IfNotPresent
 service:

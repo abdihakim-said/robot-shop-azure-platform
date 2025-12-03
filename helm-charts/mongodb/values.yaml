@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/mongodb
+  repository: robotshop/rs-mongodb
   tag: latest
   pullPolicy: IfNotPresent
 service:
