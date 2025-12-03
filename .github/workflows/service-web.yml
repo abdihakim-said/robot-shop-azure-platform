@@ -58,7 +58,7 @@ jobs:
       namespace: robot-shop
       image-tag: ${{ github.sha }}
     secrets:
-      azure-credentials: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
 
   # CD - Deploy to Production (from main branch)
   deploy-prod:
@@ -72,4 +72,4 @@ jobs:
       namespace: robot-shop
       image-tag: ${{ github.sha }}
     secrets:
-      azure-credentials: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
