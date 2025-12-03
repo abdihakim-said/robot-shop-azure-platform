@@ -41,7 +41,7 @@ resource "azurerm_storage_account" "main" {
   location                 = var.location
   account_tier             = var.storage_account_tier
   account_replication_type = var.storage_replication_type
-  
+
   blob_properties {
     delete_retention_policy {
       days = var.blob_retention_days

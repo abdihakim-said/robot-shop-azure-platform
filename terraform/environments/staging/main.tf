@@ -1,6 +1,6 @@
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -32,7 +32,7 @@ provider "azurerm" {
 locals {
   environment = "staging"
   name_prefix = "${var.project_name}-${local.environment}"
-  
+
   common_tags = {
     Environment = local.environment
     Project     = var.project_name
@@ -55,10 +55,10 @@ module "networking" {
   name_prefix         = local.name_prefix
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
-  
+
   vnet_address_space        = var.vnet_address_space
   aks_subnet_address_prefix = var.aks_subnet_address_prefix
-  
+
   tags = local.common_tags
 }
 
@@ -70,16 +70,16 @@ module "aks" {
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
   subnet_id           = module.networking.aks_subnet_id
-  
-  kubernetes_version  = var.kubernetes_version
-  node_count          = var.node_count
-  vm_size             = var.vm_size
-  enable_autoscaling  = var.enable_autoscaling
-  min_node_count      = var.min_node_count
-  max_node_count      = var.max_node_count
-  
+
+  kubernetes_version = var.kubernetes_version
+  node_count         = var.node_count
+  vm_size            = var.vm_size
+  enable_autoscaling = var.enable_autoscaling
+  min_node_count     = var.min_node_count
+  max_node_count     = var.max_node_count
+
   tags = local.common_tags
-  
+
   depends_on = [module.networking]
 }
 
@@ -91,15 +91,15 @@ module "storage" {
   storage_account_name = "${replace(local.name_prefix, "-", "")}storage"
   location             = var.location
   resource_group_name  = azurerm_resource_group.main.name
-  
+
   kubelet_identity_object_id = module.aks.kubelet_identity.object_id
-  
+
   acr_sku                  = var.acr_sku
   storage_account_tier     = var.storage_account_tier
   storage_replication_type = var.storage_replication_type
-  
+
   tags = local.common_tags
-  
+
   depends_on = [module.aks]
 }
 
@@ -112,11 +112,11 @@ module "monitoring" {
   resource_group_name        = azurerm_resource_group.main.name
   log_analytics_workspace_id = module.aks.log_analytics_workspace_id
   aks_cluster_id             = module.aks.cluster_id
-  
+
   alert_emails = var.alert_emails
-  
+
   tags = local.common_tags
-  
+
   depends_on = [module.aks]
 }
 
@@ -142,7 +142,7 @@ resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
   }
-  
+
   depends_on = [module.aks]
 }
 
@@ -152,7 +152,7 @@ resource "helm_release" "prometheus_stack" {
   chart      = "kube-prometheus-stack"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
   version    = "55.0.0"
-  
+
   values = [
     templatefile("${path.module}/../../helm-values/prometheus-values.yaml", {
       grafana_admin_password = var.grafana_admin_password
@@ -161,6 +161,6 @@ resource "helm_release" "prometheus_stack" {
       grafana_storage        = var.grafana_storage_size
     })
   ]
-  
+
   depends_on = [module.aks, kubernetes_namespace.monitoring]
 }
