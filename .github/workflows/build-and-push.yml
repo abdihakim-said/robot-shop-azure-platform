@@ -111,6 +111,19 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
     steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Trigger deployment workflow
         env:
           GH_TOKEN: ${{ github.token }}
@@ -120,4 +133,4 @@ jobs:
             --ref ${{ github.ref_name }} \
             --field service-name=${{ matrix.service }} \
             --field image-tag=${{ github.sha }} \
-            --field environment=dev
+            --field environment=${{ steps.env.outputs.environment }}
