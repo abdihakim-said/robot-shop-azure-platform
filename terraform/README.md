@@ -92,3 +92,4 @@ Manages Azure Container Registry and Storage Accounts.
 ---
 
 **Start with the dev environment, then deploy prod when ready!**
+# CI/CD Test - Wed  3 Dec 2025 05:15:31 GMT
