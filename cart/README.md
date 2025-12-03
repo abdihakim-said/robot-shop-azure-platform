@@ -4,3 +4,4 @@
 # Test build once deploy many
 # Test pipeline flow
 # Test CI/CD flow
+# Test with permissions
