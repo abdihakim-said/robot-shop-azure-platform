@@ -1,0 +1,14 @@
+image:
+  repository: robotshopdevacrmtttm8.azurecr.io/rabbitmq
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 5672
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

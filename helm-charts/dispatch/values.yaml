@@ -1,0 +1,14 @@
+image:
+  repository: robotshopdevacrmtttm8.azurecr.io/dispatch
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 55555
+resources:
+  requests:
+    cpu: 30m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

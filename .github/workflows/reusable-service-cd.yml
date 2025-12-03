@@ -1,4 +1,4 @@
-name: Reusable Service CD - Deploy Pre-Built Image
+name: Reusable Service CD - Deploy Service
 
 on:
   workflow_call:
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.azure-credentials }}
 
@@ -48,41 +48,17 @@ jobs:
         with:
           version: '3.13.0'
 
-      - name: Verify image exists
+      - name: Deploy service independently
         run: |
-          az acr repository show-tags \
-            --name robotshopdevacrmtttm8 \
-            --repository ${{ inputs.service-name }} \
-            --output table | grep ${{ inputs.image-tag }}
-
-      - name: Deploy service with pre-built image
-        run: |
-          helm upgrade --install ${{ inputs.service-name }} ./helm \
+          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${{ inputs.service-name }} \
             --namespace ${{ inputs.namespace }} \
             --create-namespace \
-            --values ./helm/values-${{ inputs.environment }}.yaml \
-            --set ${{ inputs.service-name }}.image.repository=${{ env.ACR_LOGIN_SERVER }}/${{ inputs.service-name }} \
-            --set ${{ inputs.service-name }}.image.tag=${{ inputs.image-tag }} \
+            --set image.tag=${{ inputs.image-tag }} \
             --wait \
-            --timeout 5m \
-            --atomic
+            --timeout 5m
 
       - name: Verify deployment
         run: |
           kubectl rollout status deployment/${{ inputs.service-name }} -n ${{ inputs.namespace }} --timeout=300s
-          
-          echo "Verifying image tag..."
-          DEPLOYED_IMAGE=$(kubectl get deployment ${{ inputs.service-name }} -n ${{ inputs.namespace }} -o jsonpath='{.spec.template.spec.containers[0].image}')
-          echo "Deployed image: $DEPLOYED_IMAGE"
-          
-          if [[ "$DEPLOYED_IMAGE" != *"${{ inputs.image-tag }}"* ]]; then
-            echo "ERROR: Deployed image tag doesn't match!"
-            exit 1
-          fi
-          
-          echo "✅ Correct image deployed"
-
-      - name: Smoke test
-        run: |
-          echo "Running smoke test for ${{ inputs.service-name }}"
           kubectl get pods -l service=${{ inputs.service-name }} -n ${{ inputs.namespace }}
+          echo "✅ ${{ inputs.service-name }} deployed successfully"

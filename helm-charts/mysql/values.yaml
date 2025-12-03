@@ -1,0 +1,14 @@
+image:
+  repository: robotshopdevacrmtttm8.azurecr.io/mysql
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3306
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
