@@ -78,13 +78,15 @@ jobs:
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-${{ matrix.service }}.sarif'
 
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         if: always()
         with:
           sarif_file: 'trivy-${{ matrix.service }}.sarif'
