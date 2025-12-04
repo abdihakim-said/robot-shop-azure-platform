@@ -11,8 +11,8 @@ RUN apt-get update && \
     apt-get upgrade -y libgssapi-krb5-2 libk5crypto3 libkrb5-3 libkrb5support0 && \
     rm -rf /var/lib/apt/lists/*
 
-# Update npm to latest version to fix CVE-2025-7783 in npm's form-data dependency
-RUN npm install -g npm@latest
+# Update npm to 8.x (compatible with Node 14, has patched form-data)
+RUN npm install -g npm@8
 
 COPY package.json /opt/server/
 
