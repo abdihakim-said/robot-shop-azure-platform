@@ -58,15 +58,8 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
     
-    container:
-      image: semgrep/semgrep
-    
     steps:
       - uses: actions/checkout@v4
-      
-      # Fix git ownership for container
-      - name: Fix git ownership
-        run: git config --global --add safe.directory /__w/robot-shop-azure-platform/robot-shop-azure-platform
       
       # 1. Secret Detection
       - name: Secret Detection (TruffleHog)
@@ -97,7 +90,9 @@ jobs:
       
       # 3. SAST - Code Security Scanning
       - name: Code Security Scan (Semgrep)
-        run: semgrep scan --config auto --sarif --output=semgrep-${{ matrix.service }}.sarif
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config auto --sarif --output=/src/semgrep-${{ matrix.service }}.sarif
+        continue-on-error: true
         continue-on-error: true
       
       - name: Upload SAST Results
