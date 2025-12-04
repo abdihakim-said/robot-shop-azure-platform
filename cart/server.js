@@ -1,6 +1,7 @@
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
+// Test PR validation pipeline
 instana({
     tracing: {
         enabled: true
