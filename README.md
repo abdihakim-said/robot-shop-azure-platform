@@ -7,7 +7,7 @@
 
 > Production-grade microservices platform demonstrating enterprise DevOps, DevSecOps, and cloud-native best practices on Azure.
 
-**Live Demo**: http://57.151.39.73:8080
+**Built by**: [Abdihakim Said](https://github.com/abdihakim-said)
 
 ---
 
@@ -269,7 +269,6 @@ kubectl port-forward -n monitoring svc/monitoring-prometheus 9090:9090
 **Cluster**: robot-shop-dev-aks (East US)  
 **Nodes**: 2 × Standard_DC2s_v3  
 **Pods**: 12/12 Running  
-**URL**: http://57.151.39.73:8080  
 
 **Latest Deployment**:
 - Commit: `949ab1c`
