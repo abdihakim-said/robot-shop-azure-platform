@@ -1,1 +1,1 @@
-# MySQL Service with shipping user
+# MySQL with shipping user configured
