@@ -18,8 +18,5 @@
       "pino-pretty": "^2.5.0",
       "@instana/collector": "^1.132.2",
       "prom-client": "^11.5.3"
-  },
-  "overrides": {
-    "form-data": "4.0.4"
   }
 }
