@@ -105,32 +105,16 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
 
-  trigger-deployments:
-    name: Trigger Deployments
-    runs-on: ubuntu-latest
+  deploy:
+    name: Deploy ${{ matrix.service }}
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
-    steps:
-      - name: Determine environment
-        id: env
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
-            echo "environment=staging" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-          else
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Trigger deployment workflow
-        uses: ./.github/workflows/service-${{ matrix.service }}.yml
-        with:
-          service-name: ${{ matrix.service }}
-          image-tag: ${{ github.sha }}
-          environment: ${{ steps.env.outputs.environment }}
-        secrets: inherit
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: ${{ matrix.service }}
+      image-tag: ${{ github.sha }}
+      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    secrets: inherit
