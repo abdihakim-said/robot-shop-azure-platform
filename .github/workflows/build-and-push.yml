@@ -57,10 +57,14 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    
+    container:
+      image: semgrep/semgrep
+    
     steps:
       - uses: actions/checkout@v4
       
-      # 1. Secret Scanning
+      # 1. Secret Detection
       - name: Secret Detection (TruffleHog)
         uses: trufflesecurity/trufflehog@main
         continue-on-error: true
@@ -87,11 +91,9 @@ jobs:
           sarif_file: 'trivy-deps-${{ matrix.service }}.sarif'
           category: 'dependencies-${{ matrix.service }}'
       
-      # 3. SAST - Code Security Scanning (Multi-language)
+      # 3. SAST - Code Security Scanning
       - name: Code Security Scan (Semgrep)
-        run: |
-          cd ${{ matrix.service }}
-          docker run --rm -v "${PWD}:/src" returntocorp/semgrep semgrep scan --config=auto --sarif --output=../semgrep-${{ matrix.service }}.sarif || true
+        run: semgrep scan --config auto --sarif --output=semgrep-${{ matrix.service }}.sarif
         continue-on-error: true
       
       - name: Upload SAST Results
