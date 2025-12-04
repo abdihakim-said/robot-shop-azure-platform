@@ -18,6 +18,9 @@ spec:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/cities?useSSL=false&allowPublicKeyRetrieval=true"
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:
