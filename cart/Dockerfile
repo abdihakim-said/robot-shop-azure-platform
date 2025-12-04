@@ -14,7 +14,9 @@ RUN apt-get update && \
 COPY package.json /opt/server/
 
 RUN npm install && \
-    npm install form-data@4.0.4 --save
+    npm ls form-data && \
+    npm update form-data@4.0.4 && \
+    npm ls form-data
 
 COPY server.js /opt/server/
 
