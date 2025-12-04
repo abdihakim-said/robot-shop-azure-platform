@@ -1,6 +1,18 @@
 name: user Service
 
 on:
+  workflow_call:
+    inputs:
+      image-tag:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+  
   workflow_dispatch:
     inputs:
       image-tag:
