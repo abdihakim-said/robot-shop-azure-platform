@@ -4,7 +4,8 @@
   "description": "cart REST API",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm ls form-data || true && find node_modules -name 'form-data' -type d -exec rm -rf {} + 2>/dev/null || true && npm install form-data@4.0.4 --no-save"
   },
   "author": "SteveW",
   "license": "Apache-2.0",
