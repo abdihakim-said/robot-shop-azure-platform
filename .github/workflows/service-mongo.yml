@@ -1,0 +1,26 @@
+name: mongo Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'Image tag to deploy (commit SHA)'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: mongo
+      image-tag: ${{ inputs.image-tag }}
+      environment: ${{ inputs.environment }}
+    secrets: inherit

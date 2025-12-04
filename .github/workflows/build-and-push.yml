@@ -112,7 +112,7 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
-    uses: ./.github/workflows/deploy-service.yml
+    uses: ./.github/workflows/service-${{ matrix.service }}.yml
     with:
       service-name: ${{ matrix.service }}
       image-tag: ${{ github.sha }}
