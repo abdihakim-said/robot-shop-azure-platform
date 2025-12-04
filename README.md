@@ -7,6 +7,10 @@
 
 > Production-grade microservices platform demonstrating enterprise DevOps, GitOps, and cloud-native best practices on Azure.
 
+**Built by**: [Abdihakim Said](https://github.com/abdihakim-said)
+
+---
+
 ## 🎯 Project Overview
 
 A complete end-to-end implementation of a 12-service microservices application on Azure Kubernetes Service (AKS), showcasing:
@@ -16,8 +20,6 @@ A complete end-to-end implementation of a 12-service microservices application o
 - **Infrastructure as Code**: Modular Terraform with 3-tier environments
 - **Microservices Architecture**: Independent service deployments
 - **Production-Ready**: Autoscaling, monitoring, and high availability
-
-**Live Demo**: http://57.151.39.73:8080 (Development environment)
 
 ---
 
