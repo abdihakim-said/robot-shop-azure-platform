@@ -1,7 +1,7 @@
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
-// Test PR validation pipeline
+// Test dynamic matrix deployment - scalable approach
 instana({
     tracing: {
         enabled: true
