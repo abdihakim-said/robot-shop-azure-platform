@@ -48,10 +48,70 @@ jobs:
           echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
           echo "Changed services: $CHANGED_SERVICES"
 
+  # DevSecOps: Pre-Build Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Secret Scanning
+      - name: Secret Detection (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./${{ matrix.service }}
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+      
+      # 2. Dependency Vulnerability Scanning
+      - name: Dependency Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          scan-type: 'fs'
+          scan-ref: './${{ matrix.service }}'
+          format: 'sarif'
+          output: 'trivy-deps-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      
+      - name: Upload Dependency Scan Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: 'trivy-deps-${{ matrix.service }}.sarif'
+          category: 'dependencies-${{ matrix.service }}'
+      
+      # 3. SAST - Code Security Scanning (Multi-language)
+      - name: Code Security Scan (Semgrep)
+        uses: returntocorp/semgrep-action@v1
+        continue-on-error: true
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+          scanPath: ./${{ matrix.service }}
+          generateSarif: true
+      
+      - name: Upload SAST Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: 'sast-${{ matrix.service }}'
+
   build-and-push:
     name: Build & Push
     runs-on: ubuntu-latest
-    needs: detect-changes
+    needs: [detect-changes, security-scan]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
       matrix:
@@ -83,20 +143,47 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Scan image with Trivy
+      # DevSecOps: Container Image Security Scanning
+      - name: Scan image with Trivy (Vulnerabilities)
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         with:
           image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
           format: 'sarif'
-          output: 'trivy-${{ matrix.service }}.sarif'
-
-      - name: Upload Trivy results
+          output: 'trivy-image-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+      
+      - name: Upload Image Scan Results
         uses: github/codeql-action/upload-sarif@v4
-        continue-on-error: true
         if: always()
         with:
-          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+          sarif_file: 'trivy-image-${{ matrix.service }}.sarif'
+          category: 'container-${{ matrix.service }}'
+      
+      # Security Gate: Fail on Critical Vulnerabilities
+      - name: Security Gate Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL'
+          ignore-unfixed: true
+      
+      # DevSecOps: Generate SBOM (Software Bill of Materials)
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'cyclonedx'
+          output: 'sbom-${{ matrix.service }}.json'
+      
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: sbom-${{ matrix.service }}.json
+          retention-days: 90
 
       - name: Tag image as tested
         run: |
