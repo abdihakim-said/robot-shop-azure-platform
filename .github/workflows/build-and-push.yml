@@ -186,92 +186,18 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
 
-  deploy-cart:
-    if: contains(needs.detect-changes.outputs.services, 'cart')
+  # Dynamic deployment for all changed services
+  deploy-services:
+    name: Deploy ${{ matrix.service }}
     needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-cart.yml
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+      fail-fast: false
+    uses: ./.github/workflows/deploy-service.yml
     with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-catalogue:
-    if: contains(needs.detect-changes.outputs.services, 'catalogue')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-catalogue.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-dispatch:
-    if: contains(needs.detect-changes.outputs.services, 'dispatch')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-dispatch.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-mongo:
-    if: contains(needs.detect-changes.outputs.services, 'mongo')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-mongo.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-mysql:
-    if: contains(needs.detect-changes.outputs.services, 'mysql')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-mysql.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-payment:
-    if: contains(needs.detect-changes.outputs.services, 'payment')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-payment.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-ratings:
-    if: contains(needs.detect-changes.outputs.services, 'ratings')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-ratings.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-shipping:
-    if: contains(needs.detect-changes.outputs.services, 'shipping')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-shipping.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-user:
-    if: contains(needs.detect-changes.outputs.services, 'user')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-user.yml
-    with:
-      image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
-
-  deploy-web:
-    if: contains(needs.detect-changes.outputs.services, 'web')
-    needs: [detect-changes, build-and-push]
-    uses: ./.github/workflows/service-web.yml
-    with:
+      service-name: ${{ matrix.service }}
       image-tag: ${{ github.sha }}
       environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     secrets: inherit
