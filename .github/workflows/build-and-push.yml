@@ -93,7 +93,6 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config auto --sarif --output=/src/semgrep-${{ matrix.service }}.sarif
         continue-on-error: true
-        continue-on-error: true
       
       - name: Upload SAST Results
         uses: github/codeql-action/upload-sarif@v4
