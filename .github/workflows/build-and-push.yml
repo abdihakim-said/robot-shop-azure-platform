@@ -12,6 +12,7 @@ on:
       - 'shipping/**'
       - 'ratings/**'
       - 'dispatch/**'
+      - 'mysql/**'
 
 permissions:
   contents: read
@@ -37,7 +38,7 @@ jobs:
         id: changes
         run: |
           CHANGED_SERVICES=""
-          for service in web cart catalogue user payment shipping ratings dispatch; do
+          for service in web cart catalogue user payment shipping ratings dispatch mysql; do
             if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
               CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
             fi
