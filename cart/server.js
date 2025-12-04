@@ -8,7 +8,7 @@ instana({
 });
 
 const redis = require('redis');
-const request = require('request');
+const axios = require('axios');
 const bodyParser = require('body-parser');
 const express = require('express');
 const pino = require('pino');
@@ -358,19 +358,14 @@ function calcTax(total) {
 }
 
 function getProduct(sku) {
-    return new Promise((resolve, reject) => {
-        request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
-            if(err) {
-                reject(err);
-            } else if(res.statusCode != 200) {
-                resolve(null);
-            } else {
-                // return object - body is a string
-                // TODO - catch parse error
-                resolve(JSON.parse(body));
+    return axios.get('http://' + catalogueHost + ':8080/product/' + sku)
+        .then(response => response.data)
+        .catch(err => {
+            if (err.response && err.response.status !== 200) {
+                return null;
             }
+            throw err;
         });
-    });
 }
 
 function saveCart(id, cart) {

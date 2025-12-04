@@ -4,8 +4,7 @@
   "description": "cart REST API",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npm ls form-data || true && find node_modules -name 'form-data' -type d -exec rm -rf {} + 2>/dev/null || true && npm install form-data@4.0.4 --no-save"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SteveW",
   "license": "Apache-2.0",
@@ -13,12 +12,11 @@
       "body-parser": "^1.18.1",
       "express": "^4.15.4",
       "redis": "^2.8.0",
-      "request": "^2.88.2",
+      "axios": "^1.6.0",
       "pino": "^5.10.8",
       "express-pino-logger": "^4.0.0",
       "pino-pretty": "^2.5.0",
       "@instana/collector": "^1.132.2",
-      "prom-client": "^11.5.3",
-      "form-data": "4.0.4"
+      "prom-client": "^11.5.3"
   }
 }
