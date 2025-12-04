@@ -1,7 +1,7 @@
 name: mongo Service Pipeline
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       service-name:
         required: true
@@ -12,6 +12,9 @@ on:
       environment:
         required: true
         type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
 
 jobs:
   deploy:
@@ -31,7 +34,7 @@ jobs:
       
       - name: Deploy to AKS
         run: |
-          helm upgrade --install mongodb ./helm-charts/mongodb \
+          helm upgrade --install mongo ./helm-charts/mongo \
             --namespace robot-shop \
             --create-namespace \
             --set image.repository=robotshopdevacrmtttm8.azurecr.io/mongo \

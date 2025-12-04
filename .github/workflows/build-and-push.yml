@@ -128,12 +128,9 @@ jobs:
           fi
 
       - name: Trigger deployment workflow
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh workflow run service-${{ matrix.service }}.yml \
-            --repo ${{ github.repository }} \
-            --ref ${{ github.ref_name }} \
-            --field service-name=${{ matrix.service }} \
-            --field image-tag=${{ github.sha }} \
-            --field environment=${{ steps.env.outputs.environment }}
+        uses: ./.github/workflows/service-${{ matrix.service }}.yml
+        with:
+          service-name: ${{ matrix.service }}
+          image-tag: ${{ github.sha }}
+          environment: ${{ steps.env.outputs.environment }}
+        secrets: inherit

@@ -1,7 +1,7 @@
 name: mysql Service Pipeline
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       service-name:
         required: true
@@ -12,6 +12,9 @@ on:
       environment:
         required: true
         type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
 
 jobs:
   deploy:

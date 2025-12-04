@@ -1,56 +1,41 @@
 name: payment Service Pipeline
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       service-name:
-        description: 'Service name'
         required: true
-        default: 'payment'
+        type: string
       image-tag:
-        description: 'Image tag (commit SHA)'
         required: true
+        type: string
       environment:
-        description: 'Environment to deploy to'
         required: true
-        default: 'dev'
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
 
 jobs:
   deploy:
-    name: Deploy payment to ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v2
+      
+      - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+      
       - name: Get AKS credentials
         run: |
           az aks get-credentials \
             --resource-group robot-shop-${{ inputs.environment }}-rg \
-            --name robot-shop-${{ inputs.environment }}-aks \
-            --overwrite-existing
-
-      - name: Setup Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: '3.13.0'
-
-      - name: Deploy service
+            --name robot-shop-${{ inputs.environment }}-aks
+      
+      - name: Deploy to AKS
         run: |
-          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${{ inputs.service-name }} \
+          helm upgrade --install payment ./helm-charts/payment \
             --namespace robot-shop \
             --create-namespace \
-            --set image.tag=${{ inputs.image-tag }} \
-            --wait \
-            --timeout 5m
-
-      - name: Verify deployment
-        run: |
-          kubectl rollout status deployment/${{ inputs.service-name }} -n robot-shop --timeout=300s
-          kubectl get pods -l service=${{ inputs.service-name }} -n robot-shop
-          echo "✅ ${{ inputs.service-name }} deployed successfully"
+            --set image.repository=robotshopdevacrmtttm8.azurecr.io/payment \
+            --set image.tag=${{ inputs.image-tag }}

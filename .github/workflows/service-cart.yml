@@ -1,19 +1,25 @@
 name: cart Service Pipeline
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       service-name:
         description: 'Service name'
         required: true
+        type: string
         default: 'cart'
       image-tag:
         description: 'Image tag (commit SHA)'
         required: true
+        type: string
       environment:
         description: 'Environment to deploy to'
         required: true
+        type: string
         default: 'dev'
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
 
 jobs:
   deploy:
