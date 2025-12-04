@@ -19,7 +19,7 @@
       "@instana/collector": "^1.132.2",
       "prom-client": "^11.5.3"
   },
-  "resolutions": {
-    "form-data": "^4.0.4"
+  "overrides": {
+    "form-data": "4.0.4"
   }
 }
