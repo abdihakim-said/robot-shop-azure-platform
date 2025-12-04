@@ -1,0 +1,38 @@
+name: mysql Service Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group robot-shop-${{ inputs.environment }}-rg \
+            --name robot-shop-${{ inputs.environment }}-aks
+      
+      - name: Deploy to AKS
+        run: |
+          helm upgrade --install mysql ./helm-charts/mysql \
+            --namespace robot-shop \
+            --create-namespace \
+            --set image.repository=robotshopdevacrmtttm8.azurecr.io/mysql \
+            --set image.tag=${{ inputs.image-tag }}
