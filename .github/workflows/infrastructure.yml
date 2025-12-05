@@ -8,6 +8,11 @@ on:
     branches: [develop, 'release/**', main]
     paths: ['terraform/**']
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   security-scan:
     name: Security Scanning
