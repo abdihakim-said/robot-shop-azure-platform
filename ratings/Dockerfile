@@ -29,3 +29,4 @@ RUN rm -Rf /var/www/var/*
 RUN chown -R www-data /var/www
 RUN chmod -R 777 /var/www
 
+LABEL version="1.0.0"

@@ -22,3 +22,4 @@ COPY server.js /opt/server/
 
 CMD ["node", "server.js"]
 
+LABEL version="1.0.0"

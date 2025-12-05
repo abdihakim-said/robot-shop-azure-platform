@@ -17,3 +17,4 @@ COPY payment.ini /app/
 #CMD ["python", "payment.py"]
 CMD ["uwsgi", "--ini", "payment.ini"]
 
+LABEL version="1.0.0"
