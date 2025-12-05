@@ -15,6 +15,7 @@
       "pino": "^5.10.8",
       "express-pino-logger": "^4.0.0",
       "pino-pretty": "^2.5.0",
-      "@instana/collector": "^1.132.2"
+      "@instana/collector": "^1.132.2",
+      "form-data": "^4.0.4"
   }
 }
