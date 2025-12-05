@@ -34,7 +34,13 @@ jobs:
       
       - name: Deploy to AKS
         run: |
-          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${{ inputs.service-name }} \
+          # Map service name to Helm chart name (mongo -> mongodb)
+          CHART_NAME="${{ inputs.service-name }}"
+          if [ "$CHART_NAME" = "mongo" ]; then
+            CHART_NAME="mongodb"
+          fi
+          
+          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${CHART_NAME} \
             --namespace robot-shop \
             --create-namespace \
             --set image.repository=robotshopdevacrmtttm8.azurecr.io/${{ inputs.service-name }} \
