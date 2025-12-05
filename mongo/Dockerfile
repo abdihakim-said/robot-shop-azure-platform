@@ -1,4 +1,4 @@
-FROM mongo:5.0.32
+FROM mongo:6.0
 
 COPY *.js /docker-entrypoint-initdb.d/
 
