@@ -1,4 +1,4 @@
-FROM mysql:5.7
+FROM mysql:5.7.44
 
 VOLUME /data
 
