@@ -1,6 +1,6 @@
 image:
   repository: mysql
-  tag: "5.7"
+  tag: "8.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -9,11 +9,11 @@ service:
 
 resources:
   requests:
-    cpu: 50m
-    memory: 256Mi
-  limits:
-    cpu: 500m
+    cpu: 100m
     memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
 
 env:
   - name: MYSQL_ROOT_PASSWORD
