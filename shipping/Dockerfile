@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.8-openjdk-8 AS build
 
 WORKDIR /opt/shipping
 
@@ -13,7 +13,7 @@ RUN mvn package
 #
 # Run
 #
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:8-jre
 
 EXPOSE 8080
 
