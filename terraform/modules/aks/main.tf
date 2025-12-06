@@ -9,16 +9,16 @@ resource "azurerm_log_analytics_workspace" "aks" {
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
-  name                              = var.cluster_name
-  location                          = var.location
-  resource_group_name               = var.resource_group_name
-  dns_prefix                        = "${var.cluster_name}-dns"
-  kubernetes_version                = var.kubernetes_version
-  private_cluster_enabled           = var.private_cluster_enabled
-  local_account_disabled            = var.local_account_disabled
-  sku_tier                          = var.sku_tier
-  automatic_channel_upgrade         = var.automatic_channel_upgrade
-  api_server_authorized_ip_ranges   = var.api_server_authorized_ip_ranges
+  name                            = var.cluster_name
+  location                        = var.location
+  resource_group_name             = var.resource_group_name
+  dns_prefix                      = "${var.cluster_name}-dns"
+  kubernetes_version              = var.kubernetes_version
+  private_cluster_enabled         = var.private_cluster_enabled
+  local_account_disabled          = var.local_account_disabled
+  sku_tier                        = var.sku_tier
+  automatic_channel_upgrade       = var.automatic_channel_upgrade
+  api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
 
   default_node_pool {
     name                = "agentpool"

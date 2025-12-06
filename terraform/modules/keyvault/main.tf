@@ -6,21 +6,21 @@ resource "azurerm_key_vault" "main" {
   resource_group_name = var.resource_group_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = var.environment == "production" ? "premium" : "standard"
-  
+
   enabled_for_deployment          = true
   enabled_for_disk_encryption     = true
   enabled_for_template_deployment = true
   enable_rbac_authorization       = true
   purge_protection_enabled        = var.environment == "production" ? true : false
   soft_delete_retention_days      = 7
-  
+
   network_acls {
-    default_action = "Deny"
-    bypass         = "AzureServices"
-    ip_rules       = var.allowed_ips
+    default_action             = "Deny"
+    bypass                     = "AzureServices"
+    ip_rules                   = var.allowed_ips
     virtual_network_subnet_ids = [var.aks_subnet_id]
   }
-  
+
   tags = var.tags
 }
 
@@ -38,9 +38,9 @@ resource "azurerm_key_vault_secret" "grafana_admin_password" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "password"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
@@ -53,9 +53,9 @@ resource "azurerm_key_vault_secret" "prometheus_password" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "password"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
@@ -68,9 +68,9 @@ resource "azurerm_key_vault_secret" "mysql_password" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "password"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
@@ -82,9 +82,9 @@ resource "azurerm_key_vault_secret" "redis_password" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "password"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
@@ -97,9 +97,9 @@ resource "azurerm_key_vault_secret" "acr_username" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "text/plain"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
@@ -111,9 +111,9 @@ resource "azurerm_key_vault_secret" "acr_password" {
   key_vault_id    = azurerm_key_vault.main.id
   content_type    = "password"
   expiration_date = timeadd(timestamp(), "8760h") # 1 year
-  
+
   depends_on = [azurerm_role_assignment.aks_secrets_user]
-  
+
   lifecycle {
     ignore_changes = [expiration_date]
   }
