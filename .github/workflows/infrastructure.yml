@@ -99,7 +99,7 @@ jobs:
         run: |
           cd terraform/environments/dev
           terraform init
-          terraform plan -out=tfplan
+          terraform plan -out=tfplan -lock-timeout=5m
 
   terraform-apply-dev:
     name: Apply Dev
@@ -132,7 +132,7 @@ jobs:
         run: |
           cd terraform/environments/dev
           terraform init
-          terraform apply -auto-approve tfplan
+          terraform apply -auto-approve tfplan -lock-timeout=5m
 
   terraform-plan-staging:
     name: Plan Staging
@@ -164,7 +164,7 @@ jobs:
         run: |
           cd terraform/environments/staging
           terraform init
-          terraform plan -out=tfplan
+          terraform plan -out=tfplan -lock-timeout=5m
 
   terraform-apply-staging:
     name: Apply Staging
@@ -197,7 +197,7 @@ jobs:
         run: |
           cd terraform/environments/staging
           terraform init
-          terraform apply -auto-approve tfplan
+          terraform apply -auto-approve tfplan -lock-timeout=5m
 
   terraform-plan-prod:
     name: Plan Production
@@ -229,7 +229,7 @@ jobs:
         run: |
           cd terraform/environments/production
           terraform init
-          terraform plan -out=tfplan
+          terraform plan -out=tfplan -lock-timeout=5m
 
   terraform-apply-prod:
     name: Apply Production
@@ -262,4 +262,4 @@ jobs:
         run: |
           cd terraform/environments/production
           terraform init
-          terraform apply -auto-approve tfplan
+          terraform apply -auto-approve tfplan -lock-timeout=5m
