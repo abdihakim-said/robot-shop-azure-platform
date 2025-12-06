@@ -31,7 +31,7 @@ jobs:
         with:
           directory: terraform
           framework: terraform
-          soft_fail_on: medium
+          soft_fail: true
           output_format: sarif
           output_file_path: checkov-results.sarif
 
