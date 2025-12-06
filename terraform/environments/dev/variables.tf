@@ -92,12 +92,6 @@ variable "alert_emails" {
   default     = []
 }
 
-variable "grafana_admin_password" {
-  description = "Grafana admin password"
-  type        = string
-  sensitive   = true
-}
-
 variable "prometheus_storage_size" {
   description = "Prometheus storage size"
   type        = string

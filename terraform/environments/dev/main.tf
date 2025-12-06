@@ -164,7 +164,7 @@ resource "helm_release" "prometheus_stack" {
 
   values = [
     templatefile("${path.module}/../../helm-values/prometheus-values.yaml", {
-      grafana_admin_password = var.grafana_admin_password
+      grafana_admin_password = data.azurerm_key_vault_secret.grafana_password.value
       storage_class          = "managed-csi"
       prometheus_storage     = var.prometheus_storage_size
       grafana_storage        = var.grafana_storage_size
