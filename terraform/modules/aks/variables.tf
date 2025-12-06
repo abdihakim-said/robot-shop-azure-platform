@@ -78,6 +78,48 @@ variable "enable_azure_policy" {
   default     = true
 }
 
+variable "private_cluster_enabled" {
+  description = "Enable private cluster"
+  type        = bool
+  default     = false
+}
+
+variable "local_account_disabled" {
+  description = "Disable local admin account"
+  type        = bool
+  default     = false
+}
+
+variable "sku_tier" {
+  description = "AKS SKU tier - Free or Standard"
+  type        = string
+  default     = "Free"
+}
+
+variable "automatic_channel_upgrade" {
+  description = "Cluster upgrade channel"
+  type        = string
+  default     = null
+}
+
+variable "api_server_authorized_ip_ranges" {
+  description = "Authorized IP ranges for API server"
+  type        = list(string)
+  default     = []
+}
+
+variable "max_pods_per_node" {
+  description = "Maximum pods per node"
+  type        = number
+  default     = 30
+}
+
+variable "os_disk_type" {
+  description = "OS disk type - Managed or Ephemeral"
+  type        = string
+  default     = "Managed"
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

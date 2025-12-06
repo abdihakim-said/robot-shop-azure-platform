@@ -78,6 +78,15 @@ module "aks" {
   min_node_count     = var.min_node_count
   max_node_count     = var.max_node_count
 
+  # Security settings (staging - production-like)
+  private_cluster_enabled           = true      # Private cluster
+  local_account_disabled            = true      # Disable local admin
+  sku_tier                          = "Standard" # Paid SLA
+  automatic_channel_upgrade         = "stable"   # Stable updates
+  api_server_authorized_ip_ranges   = []        # Configure as needed
+  max_pods_per_node                 = 50        # Production-ready
+  os_disk_type                      = "Ephemeral" # Better performance
+
   tags = local.common_tags
 
   depends_on = [module.networking]
