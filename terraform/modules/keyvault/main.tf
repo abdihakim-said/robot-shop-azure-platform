@@ -33,52 +33,88 @@ resource "azurerm_role_assignment" "aks_secrets_user" {
 
 # Store Grafana admin password
 resource "azurerm_key_vault_secret" "grafana_admin_password" {
-  name         = "grafana-admin-password"
-  value        = var.grafana_admin_password
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "grafana-admin-password"
+  value           = var.grafana_admin_password
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 # Store Prometheus credentials
 resource "azurerm_key_vault_secret" "prometheus_password" {
-  name         = "prometheus-password"
-  value        = var.prometheus_password
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "prometheus-password"
+  value           = var.prometheus_password
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 # Store database passwords
 resource "azurerm_key_vault_secret" "mysql_password" {
-  name         = "mysql-admin-password"
-  value        = var.mysql_admin_password
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "mysql-admin-password"
+  value           = var.mysql_admin_password
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_key_vault_secret" "redis_password" {
-  name         = "redis-password"
-  value        = var.redis_password
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "redis-password"
+  value           = var.redis_password
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 # Store ACR credentials
 resource "azurerm_key_vault_secret" "acr_username" {
-  name         = "acr-username"
-  value        = var.acr_admin_username
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "acr-username"
+  value           = var.acr_admin_username
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "text/plain"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_key_vault_secret" "acr_password" {
-  name         = "acr-password"
-  value        = var.acr_admin_password
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "acr-password"
+  value           = var.acr_admin_password
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
   
   depends_on = [azurerm_role_assignment.aks_secrets_user]
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }

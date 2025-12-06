@@ -17,19 +17,37 @@ module "databases" {
 
 # Store connection strings in Key Vault
 resource "azurerm_key_vault_secret" "mysql_connection" {
-  name         = "mysql-connection-string"
-  value        = "Server=${module.databases.mysql_fqdn};Database=users;Uid=${module.databases.mysql_admin_username};Pwd=${var.mysql_admin_password};"
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "mysql-connection-string"
+  value           = "Server=${module.databases.mysql_fqdn};Database=users;Uid=${module.databases.mysql_admin_username};Pwd=${var.mysql_admin_password};"
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "text/plain"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_key_vault_secret" "cosmosdb_connection" {
-  name         = "cosmosdb-connection-string"
-  value        = module.databases.cosmosdb_connection_string
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "cosmosdb-connection-string"
+  value           = module.databases.cosmosdb_connection_string
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "text/plain"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_key_vault_secret" "redis_connection" {
-  name         = "redis-connection-string"
-  value        = "${module.databases.redis_hostname}:${module.databases.redis_ssl_port},password=${module.databases.redis_primary_key},ssl=True"
-  key_vault_id = azurerm_key_vault.main.id
+  name            = "redis-connection-string"
+  value           = "${module.databases.redis_hostname}:${module.databases.redis_ssl_port},password=${module.databases.redis_primary_key},ssl=True"
+  key_vault_id    = azurerm_key_vault.main.id
+  content_type    = "text/plain"
+  expiration_date = timeadd(timestamp(), "8760h") # 1 year
+  
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
