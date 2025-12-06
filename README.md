@@ -1,5 +1,7 @@
 # Robot Shop - Enterprise Microservices Platform on Azure AKS
 
+![Robot Shop Platform](docs/Screenshot%202025-12-05%20at%2011.53.27.png)
+
 [![Azure](https://img.shields.io/badge/Azure-AKS-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/services/kubernetes-service/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.31-326CE5?logo=kubernetes)](https://kubernetes.io/)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform)](https://www.terraform.io/)
