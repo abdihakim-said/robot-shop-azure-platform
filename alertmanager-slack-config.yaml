@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-monitoring-kube-prometheus-alertmanager
+  namespace: monitoring
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: 'REPLACE_WITH_YOUR_SLACK_WEBHOOK_URL'
+    
+    route:
+      receiver: 'default'
+      group_by: ['alertname', 'severity', 'namespace']
+      group_wait: 10s
+      group_interval: 5m
+      repeat_interval: 12h
+      
+      routes:
+      - match:
+          severity: critical
+        receiver: 'slack-critical'
+        continue: true
+      
+      - match:
+          severity: warning
+        receiver: 'slack-warnings'
+        continue: true
+    
+    receivers:
+    - name: 'default'
+      slack_configs:
+      - channel: '#alerts'
+        title: '🤖 Robot Shop Alert'
+        text: |
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Severity:* {{ .CommonLabels.severity }}
+          *Summary:* {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}
+        send_resolved: true
+    
+    - name: 'slack-critical'
+      slack_configs:
+      - channel: '#alerts'
+        title: '🚨 CRITICAL: Robot Shop'
+        text: |
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Namespace:* {{ .GroupLabels.namespace }}
+          *Summary:* {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ .Annotations.description }}{{ end }}
+        color: 'danger'
+        send_resolved: true
+    
+    - name: 'slack-warnings'
+      slack_configs:
+      - channel: '#alerts'
+        title: '⚠️ WARNING: Robot Shop'
+        text: |
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Summary:* {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}
+        color: 'warning'
+        send_resolved: true
+    
+    inhibit_rules:
+    - equal:
+      - namespace
+      - alertname
+      source_matchers:
+      - severity = critical
+      target_matchers:
+      - severity =~ warning|info
