@@ -21,16 +21,16 @@ resource "azurerm_kubernetes_cluster" "main" {
   api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
 
   default_node_pool {
-    name                         = "agentpool"
-    temporary_name_for_rotation  = "agenttmp"
-    node_count                   = var.node_count
-    vm_size                      = var.vm_size
-    vnet_subnet_id               = var.subnet_id
-    enable_auto_scaling          = var.enable_autoscaling
-    min_count                    = var.enable_autoscaling ? var.min_node_count : null
-    max_count                    = var.enable_autoscaling ? var.max_node_count : null
-    max_pods                     = var.max_pods_per_node
-    os_disk_type                 = var.os_disk_type
+    name                        = "agentpool"
+    temporary_name_for_rotation = "agenttmp"
+    node_count                  = var.node_count
+    vm_size                     = var.vm_size
+    vnet_subnet_id              = var.subnet_id
+    enable_auto_scaling         = var.enable_autoscaling
+    min_count                   = var.enable_autoscaling ? var.min_node_count : null
+    max_count                   = var.enable_autoscaling ? var.max_node_count : null
+    max_pods                    = var.max_pods_per_node
+    os_disk_type                = var.os_disk_type
 
     upgrade_settings {
       max_surge = "10%"
