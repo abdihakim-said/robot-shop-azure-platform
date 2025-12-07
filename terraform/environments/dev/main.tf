@@ -77,7 +77,7 @@ module "aks" {
   enable_autoscaling = var.enable_autoscaling
   min_node_count     = var.min_node_count
   max_node_count     = var.max_node_count
-  max_pods_per_node  = 30  # Match existing cluster
+  max_pods_per_node  = 30 # Match existing cluster
 
   # Security settings (dev-appropriate)
   private_cluster_enabled         = false     # Public for testing
