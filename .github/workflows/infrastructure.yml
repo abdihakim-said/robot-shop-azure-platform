@@ -37,7 +37,7 @@ jobs:
           output_file_path: checkov-results.sarif
 
       - name: Upload Checkov SARIF
-        if: always()
+        if: always() && hashFiles('checkov-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: checkov-results.sarif
