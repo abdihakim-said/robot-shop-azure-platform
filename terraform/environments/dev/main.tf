@@ -155,21 +155,6 @@ resource "kubernetes_namespace" "monitoring" {
   depends_on = [module.aks]
 }
 
-resource "helm_release" "prometheus_stack" {
-  name       = "monitoring"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
-  version    = "55.0.0"
-
-  values = [
-    templatefile("${path.module}/../../helm-values/prometheus-values.yaml", {
-      grafana_admin_password = data.azurerm_key_vault_secret.grafana_password.value
-      storage_class          = "managed-csi"
-      prometheus_storage     = var.prometheus_storage_size
-      grafana_storage        = var.grafana_storage_size
-    })
-  ]
-
-  depends_on = [module.aks, kubernetes_namespace.monitoring]
-}
+# Monitoring is now managed via Helm CLI
+# See: helm-charts/monitoring/ or use helm install directly
+# helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring -f values.yaml
