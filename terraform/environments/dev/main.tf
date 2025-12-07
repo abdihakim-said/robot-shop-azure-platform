@@ -85,7 +85,6 @@ module "aks" {
   sku_tier                        = "Free"    # Cost optimization
   automatic_channel_upgrade       = "patch"   # Auto patch updates
   api_server_authorized_ip_ranges = []        # Open for testing
-  max_pods_per_node               = 50        # Adequate for dev
   os_disk_type                    = "Managed" # Standard
 
   tags = local.common_tags
