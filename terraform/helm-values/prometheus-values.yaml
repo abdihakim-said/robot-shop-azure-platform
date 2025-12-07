@@ -28,6 +28,9 @@ grafana:
   enabled: true
   adminPassword: ${grafana_admin_password}
   
+  # High Availability - 2 replicas
+  replicas: 2
+  
   service:
     type: LoadBalancer
     annotations:
@@ -35,7 +38,9 @@ grafana:
   
   persistence:
     enabled: true
-    storageClassName: ${storage_class}
+    storageClassName: azurefile  # ReadWriteMany for HA
+    accessModes:
+      - ReadWriteMany
     size: ${grafana_storage}
   
   resources:
