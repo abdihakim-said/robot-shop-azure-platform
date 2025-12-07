@@ -132,7 +132,7 @@ jobs:
         run: |
           cd terraform/environments/dev
           terraform init
-          terraform apply -auto-approve tfplan -lock-timeout=5m
+          terraform apply -auto-approve -lock-timeout=5m
 
   terraform-plan-staging:
     name: Plan Staging
