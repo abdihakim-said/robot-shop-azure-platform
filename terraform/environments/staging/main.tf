@@ -6,14 +6,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.24"
-    }
   }
 
   # Optional: Remote state
@@ -129,47 +121,6 @@ module "monitoring" {
   depends_on = [module.aks]
 }
 
-# Helm/Kubernetes Providers
-provider "helm" {
-  kubernetes {
-    host                   = module.aks.kube_config.host
-    client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-    client_key             = base64decode(module.aks.kube_config.client_key)
-    cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-  }
-}
-
-provider "kubernetes" {
-  host                   = module.aks.kube_config.host
-  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-  client_key             = base64decode(module.aks.kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-}
-
-# Prometheus + Grafana
-resource "kubernetes_namespace" "monitoring" {
-  metadata {
-    name = "monitoring"
-  }
-
-  depends_on = [module.aks]
-}
-
-resource "helm_release" "prometheus_stack" {
-  name       = "monitoring"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
-  version    = "55.0.0"
-
-  values = [
-    templatefile("${path.module}/../../helm-values/prometheus-values.yaml", {
-      grafana_admin_password = var.grafana_admin_password
-      storage_class          = "managed-csi"
-      prometheus_storage     = var.prometheus_storage_size
-      grafana_storage        = var.grafana_storage_size
-    })
-  ]
-
-  depends_on = [module.aks, kubernetes_namespace.monitoring]
-}
+# Note: Monitoring stack (Prometheus/Grafana) is managed via Helm CLI
+# See MONITORING-MANAGEMENT.md for deployment instructions
+# This follows best practices: Terraform manages infrastructure, Helm CLI manages applications
