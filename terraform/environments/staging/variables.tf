@@ -66,6 +66,12 @@ variable "max_node_count" {
   default     = 3 # Dev: limited scale
 }
 
+variable "max_pods_per_node" {
+  description = "Maximum pods per node"
+  type        = number
+  default     = 30
+}
+
 # Storage
 variable "acr_sku" {
   description = "ACR SKU"
