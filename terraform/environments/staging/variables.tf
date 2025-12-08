@@ -91,4 +91,3 @@ variable "alert_emails" {
   type        = list(string)
   default     = []
 }
-}
