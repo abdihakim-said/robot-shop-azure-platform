@@ -8,13 +8,13 @@ terraform {
     }
   }
 
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "staging.terraform.tfstate"
-  # }
+  backend "azurerm" {
+    resource_group_name  = "robot-shop-tfstate-rg"
+    storage_account_name = "robotshoptfstate03640a07"
+    container_name       = "tfstate"
+    key                  = "staging.terraform.tfstate"
+    use_azuread_auth     = true
+  }
 }
 
 provider "azurerm" {
