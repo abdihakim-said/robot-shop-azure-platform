@@ -55,7 +55,11 @@ jobs:
         with:
           terraform_version: '1.6.0'
 
-      - name: Terraform Format
+      - name: Terraform Auto-Format
+        run: terraform fmt -recursive
+        working-directory: terraform
+
+      - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: terraform
 
