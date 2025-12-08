@@ -6,23 +6,15 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.24"
-    }
   }
 
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "dev.terraform.tfstate"
-  # }
+  backend "azurerm" {
+    resource_group_name  = "robot-shop-tfstate-rg"
+    storage_account_name = "robotshoptfstate03640a07"
+    container_name       = "tfstate"
+    key                  = "dev.terraform.tfstate"
+    use_azuread_auth     = true
+  }
 }
 
 provider "azurerm" {
@@ -130,22 +122,6 @@ module "monitoring" {
 }
 
 # Helm/Kubernetes Providers
-provider "helm" {
-  kubernetes {
-    host                   = module.aks.kube_config.host
-    client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-    client_key             = base64decode(module.aks.kube_config.client_key)
-    cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-  }
-}
-
-provider "kubernetes" {
-  host                   = module.aks.kube_config.host
-  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-  client_key             = base64decode(module.aks.kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-}
-
 # Prometheus + Grafana
 resource "kubernetes_namespace" "monitoring" {
   metadata {
@@ -155,6 +131,6 @@ resource "kubernetes_namespace" "monitoring" {
   depends_on = [module.aks]
 }
 
-# Monitoring is now managed via Helm CLI
-# See: helm-charts/monitoring/ or use helm install directly
-# helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring -f values.yaml
+# Note: Monitoring stack (Prometheus/Grafana) is managed via Helm CLI
+# See MONITORING-MANAGEMENT.md for deployment instructions
+# This follows best practices: Terraform manages infrastructure, Helm CLI manages applications
