@@ -72,7 +72,7 @@ module "aks" {
 
   # Security settings (staging - production-like)
   private_cluster_enabled         = true       # Private cluster
-  local_account_disabled          = true       # Disable local admin
+  local_account_disabled          = false      # Requires AAD integration
   sku_tier                        = "Standard" # Paid SLA
   automatic_channel_upgrade       = "stable"   # Stable updates
   api_server_authorized_ip_ranges = []                  # Configure as needed
