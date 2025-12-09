@@ -12,7 +12,7 @@ aks_subnet_address_prefix = "10.1.1.0/24"
 # AKS - Staging Configuration
 kubernetes_version = "1.32.9"           # Non-LTS, works with Standard tier
 node_count         = 2                  # Start with 2 nodes
-vm_size            = "Standard_DC2s_v3" # Match dev (subscription restriction)
+vm_size            = "Standard_B2s"     # Use B-series (available quota)
 enable_autoscaling = true
 min_node_count     = 2
 max_node_count     = 5
