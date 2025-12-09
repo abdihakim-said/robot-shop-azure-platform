@@ -70,6 +70,10 @@ module "aks" {
   min_node_count     = var.min_node_count
   max_node_count     = var.max_node_count
 
+  # Network settings - avoid overlap with VNet 10.1.0.0/16
+  service_cidr   = "10.2.0.0/16"
+  dns_service_ip = "10.2.0.10"
+
   # Security settings (staging - production-like)
   private_cluster_enabled         = true       # Private cluster
   local_account_disabled          = false      # Requires AAD integration
