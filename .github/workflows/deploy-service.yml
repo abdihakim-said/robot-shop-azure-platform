@@ -32,6 +32,10 @@ jobs:
             --resource-group robot-shop-${{ inputs.environment }}-rg \
             --name robot-shop-${{ inputs.environment }}-aks
       
+      - name: Login to ACR
+        run: |
+          az acr login --name robotshopdevacrmtttm8
+      
       - name: Deploy to AKS
         run: |
           # Deploy using the main robot-shop Helm chart
