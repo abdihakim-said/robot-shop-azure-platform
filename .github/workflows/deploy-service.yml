@@ -38,5 +38,6 @@ jobs:
           helm upgrade --install robot-shop ./helm-charts/robot-shop \
             --namespace robot-shop \
             --create-namespace \
+            --set web.monitoring.serviceMonitor.enabled=false \
             --set ${{ inputs.service-name }}.image.repository=robotshopdevacrmtttm8.azurecr.io/${{ inputs.service-name }} \
             --set ${{ inputs.service-name }}.image.tag=${{ inputs.image-tag }}
