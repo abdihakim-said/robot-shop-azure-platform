@@ -1,0 +1,88 @@
+# Production Environment Configuration - Maximum Security
+global:
+  imageRegistry: robotshopprodacr.azurecr.io
+  imagePullPolicy: IfNotPresent
+  environment: production
+  
+  monitoring:
+    enabled: true
+    scrapeInterval: 15s  # High-frequency monitoring
+
+# Production security configuration
+web:
+  replicas: 3  # High availability
+  service:
+    type: ClusterIP  # Private cluster - no direct external access
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      # TLS Configuration
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      # Security Headers (OWASP Recommended)
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'" always;
+      # Rate Limiting (Production)
+      nginx.ingress.kubernetes.io/rate-limit-connections: "20"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+      nginx.ingress.kubernetes.io/rate-limit-burst-multiplier: "5"
+      # DDoS Protection
+      nginx.ingress.kubernetes.io/limit-connections: "100"
+      nginx.ingress.kubernetes.io/limit-rps: "50"
+    hosts:
+      - host: robot-shop.com  # Production domain
+        paths:
+          - path: /
+            pathType: Prefix
+            service: web
+            port: 8080
+    tls:
+      - secretName: robot-shop-prod-tls
+        hosts:
+          - robot-shop.com
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  monitoring:
+    enabled: true
+
+# Production-grade resources with HA
+redis:
+  replicas: 2  # HA Redis
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+mysql:
+  replicas: 1  # Single master (could be HA)
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+mongodb:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi

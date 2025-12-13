@@ -1,0 +1,69 @@
+# Global Robot Shop Configuration
+global:
+  imageRegistry: robotshopdevacrmtttm8.azurecr.io
+  imagePullPolicy: IfNotPresent
+  
+  # Global monitoring settings
+  monitoring:
+    enabled: true
+    namespace: monitoring
+    
+  # Global resource defaults
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Service-specific overrides
+web:
+  monitoring:
+    enabled: true
+    sidecar:
+      image: nginx/nginx-prometheus-exporter:0.11.0
+      port: 9113
+  service:
+    type: LoadBalancer
+
+cart:
+  monitoring:
+    enabled: false  # Will add later
+
+catalogue:
+  monitoring:
+    enabled: false  # Will add later
+
+user:
+  monitoring:
+    enabled: false
+
+payment:
+  monitoring:
+    enabled: false
+
+shipping:
+  monitoring:
+    enabled: false
+
+ratings:
+  monitoring:
+    enabled: false
+
+dispatch:
+  monitoring:
+    enabled: false
+
+# Infrastructure services
+redis:
+  enabled: true
+
+rabbitmq:
+  enabled: true
+
+mongodb:
+  enabled: true
+
+mysql:
+  enabled: true

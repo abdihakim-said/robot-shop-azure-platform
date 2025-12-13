@@ -1,0 +1,78 @@
+# Staging Environment Configuration - Production-like Security
+global:
+  imageRegistry: robotshopstagingacrx85x6u.azurecr.io
+  imagePullPolicy: IfNotPresent
+  environment: staging
+  
+  monitoring:
+    enabled: true
+    scrapeInterval: 30s  # Production-like monitoring
+
+# Staging security configuration
+web:
+  service:
+    type: ClusterIP  # Private cluster - no direct external access
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      # TLS Configuration
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      # Security Headers
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      # Rate Limiting
+      nginx.ingress.kubernetes.io/rate-limit-connections: "10"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    hosts:
+      - host: staging.robot-shop.com  # Custom domain
+        paths:
+          - path: /
+            pathType: Prefix
+            service: web
+            port: 8080
+    tls:
+      - secretName: robot-shop-staging-tls
+        hosts:
+          - staging.robot-shop.com
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi
+  monitoring:
+    enabled: true
+
+# Production-like resources for staging
+redis:
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+mysql:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+mongodb:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
