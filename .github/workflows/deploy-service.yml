@@ -35,9 +35,8 @@ jobs:
       - name: Deploy to AKS
         run: |
           # Deploy using the main robot-shop Helm chart
-          helm upgrade --install robot-shop ./helm \
+          helm upgrade --install robot-shop ./helm-charts/robot-shop \
             --namespace robot-shop \
             --create-namespace \
-            --values ./helm/values-${{ inputs.environment }}.yaml \
             --set ${{ inputs.service-name }}.image.repository=robotshopdevacrmtttm8.azurecr.io/${{ inputs.service-name }} \
             --set ${{ inputs.service-name }}.image.tag=${{ inputs.image-tag }}
