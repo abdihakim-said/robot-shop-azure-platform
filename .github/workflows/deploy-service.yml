@@ -34,14 +34,10 @@ jobs:
       
       - name: Deploy to AKS
         run: |
-          # Map service name to Helm chart name (mongo -> mongodb)
-          CHART_NAME="${{ inputs.service-name }}"
-          if [ "$CHART_NAME" = "mongo" ]; then
-            CHART_NAME="mongodb"
-          fi
-          
-          helm upgrade --install ${{ inputs.service-name }} ./helm-charts/${CHART_NAME} \
+          # Deploy using the main robot-shop Helm chart
+          helm upgrade --install robot-shop ./helm \
             --namespace robot-shop \
             --create-namespace \
-            --set image.repository=robotshopdevacrmtttm8.azurecr.io/${{ inputs.service-name }} \
-            --set image.tag=${{ inputs.image-tag }}
+            --values ./helm/values-${{ inputs.environment }}.yaml \
+            --set ${{ inputs.service-name }}.image.repository=robotshopdevacrmtttm8.azurecr.io/${{ inputs.service-name }} \
+            --set ${{ inputs.service-name }}.image.tag=${{ inputs.image-tag }}
