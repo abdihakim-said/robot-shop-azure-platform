@@ -47,15 +47,33 @@ jobs:
     name: Terraform Validate
     runs-on: ubuntu-latest
     needs: security-scan
+    permissions:
+      contents: write  # Needed for auto-fix commits
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.6.0'
 
-      - name: Terraform Format
+      - name: Auto-fix Terraform Format
+        run: |
+          terraform fmt -recursive terraform/
+          if ! git diff --quiet; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add terraform/
+            git commit -m "style: auto-fix terraform formatting [skip ci]"
+            git push
+            echo "✅ Terraform formatting auto-fixed and committed"
+          else
+            echo "✅ Terraform formatting is already correct"
+          fi
+
+      - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: terraform
 
