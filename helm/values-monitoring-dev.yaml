@@ -1,0 +1,66 @@
+# Development Monitoring Stack - Minimal Resources
+grafana:
+  enabled: true
+  replicas: 1
+  
+  service:
+    type: ClusterIP
+  
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.robot-shop-dev.com
+  
+  persistence:
+    enabled: true
+    storageClassName: managed-csi
+    size: 5Gi
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.robot-shop-dev.com
+
+  prometheusSpec:
+    replicas: 1
+    retention: 7d  # Short retention for dev
+    
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-csi
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-csi
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi

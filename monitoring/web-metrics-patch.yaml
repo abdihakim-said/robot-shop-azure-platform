@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: robot-shop
+spec:
+  template:
+    metadata:
+      labels:
+        service: web
+        metrics: enabled  # Add label for ServiceMonitor
+    spec:
+      containers:
+      # Existing web container (unchanged)
+      - name: web
+        image: robotshopdevacrmtttm8.azurecr.io/web:8fccf2b8a95ffb56854a4b52444ed3633d8c3ad0
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 30m
+            memory: 64Mi
+      
+      # NEW: Prometheus exporter sidecar (non-breaking addition)
+      - name: nginx-prometheus-exporter
+        image: nginx/nginx-prometheus-exporter:0.11.0
+        args:
+          - -nginx.scrape-uri=http://localhost:8080/nginx_status
+          - -web.listen-address=:9113
+        ports:
+        - containerPort: 9113
+          name: metrics
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 50m
+            memory: 32Mi
+          requests:
+            cpu: 10m
+            memory: 16Mi
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9113
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9113
+          initialDelaySeconds: 5
+          periodSeconds: 10

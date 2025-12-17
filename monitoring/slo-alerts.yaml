@@ -1,0 +1,67 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: robot-shop-slo-alerts
+  namespace: monitoring
+  labels:
+    app: robot-shop
+    release: monitoring
+spec:
+  groups:
+  - name: robot-shop.slo
+    rules:
+    # SLI: Availability (success rate)
+    - record: robot_shop:availability_5m
+      expr: |
+        (
+          sum(rate(http_requests_total{job="robot-shop-web",code!~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="robot-shop-web"}[5m]))
+        ) * 100
+
+    # SLI: Error Rate
+    - record: robot_shop:error_rate_5m
+      expr: |
+        (
+          sum(rate(http_requests_total{job="robot-shop-web",code=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="robot-shop-web"}[5m]))
+        ) * 100
+
+    # SLI: Response Time (95th percentile)
+    - record: robot_shop:response_time_95p
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(http_request_duration_seconds_bucket{job="robot-shop-web"}[5m])) by (le)
+        ) * 1000
+
+    # SLO Alert: Availability < 99.9%
+    - alert: RobotShopAvailabilityBreach
+      expr: robot_shop:availability_5m < 99.9
+      for: 2m
+      labels:
+        severity: critical
+        slo: availability
+      annotations:
+        summary: "Robot Shop availability SLO breach"
+        description: "Availability is {{ $value }}%, below 99.9% SLO target"
+
+    # SLO Alert: Error Rate > 0.1%
+    - alert: RobotShopErrorRateBreach
+      expr: robot_shop:error_rate_5m > 0.1
+      for: 2m
+      labels:
+        severity: critical
+        slo: error_rate
+      annotations:
+        summary: "Robot Shop error rate SLO breach"
+        description: "Error rate is {{ $value }}%, above 0.1% SLO target"
+
+    # SLO Alert: Response Time > 200ms
+    - alert: RobotShopLatencyBreach
+      expr: robot_shop:response_time_95p > 200
+      for: 2m
+      labels:
+        severity: critical
+        slo: latency
+      annotations:
+        summary: "Robot Shop latency SLO breach"
+        description: "95th percentile latency is {{ $value }}ms, above 200ms SLO target"

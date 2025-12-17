@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: robot-shop-quota
+  namespace: robot-shop
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "2"      # 2 CPU cores total
+    requests.memory: 4Gi   # 4GB memory total
+    limits.cpu: "4"        # 4 CPU cores max
+    limits.memory: 8Gi     # 8GB memory max
+    
+    # Storage
+    requests.storage: 20Gi
+    
+    # Object counts
+    pods: "20"
+    services: "15"
+    persistentvolumeclaims: "5"
+    
+    # Cost optimization: Prevent resource waste
+    count/deployments.apps: "12"  # Max 12 deployments (our microservices)
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: robot-shop-limits
+  namespace: robot-shop
+spec:
+  limits:
+  - default:
+      cpu: 200m      # Default CPU limit
+      memory: 256Mi   # Default memory limit
+    defaultRequest:
+      cpu: 100m      # Default CPU request
+      memory: 128Mi   # Default memory request
+    max:
+      cpu: 1000m     # Max CPU per container
+      memory: 1Gi    # Max memory per container
+    min:
+      cpu: 50m       # Min CPU per container
+      memory: 64Mi   # Min memory per container
+    type: Container
