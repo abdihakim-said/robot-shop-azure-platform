@@ -1,9 +1,9 @@
 terraform {
   backend "azurerm" {
     resource_group_name  = "robot-shop-tfstate-rg"
-    storage_account_name = "robotshoptfstate03640a07"
+    storage_account_name = "robotshoptfstate7ef8fd5e"
     container_name       = "tfstate"
     key                  = "staging.terraform.tfstate"
-    use_azuread_auth     = true # Uses Workload Identity
+    use_azuread_auth     = true  # Uses Workload Identity
   }
 }
