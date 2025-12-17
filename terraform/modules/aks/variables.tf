@@ -30,6 +30,12 @@ variable "node_count" {
   default     = 3
 }
 
+variable "enable_multi_az" {
+  description = "Enable multi-availability zone deployment"
+  type        = bool
+  default     = false
+}
+
 variable "vm_size" {
   description = "VM size for nodes"
   type        = string
