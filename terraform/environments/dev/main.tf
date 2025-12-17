@@ -158,3 +158,4 @@ resource "kubernetes_namespace" "monitoring" {
 # Monitoring is now managed via Helm CLI
 # See: helm-charts/monitoring/ or use helm install directly
 # helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring -f values.yaml
+# Infrastructure test Wed 17 Dec 2025 14:35:22 GMT
