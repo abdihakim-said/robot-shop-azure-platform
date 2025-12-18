@@ -4,6 +4,6 @@ terraform {
     storage_account_name = "robotshoptfstate7ef8fd5e"
     container_name       = "tfstate"
     key                  = "staging.terraform.tfstate"
-    use_azuread_auth     = true  # Uses Workload Identity
+    use_azuread_auth     = true # Uses Workload Identity
   }
 }
