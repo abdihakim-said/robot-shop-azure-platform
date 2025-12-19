@@ -79,9 +79,6 @@ module "aks" {
   max_node_count     = var.max_node_count
   max_pods_per_node  = 30 # Match existing cluster
 
-  # ACR integration
-  acr_name = module.storage.acr_name
-
   # Security settings (dev-appropriate)
   private_cluster_enabled         = false     # Public for testing
   local_account_disabled          = false     # Keep for dev access
