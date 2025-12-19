@@ -1,4 +1,4 @@
-# Staging Environment Configuration
+# Staging Environment Configuration - v1.0
 # Production-like but smaller for pre-production testing
 
 project_name = "robot-shop"
