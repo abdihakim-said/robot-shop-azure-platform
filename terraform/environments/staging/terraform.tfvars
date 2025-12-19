@@ -27,3 +27,4 @@ storage_replication_type = "LRS" # Cost-effective for staging
 alert_emails            = ["staging-team@example.com"]
 prometheus_storage_size = "15Gi"
 grafana_storage_size    = "8Gi"
+# Test authentication fix
