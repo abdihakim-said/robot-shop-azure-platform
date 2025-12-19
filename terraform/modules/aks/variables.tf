@@ -131,3 +131,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+variable "acr_name" {
+  description = "Name of the Azure Container Registry for integration"
+  type        = string
+  default     = null
+}

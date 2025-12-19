@@ -141,6 +141,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Import Existing Resources
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_USE_OIDC: true
+        run: |
+          cd terraform/environments/dev
+          terraform init
+          # Import diagnostic setting if it exists (ignore errors if not found)
+          terraform import module.monitoring.azurerm_monitor_diagnostic_setting.aks "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/robot-shop-dev-rg/providers/Microsoft.ContainerService/managedClusters/robot-shop-dev-aks|robot-shop-dev-diagnostics" || true
+
       - name: Terraform Apply
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

@@ -28,13 +28,6 @@ resource "azurerm_container_registry" "main" {
   tags = var.tags
 }
 
-resource "azurerm_role_assignment" "aks_acr" {
-  principal_id                     = var.kubelet_identity_object_id
-  role_definition_name             = "AcrPull"
-  scope                            = azurerm_container_registry.main.id
-  skip_service_principal_aad_check = true
-}
-
 resource "azurerm_storage_account" "main" {
   name                     = var.storage_account_name
   resource_group_name      = var.resource_group_name

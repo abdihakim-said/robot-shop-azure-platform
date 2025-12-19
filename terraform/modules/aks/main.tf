@@ -43,6 +43,9 @@ resource "azurerm_kubernetes_cluster" "main" {
     type = "SystemAssigned"
   }
 
+  # ACR integration - automatically handles role assignments
+  acr_name = var.acr_name
+
   network_profile {
     network_plugin    = "azure"
     network_policy    = "azure"
