@@ -77,7 +77,7 @@ resource "azurerm_linux_virtual_machine" "kubectl" {
   name                = "${var.name_prefix}-kubectl-vm"
   resource_group_name = var.resource_group_name
   location            = var.location
-  size                = "Standard_DC2s_v3" # Same as AKS nodes
+  size                = "Standard_D2s_v3" # Same as AKS nodes
   admin_username      = "azureuser"
   tags                = var.tags
 
