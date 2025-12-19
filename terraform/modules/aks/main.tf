@@ -18,7 +18,10 @@ resource "azurerm_kubernetes_cluster" "main" {
   local_account_disabled          = var.local_account_disabled
   sku_tier                        = var.sku_tier
   automatic_channel_upgrade       = var.automatic_channel_upgrade
-  api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
+
+  api_server_access_profile {
+    authorized_ip_ranges = var.api_server_authorized_ip_ranges
+  }
 
   default_node_pool {
     name                = "agentpool"

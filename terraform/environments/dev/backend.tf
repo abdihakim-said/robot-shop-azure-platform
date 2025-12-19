@@ -4,6 +4,9 @@ terraform {
     storage_account_name = "robotshoptfstate7ef8fd5e"
     container_name       = "tfstate"
     key                  = "dev.terraform.tfstate"
+<<<<<<< HEAD
     use_azuread_auth     = true # Uses Workload Identity
+=======
+>>>>>>> 4e02f5b (Fix Key Vault dependency and Terraform warnings)
   }
 }

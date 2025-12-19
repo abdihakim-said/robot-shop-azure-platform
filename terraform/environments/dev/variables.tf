@@ -1,3 +1,9 @@
+variable "max_pods_per_node" {
+  description = "Maximum number of pods per node"
+  type        = number
+  default     = 30
+}
+
 variable "project_name" {
   description = "Project name"
   type        = string
