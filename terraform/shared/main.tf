@@ -53,6 +53,14 @@ resource "azurerm_key_vault_access_policy" "terraform" {
   secret_permissions = ["Get", "List", "Set", "Delete"]
 }
 
+resource "azurerm_key_vault_access_policy" "github_actions" {
+  key_vault_id = azurerm_key_vault.secrets.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = "af46ece1-1835-4290-8fe7-e78e2a619c9e"  # GitHub Actions service principal
+
+  secret_permissions = ["Get", "List"]
+}
+
 resource "azurerm_key_vault_secret" "grafana_password" {
   name         = "grafana-admin-password"
   value        = "admin123!"
