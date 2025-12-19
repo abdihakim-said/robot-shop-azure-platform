@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -84,4 +88,8 @@ resource "azurerm_key_vault_secret" "redis_password" {
   name         = "redis-password"
   value        = "redis123!"
   key_vault_id = azurerm_key_vault.secrets.id
+}
+
+module "github_federated_identity" {
+  source = "../modules/github-federated-identity"
 }
