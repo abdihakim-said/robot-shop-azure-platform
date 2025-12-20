@@ -1,6 +1,12 @@
-variable "environment" {
-  description = "Environment name"
+variable "name_prefix" {
+  description = "Prefix for resource names"
   type        = string
+}
+
+variable "location" {
+  description = "Azure region"
+  type        = string
+  default     = "East US"
 }
 
 variable "resource_group_name" {
@@ -8,65 +14,38 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
-  description = "Azure region"
+variable "random_suffix" {
+  description = "Random suffix for unique naming"
   type        = string
 }
 
-variable "aks_subnet_id" {
-  description = "AKS subnet ID for network access"
+variable "github_actions_object_id" {
+  description = "GitHub Actions service principal object ID"
   type        = string
 }
 
-variable "aks_kubelet_identity_object_id" {
-  description = "AKS kubelet managed identity object ID"
-  type        = string
+variable "secrets" {
+  description = "Map of secrets to create in Key Vault"
+  type = map(object({
+    name   = string
+    length = optional(number, 16)
+  }))
+  default = {}
 }
 
-variable "allowed_ips" {
-  description = "Allowed IP addresses for Key Vault access"
-  type        = list(string)
-  default     = []
-}
-
-variable "grafana_admin_password" {
-  description = "Grafana admin password"
-  type        = string
-  sensitive   = true
-}
-
-variable "prometheus_password" {
-  description = "Prometheus password"
-  type        = string
-  sensitive   = true
-}
-
-variable "mysql_admin_password" {
-  description = "MySQL admin password"
-  type        = string
-  sensitive   = true
-}
-
-variable "redis_password" {
-  description = "Redis password"
-  type        = string
-  sensitive   = true
-}
-
-variable "acr_admin_username" {
-  description = "ACR admin username"
-  type        = string
-  sensitive   = true
-}
-
-variable "acr_admin_password" {
-  description = "ACR admin password"
-  type        = string
-  sensitive   = true
+variable "access_policies" {
+  description = "Additional access policies for Key Vault"
+  type = list(object({
+    object_id               = string
+    secret_permissions      = list(string)
+    key_permissions         = optional(list(string), [])
+    certificate_permissions = optional(list(string), [])
+  }))
+  default = []
 }
 
 variable "tags" {
-  description = "Tags to apply"
+  description = "Tags to apply to resources"
   type        = map(string)
   default     = {}
 }

@@ -15,6 +15,65 @@ permissions:
   id-token: write  # Required for Workload Identity
 
 jobs:
+  deploy-bootstrap:
+    name: Deploy Bootstrap
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      backend_storage: ${{ steps.bootstrap.outputs.backend_storage }}
+      backend_rg: ${{ steps.bootstrap.outputs.backend_rg }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Deploy Bootstrap
+        id: bootstrap
+        run: |
+          cd terraform/bootstrap
+          terraform init
+          terraform apply -auto-approve
+          echo "backend_storage=$(terraform output -raw backend_storage_account_name)" >> $GITHUB_OUTPUT
+          echo "backend_rg=$(terraform output -raw backend_resource_group_name)" >> $GITHUB_OUTPUT
+
+  deploy-shared:
+    name: Deploy Shared Infrastructure
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-bootstrap
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Deploy Shared Infrastructure
+        run: |
+          cd terraform/shared
+          terraform init \
+            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
+          terraform apply -auto-approve
+
   security-scan:
     name: Security Scanning
     runs-on: ubuntu-latest
@@ -91,7 +150,7 @@ jobs:
     name: Plan Dev
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
-    needs: terraform-validate
+    needs: [deploy-bootstrap, terraform-validate]
     permissions:
       id-token: write
       contents: read
@@ -116,14 +175,16 @@ jobs:
           ARM_USE_OIDC: true
         run: |
           cd terraform/environments/dev
-          terraform init
+          terraform init \
+            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
           terraform plan -out=tfplan -lock-timeout=5m
 
   terraform-apply-dev:
     name: Apply Dev
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    needs: terraform-plan-dev
+    needs: [deploy-bootstrap, terraform-plan-dev]
     environment: development
     permissions:
       id-token: write
@@ -141,18 +202,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Import Existing Resources
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
-        run: |
-          cd terraform/environments/dev
-          terraform init
-          # Import diagnostic setting if it exists (ignore errors if not found)
-          terraform import module.monitoring.azurerm_monitor_diagnostic_setting.aks "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/robot-shop-dev-rg/providers/Microsoft.ContainerService/managedClusters/robot-shop-dev-aks|robot-shop-dev-diagnostics" || true
-
       - name: Terraform Apply
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -161,14 +210,16 @@ jobs:
           ARM_USE_OIDC: true
         run: |
           cd terraform/environments/dev
-          terraform init
+          terraform init \
+            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
           terraform apply -auto-approve -lock-timeout=5m
 
   terraform-plan-staging:
     name: Plan Staging
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/release/')
-    needs: terraform-validate
+    needs: [deploy-shared, terraform-validate]
     permissions:
       id-token: write
       contents: read
@@ -233,7 +284,7 @@ jobs:
     name: Plan Production
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    needs: terraform-validate
+    needs: [deploy-shared, terraform-validate]
     permissions:
       id-token: write
       contents: read

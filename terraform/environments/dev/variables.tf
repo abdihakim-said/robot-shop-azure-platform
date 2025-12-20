@@ -10,10 +10,29 @@ variable "project_name" {
   default     = "robot-shop"
 }
 
+# Backend configuration variables
+variable "backend_resource_group_name" {
+  description = "Backend resource group name"
+  type        = string
+  default     = "robot-shop-tfstate-rg"
+}
+
+variable "backend_storage_account_name" {
+  description = "Backend storage account name"
+  type        = string
+  default     = "robotshoptfstatew0dv4afu"
+}
+
+variable "backend_container_name" {
+  description = "Backend container name"
+  type        = string
+  default     = "tfstate"
+}
+
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
+  default     = "East US"
 }
 
 variable "cost_center" {
@@ -108,4 +127,29 @@ variable "grafana_storage_size" {
   description = "Grafana storage size"
   type        = string
   default     = "5Gi" # Dev: smaller storage
+}
+variable "secrets" {
+  description = "Key Vault secrets configuration for dev environment"
+  type = map(object({
+    name   = string
+    length = optional(number, 16)
+  }))
+  default = {
+    grafana = {
+      name   = "grafana-admin-password"
+      length = 20
+    }
+    prometheus = {
+      name   = "prometheus-password"
+      length = 16
+    }
+    mysql = {
+      name   = "mysql-admin-password"
+      length = 20
+    }
+    redis = {
+      name   = "redis-password"
+      length = 16
+    }
+  }
 }

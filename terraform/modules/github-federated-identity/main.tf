@@ -11,50 +11,35 @@ data "azuread_application" "github_actions" {
   application_id = var.application_id
 }
 
-resource "azuread_application_federated_identity_credential" "github_develop" {
+# Dynamic branch credentials
+resource "azuread_application_federated_identity_credential" "github_branches" {
+  for_each = toset(var.branches)
+  
   application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-branch-develop"
+  display_name          = "github-branch-${each.value}"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:ref:refs/heads/develop"
+  subject               = "repo:${var.github_repository}:ref:refs/heads/${each.value}"
 }
 
-resource "azuread_application_federated_identity_credential" "github_main" {
+# Dynamic release branch credentials
+resource "azuread_application_federated_identity_credential" "github_release_branches" {
+  for_each = toset(var.release_branches)
+  
   application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-branch-main"
+  display_name          = "github-branch-${replace(each.value, "/", "-")}"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:ref:refs/heads/main"
+  subject               = "repo:${var.github_repository}:ref:refs/heads/${each.value}"
 }
 
-resource "azuread_application_federated_identity_credential" "github_release" {
+# Dynamic environment credentials
+resource "azuread_application_federated_identity_credential" "github_environments" {
+  for_each = toset(var.environments)
+  
   application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-branch-release"
+  display_name          = "github-env-${each.value}"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:ref:refs/heads/release/*"
-}
-
-resource "azuread_application_federated_identity_credential" "github_env_dev" {
-  application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-env-development"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:environment:development"
-}
-
-resource "azuread_application_federated_identity_credential" "github_env_staging" {
-  application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-env-staging"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:environment:staging"
-}
-
-resource "azuread_application_federated_identity_credential" "github_env_production" {
-  application_object_id = data.azuread_application.github_actions.object_id
-  display_name          = "github-env-production"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${var.github_repository}:environment:production"
+  subject               = "repo:${var.github_repository}:environment:${each.value}"
 }

@@ -15,14 +15,6 @@ terraform {
       version = "~> 2.24"
     }
   }
-
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "dev.terraform.tfstate"
-  # }
 }
 
 provider "azurerm" {
@@ -38,6 +30,8 @@ locals {
     Project     = var.project_name
     ManagedBy   = "terraform"
     CostCenter  = var.cost_center
+    Optimized   = "cost-optimized-v1"
+    Owner       = "platform-team"
   }
 }
 
@@ -46,6 +40,76 @@ resource "azurerm_resource_group" "main" {
   name     = "${local.name_prefix}-rg"
   location = var.location
   tags     = local.common_tags
+}
+
+# Network Security Groups for Production
+resource "azurerm_network_security_group" "aks" {
+  name                = "${local.name_prefix}-aks-nsg"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Allow HTTPS only
+  security_rule {
+    name                       = "AllowHTTPS"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # Deny HTTP
+  security_rule {
+    name                       = "DenyHTTP"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Deny"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # Allow SSH from corporate network only
+  security_rule {
+    name                       = "AllowSSHCorporate"
+    priority                   = 1003
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefixes    = var.allowed_ip_ranges
+    destination_address_prefix = "*"
+  }
+
+  tags = local.common_tags
+}
+
+# Database Security Groups
+resource "azurerm_network_security_group" "database" {
+  name                = "${local.name_prefix}-db-nsg"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Allow database access from AKS subnet only
+  security_rule {
+    name                       = "AllowAKSToDatabase"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = ["3306", "6379", "10255"]
+    source_address_prefix      = var.aks_subnet_address_prefix
+    destination_address_prefix = "*"
+  }
+
+  tags = local.common_tags
 }
 
 # Networking Module
@@ -60,6 +124,96 @@ module "networking" {
   aks_subnet_address_prefix = var.aks_subnet_address_prefix
 
   tags = local.common_tags
+}
+
+# Private DNS Zones for Private Endpoints
+resource "azurerm_private_dns_zone" "mysql" {
+  name                = "privatelink.mysql.database.azure.com"
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+}
+
+resource "azurerm_private_dns_zone" "redis" {
+  name                = "privatelink.redis.cache.windows.net"
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+}
+
+resource "azurerm_private_dns_zone" "cosmosdb" {
+  name                = "privatelink.documents.azure.com"
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+}
+
+# Link DNS zones to VNet
+resource "azurerm_private_dns_zone_virtual_network_link" "mysql" {
+  name                  = "${local.name_prefix}-mysql-dns-link"
+  resource_group_name   = azurerm_resource_group.main.name
+  private_dns_zone_name = azurerm_private_dns_zone.mysql.name
+  virtual_network_id    = module.networking.vnet_id
+  tags                  = local.common_tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
+  name                  = "${local.name_prefix}-redis-dns-link"
+  resource_group_name   = azurerm_resource_group.main.name
+  private_dns_zone_name = azurerm_private_dns_zone.redis.name
+  virtual_network_id    = module.networking.vnet_id
+  tags                  = local.common_tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
+  name                  = "${local.name_prefix}-cosmosdb-dns-link"
+  resource_group_name   = azurerm_resource_group.main.name
+  private_dns_zone_name = azurerm_private_dns_zone.cosmosdb.name
+  virtual_network_id    = module.networking.vnet_id
+  tags                  = local.common_tags
+}
+
+# Databases Module (Production-Grade Managed Services)
+module "databases" {
+  source = "../../modules/databases"
+  
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  environment         = local.environment
+  
+  # MySQL Configuration (Cost Optimized)
+  mysql_sku_name           = "B_Standard_B2s"           # Basic tier (80% cost reduction)
+  mysql_storage_mb         = 51200                      # 50GB storage (50% reduction)
+  mysql_backup_retention   = 7                         # 7 days backup (cost optimized)
+  mysql_admin_username     = "mysqladmin"
+  mysql_admin_password     = module.keyvault.secret_values["mysql"]
+  mysql_version           = "8.0"
+  
+  # Redis Configuration (Cost Optimized)
+  redis_sku_name     = "Standard"                       # Standard tier (70% cost reduction)
+  redis_family       = "C"                             # Standard family
+  redis_capacity     = 1                               # C1 (6GB)
+  redis_enable_non_ssl_port = false                    # SSL only
+  
+  # CosmosDB Configuration (Cost Optimized)
+  cosmosdb_offer_type                = "Standard"
+  cosmosdb_consistency_level         = "Session"
+  cosmosdb_max_interval_in_seconds   = 300
+  cosmosdb_max_staleness_prefix      = 100000
+  cosmosdb_throughput               = 400              # Minimum throughput (60% reduction)
+  
+  # Network Security
+  subnet_id = module.networking.database_subnet_id
+  
+  # Private Endpoints (Production Security)
+  enable_private_endpoints = var.enable_private_endpoints
+  private_dns_zone_ids     = [
+    azurerm_private_dns_zone.mysql.id,
+    azurerm_private_dns_zone.redis.id,
+    azurerm_private_dns_zone.cosmosdb.id
+  ]
+  
+  tags = local.common_tags
+  
+  depends_on = [module.networking, module.keyvault]
 }
 
 # AKS Module
@@ -79,13 +233,30 @@ module "aks" {
   max_node_count     = var.max_node_count
 
   # Security settings (production - maximum security)
-  private_cluster_enabled         = true        # Private cluster
-  local_account_disabled          = true        # Disable local admin
-  sku_tier                        = "Standard"  # 99.9% SLA
-  automatic_channel_upgrade       = "stable"    # Stable updates
-  api_server_authorized_ip_ranges = []          # Configure with your IPs
-  max_pods_per_node               = 50          # Production-ready
-  os_disk_type                    = "Ephemeral" # Better performance
+  private_cluster_enabled         = true                    # Private cluster
+  local_account_disabled          = true                    # Disable local admin
+  sku_tier                        = "Standard"              # 99.9% SLA
+  automatic_channel_upgrade       = "stable"                # Stable updates
+  api_server_authorized_ip_ranges = var.allowed_ip_ranges   # Corporate IPs only
+  max_pods_per_node               = 50                      # Production-ready
+  os_disk_type                    = "Ephemeral"             # Better performance
+  
+  # Production Security Features
+  azure_policy_enabled             = true                   # Azure Policy
+  microsoft_defender_enabled       = true                   # Defender for Containers
+  workload_identity_enabled        = true                   # Workload Identity
+  oidc_issuer_enabled             = true                    # OIDC Issuer
+  
+  # Security Center Integration
+  log_analytics_workspace_enabled = true                    # Security monitoring
+  oms_agent_enabled               = true                    # Container insights
+  
+  # RBAC Configuration
+  role_based_access_control_enabled = true
+  azure_active_directory_role_based_access_control {
+    managed                = true
+    admin_group_object_ids = var.rbac_admin_group_object_ids
+  }
 
   tags = local.common_tags
 
@@ -172,4 +343,19 @@ resource "helm_release" "prometheus_stack" {
   ]
 
   depends_on = [module.aks, kubernetes_namespace.monitoring]
+}
+
+# Key Vault Module (Environment-specific)
+module "keyvault" {
+  source = "../../modules/keyvault"
+  
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  random_suffix       = var.random_suffix
+  github_actions_object_id = var.github_actions_object_id
+  
+  secrets = var.secrets
+  
+  tags = local.common_tags
 }

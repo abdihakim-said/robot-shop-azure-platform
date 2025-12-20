@@ -15,23 +15,41 @@ terraform {
       version = "~> 2.24"
     }
   }
-
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "dev.terraform.tfstate"
-  # }
 }
 
 provider "azurerm" {
   features {}
 }
 
+# Get bootstrap outputs
+data "terraform_remote_state" "bootstrap" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.backend_resource_group_name
+    storage_account_name = var.backend_storage_account_name
+    container_name       = var.backend_container_name
+    key                  = "bootstrap.tfstate"
+  }
+}
+
+# Get shared outputs
+data "terraform_remote_state" "shared" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.backend_resource_group_name
+    storage_account_name = var.backend_storage_account_name
+    container_name       = var.backend_container_name
+    key                  = "shared.tfstate"
+  }
+}
+
 locals {
   environment = "dev"
   name_prefix = "${var.project_name}-${local.environment}"
+
+  # Dynamic values from remote state
+  random_suffix = data.terraform_remote_state.bootstrap.outputs.random_suffix
+  github_actions_object_id = data.terraform_remote_state.shared.outputs.github_service_principal_object_id
 
   common_tags = {
     Environment = local.environment
@@ -110,6 +128,21 @@ module "storage" {
   tags = local.common_tags
 
   depends_on = [module.aks]
+}
+
+# Key Vault Module (Environment-specific)
+module "keyvault" {
+  source = "../../modules/keyvault"
+  
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  random_suffix       = local.random_suffix
+  github_actions_object_id = local.github_actions_object_id
+  
+  secrets = var.secrets
+  
+  tags = local.common_tags
 }
 
 # Monitoring Module

@@ -1,90 +1,73 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
+  }
+}
+
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_key_vault" "main" {
-  name                = "${var.environment}-robotshop-kv"
+# Generate random passwords for each secret
+resource "random_password" "secrets" {
+  for_each = var.secrets
+  
+  length  = each.value.length
+  special = true
+  upper   = true
+  lower   = true
+  numeric = true
+}
+
+resource "azurerm_key_vault" "secrets" {
+  name                = "${replace(var.name_prefix, "-", "")}kv${var.random_suffix}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
-  sku_name            = var.environment == "production" ? "premium" : "standard"
+  sku_name            = "standard"
+  
+  purge_protection_enabled   = false
+  soft_delete_retention_days = 7
 
-  enabled_for_deployment          = true
-  enabled_for_disk_encryption     = true
-  enabled_for_template_deployment = true
-  enable_rbac_authorization       = true
-  purge_protection_enabled        = var.environment == "production" ? true : false
-  soft_delete_retention_days      = 7
+  # Default access policy for current user/service principal
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+    secret_permissions = ["Get", "List", "Set", "Delete", "Purge"]
+  }
 
-  network_acls {
-    default_action             = "Deny"
-    bypass                     = "AzureServices"
-    ip_rules                   = var.allowed_ips
-    virtual_network_subnet_ids = [var.aks_subnet_id]
+  # GitHub Actions access policy
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = var.github_actions_object_id
+    secret_permissions = ["Get", "List"]
+  }
+
+  # Additional dynamic access policies
+  dynamic "access_policy" {
+    for_each = var.access_policies
+    content {
+      tenant_id               = data.azurerm_client_config.current.tenant_id
+      object_id               = access_policy.value.object_id
+      secret_permissions      = access_policy.value.secret_permissions
+      key_permissions         = access_policy.value.key_permissions
+      certificate_permissions = access_policy.value.certificate_permissions
+    }
   }
 
   tags = var.tags
 }
 
-# Grant AKS access to Key Vault
-resource "azurerm_role_assignment" "aks_secrets_user" {
-  scope                = azurerm_key_vault.main.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.aks_kubelet_identity_object_id
-}
-
-# Store Grafana admin password
-resource "azurerm_key_vault_secret" "grafana_admin_password" {
-  name         = "grafana-admin-password"
-  value        = nonsensitive(var.grafana_admin_password)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "password"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
-}
-
-# Store Prometheus credentials
-resource "azurerm_key_vault_secret" "prometheus_password" {
-  name         = "prometheus-password"
-  value        = nonsensitive(var.prometheus_password)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "password"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
-}
-
-# Store database passwords
-resource "azurerm_key_vault_secret" "mysql_password" {
-  name         = "mysql-admin-password"
-  value        = nonsensitive(var.mysql_admin_password)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "password"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
-}
-
-resource "azurerm_key_vault_secret" "redis_password" {
-  name         = "redis-password"
-  value        = nonsensitive(var.redis_password)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "password"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
-}
-
-# Store ACR credentials
-resource "azurerm_key_vault_secret" "acr_username" {
-  name         = "acr-username"
-  value        = nonsensitive(var.acr_admin_username)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "text/plain"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
-}
-
-resource "azurerm_key_vault_secret" "acr_password" {
-  name         = "acr-password"
-  value        = nonsensitive(var.acr_admin_password)
-  key_vault_id = azurerm_key_vault.main.id
-  content_type = "password"
-
-  depends_on = [azurerm_role_assignment.aks_secrets_user]
+# Dynamic secrets creation
+resource "azurerm_key_vault_secret" "secrets" {
+  for_each = var.secrets
+  
+  name         = each.value.name
+  value        = random_password.secrets[each.key].result
+  key_vault_id = azurerm_key_vault.secrets.id
 }

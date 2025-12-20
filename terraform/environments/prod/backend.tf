@@ -1,7 +1,7 @@
 terraform {
   backend "azurerm" {
     container_name   = "tfstate"
-    key              = "staging.terraform.tfstate"
+    key              = "prod.terraform.tfstate"
     use_azuread_auth = true
   }
 }

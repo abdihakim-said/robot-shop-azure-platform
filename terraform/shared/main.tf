@@ -9,6 +9,9 @@ terraform {
       version = "~> 2.0"
     }
   }
+  backend "azurerm" {
+    # Dynamic configuration via CI/CD pipeline
+  }
 }
 
 provider "azurerm" {
@@ -17,79 +20,44 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
+locals {
+  common_tags = {
+    Environment = "shared"
+    Project     = var.project_name
+    ManagedBy   = "terraform"
+  }
+}
+
 resource "azurerm_resource_group" "shared" {
-  name     = "robot-shop-shared-rg"
-  location = "East US"
-
-  tags = {
-    Environment = "shared"
-    Project     = "robot-shop"
-    ManagedBy   = "terraform"
-  }
+  name     = "${var.project_name}-shared-rg"
+  location = var.location
+  tags     = local.common_tags
 }
 
-resource "azurerm_key_vault" "secrets" {
-  name                = "robot-shop-secrets-kv"
-  location            = azurerm_resource_group.shared.location
-  resource_group_name = azurerm_resource_group.shared.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  sku_name            = "standard"
-
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-
-    secret_permissions = ["Get", "List", "Set", "Delete"]
-  }
-
-  tags = {
-    Environment = "shared"
-    Project     = "robot-shop"
-    ManagedBy   = "terraform"
-  }
+# Create Azure AD Application for GitHub Actions
+resource "azuread_application" "github_actions" {
+  display_name = "${var.project_name}-github-actions"
 }
 
-resource "azurerm_key_vault_access_policy" "terraform" {
-  key_vault_id = azurerm_key_vault.secrets.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
-
-  secret_permissions = ["Get", "List", "Set", "Delete"]
+# Create Service Principal
+resource "azuread_service_principal" "github_actions" {
+  client_id = azuread_application.github_actions.client_id
 }
 
-resource "azurerm_key_vault_access_policy" "github_actions" {
-  key_vault_id = azurerm_key_vault.secrets.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = "af46ece1-1835-4290-8fe7-e78e2a619c9e" # GitHub Actions service principal
-
-  secret_permissions = ["Get", "List"]
+# Assign Contributor role to subscription
+resource "azurerm_role_assignment" "github_actions_contributor" {
+  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+  role_definition_name = "Contributor"
+  principal_id         = azuread_service_principal.github_actions.object_id
 }
 
-resource "azurerm_key_vault_secret" "grafana_password" {
-  name         = "grafana-admin-password"
-  value        = "admin123!"
-  key_vault_id = azurerm_key_vault.secrets.id
-  depends_on   = [azurerm_key_vault_access_policy.terraform]
-}
-
-resource "azurerm_key_vault_secret" "prometheus_password" {
-  name         = "prometheus-password"
-  value        = "prom123!"
-  key_vault_id = azurerm_key_vault.secrets.id
-}
-
-resource "azurerm_key_vault_secret" "mysql_password" {
-  name         = "mysql-admin-password"
-  value        = "mysql123!"
-  key_vault_id = azurerm_key_vault.secrets.id
-}
-
-resource "azurerm_key_vault_secret" "redis_password" {
-  name         = "redis-password"
-  value        = "redis123!"
-  key_vault_id = azurerm_key_vault.secrets.id
-}
-
+# GitHub federated identity module with dynamic configuration
 module "github_federated_identity" {
   source = "../modules/github-federated-identity"
+  
+  application_id    = azuread_application.github_actions.client_id
+  github_repository = var.github_repository
+  branches          = ["develop", "main"]
+  release_branches  = ["release/*"]
+  environments      = ["development", "staging", "production"]
 }

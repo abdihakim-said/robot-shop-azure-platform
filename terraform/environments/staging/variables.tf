@@ -7,7 +7,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
+  default     = "East US"
 }
 
 variable "cost_center" {
@@ -108,4 +108,39 @@ variable "grafana_storage_size" {
   description = "Grafana storage size"
   type        = string
   default     = "5Gi" # Dev: smaller storage
+}
+variable "random_suffix" {
+  description = "Random suffix from bootstrap"
+  type        = string
+}
+
+variable "github_actions_object_id" {
+  description = "GitHub Actions service principal object ID"
+  type        = string
+}
+
+variable "secrets" {
+  description = "Key Vault secrets configuration for staging environment"
+  type = map(object({
+    name   = string
+    length = optional(number, 20)
+  }))
+  default = {
+    grafana = {
+      name   = "grafana-admin-password"
+      length = 24
+    }
+    prometheus = {
+      name   = "prometheus-password"
+      length = 20
+    }
+    mysql = {
+      name   = "mysql-admin-password"
+      length = 24
+    }
+    redis = {
+      name   = "redis-password"
+      length = 20
+    }
+  }
 }

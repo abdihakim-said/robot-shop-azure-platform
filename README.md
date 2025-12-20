@@ -307,7 +307,8 @@ Educational and demonstration purposes.
 
 ## 📚 Additional Resources
 
-All detailed documentation is maintained locally for development reference:
+### Production Deployment Strategy
+- [Blue/Green Deployment with Azure Functions](docs/PRODUCTION-DEPLOYMENT-STRATEGY.md)
 - Architecture diagrams
 - Deployment guides
 - Troubleshooting guides

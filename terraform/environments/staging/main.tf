@@ -15,14 +15,6 @@ terraform {
       version = "~> 2.24"
     }
   }
-
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "staging.terraform.tfstate"
-  # }
 }
 
 provider "azurerm" {
@@ -172,4 +164,19 @@ resource "helm_release" "prometheus_stack" {
   ]
 
   depends_on = [module.aks, kubernetes_namespace.monitoring]
+}
+
+# Key Vault Module (Environment-specific)
+module "keyvault" {
+  source = "../../modules/keyvault"
+  
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  random_suffix       = var.random_suffix
+  github_actions_object_id = var.github_actions_object_id
+  
+  secrets = var.secrets
+  
+  tags = local.common_tags
 }
