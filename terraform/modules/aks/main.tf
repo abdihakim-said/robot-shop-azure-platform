@@ -62,6 +62,6 @@ resource "azurerm_kubernetes_cluster" "main" {
 
 # Get the outbound IP from the AKS managed resource group
 data "azurerm_public_ip" "aks_outbound" {
-  name                = split("/", azurerm_kubernetes_cluster.main.network_profile[0].load_balancer_profile[0].outbound_ip_address_ids[0])[8]
+  name                = split("/", tolist(azurerm_kubernetes_cluster.main.network_profile[0].load_balancer_profile[0].outbound_ip_address_ids)[0])[8]
   resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
 }
