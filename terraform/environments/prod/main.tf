@@ -241,22 +241,26 @@ module "aks" {
   max_pods_per_node               = 50                    # Production-ready
   os_disk_type                    = "Ephemeral"           # Better performance
 
-  # Production Security Features
-  azure_policy_enabled       = true # Azure Policy
-  microsoft_defender_enabled = true # Defender for Containers
-  workload_identity_enabled  = true # Workload Identity
-  oidc_issuer_enabled        = true # OIDC Issuer
-
-  # Security Center Integration
-  log_analytics_workspace_enabled = true # Security monitoring
-  oms_agent_enabled               = true # Container insights
-
-  # RBAC Configuration
-  role_based_access_control_enabled = true
-  azure_active_directory_role_based_access_control {
-    managed                = true
-    admin_group_object_ids = var.rbac_admin_group_object_ids
-  }
+  # Enterprise Production Configuration
+  kubernetes_version              = var.kubernetes_version
+  vm_size                        = var.vm_size
+  node_count                     = var.node_count
+  min_node_count                 = var.min_count
+  max_node_count                 = var.max_count
+  enable_autoscaling             = true
+  enable_multi_az                = true
+  
+  # Enterprise Security Features
+  enable_azure_policy            = true
+  private_cluster_enabled        = var.private_cluster_enabled
+  local_account_disabled         = true
+  sku_tier                       = "Standard"
+  automatic_channel_upgrade      = "patch"
+  
+  # Network Security
+  api_server_authorized_ip_ranges = var.allowed_ip_ranges
+  max_pods_per_node              = 50
+  os_disk_type                   = "Ephemeral"
 
   tags = local.common_tags
 
