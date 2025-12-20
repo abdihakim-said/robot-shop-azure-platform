@@ -62,13 +62,16 @@ jobs:
 
       - name: Terraform Init & Validate
         run: |
-          for env in dev staging prod; do
-            echo "Validating $env environment..."
-            cd terraform/environments/$env
-            terraform init -backend=false
-            terraform validate
-            cd ../../..
-          done
+          echo "Validating bootstrap..."
+          cd terraform/bootstrap
+          terraform init -backend=false
+          terraform validate
+          cd ../..
+          
+          echo "Validating shared..."
+          cd terraform/shared  
+          terraform init -backend=false
+          terraform validate
 
   # Bootstrap - runs once per pipeline, creates shared backend
   deploy-bootstrap:
