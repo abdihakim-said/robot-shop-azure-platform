@@ -169,14 +169,14 @@ resource "helm_release" "prometheus_stack" {
 # Key Vault Module (Environment-specific)
 module "keyvault" {
   source = "../../modules/keyvault"
-  
-  name_prefix         = local.name_prefix
-  location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
-  random_suffix       = var.random_suffix
+
+  name_prefix              = local.name_prefix
+  location                 = var.location
+  resource_group_name      = azurerm_resource_group.main.name
+  random_suffix            = var.random_suffix
   github_actions_object_id = var.github_actions_object_id
-  
+
   secrets = var.secrets
-  
+
   tags = local.common_tags
 }

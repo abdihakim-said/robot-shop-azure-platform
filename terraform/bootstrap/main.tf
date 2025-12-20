@@ -35,7 +35,7 @@ resource "random_string" "suffix" {
 # Backend infrastructure only
 module "backend" {
   source = "../modules/backend"
-  
+
   name_prefix   = var.project_name
   location      = var.location
   random_suffix = random_string.suffix.result

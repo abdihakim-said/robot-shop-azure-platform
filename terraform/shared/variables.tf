@@ -11,7 +11,7 @@ variable "location" {
 }
 
 variable "github_repository" {
-  description = "GitHub repository in format owner/repo"  
+  description = "GitHub repository in format owner/repo"
   type        = string
   default     = "abdihakim-said/robot-shop-azure-platform"
 }

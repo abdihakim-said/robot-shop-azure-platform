@@ -16,7 +16,7 @@ data "azurerm_client_config" "current" {}
 # Generate random passwords for each secret
 resource "random_password" "secrets" {
   for_each = var.secrets
-  
+
   length  = each.value.length
   special = true
   upper   = true
@@ -30,21 +30,21 @@ resource "azurerm_key_vault" "secrets" {
   resource_group_name = var.resource_group_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
-  
+
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
 
   # Default access policy for current user/service principal
   access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+    object_id          = data.azurerm_client_config.current.object_id
     secret_permissions = ["Get", "List", "Set", "Delete", "Purge"]
   }
 
   # GitHub Actions access policy
   access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = var.github_actions_object_id
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+    object_id          = var.github_actions_object_id
     secret_permissions = ["Get", "List"]
   }
 
@@ -66,7 +66,7 @@ resource "azurerm_key_vault" "secrets" {
 # Dynamic secrets creation
 resource "azurerm_key_vault_secret" "secrets" {
   for_each = var.secrets
-  
+
   name         = each.value.name
   value        = random_password.secrets[each.key].result
   key_vault_id = azurerm_key_vault.secrets.id

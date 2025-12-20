@@ -1,23 +1,23 @@
 # Environment-specific configuration
 project_name = "robot-shop"
-location = "East US"
-cost_center = "development"
+location     = "East US"
+cost_center  = "development"
 
 # Network Configuration
-vnet_address_space = "10.0.0.0/16"
+vnet_address_space        = "10.0.0.0/16"
 aks_subnet_address_prefix = "10.0.1.0/24"
 
 # AKS Configuration
 kubernetes_version = "1.32.9"
-node_count = 1
-vm_size = "Standard_D2s_v3"
+node_count         = 1
+vm_size            = "Standard_D2s_v3"
 enable_autoscaling = true
-min_node_count = 1
-max_node_count = 2
+min_node_count     = 1
+max_node_count     = 2
 
 # Storage Configuration
-acr_sku = "Basic"
-storage_account_tier = "Standard"
+acr_sku                  = "Basic"
+storage_account_tier     = "Standard"
 storage_replication_type = "LRS"
 
 # Monitoring
