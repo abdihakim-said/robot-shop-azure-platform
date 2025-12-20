@@ -225,22 +225,6 @@ module "aks" {
   resource_group_name = azurerm_resource_group.main.name
   subnet_id           = module.networking.aks_subnet_id
 
-  kubernetes_version = var.kubernetes_version
-  node_count         = var.node_count
-  vm_size            = var.vm_size
-  enable_autoscaling = var.enable_autoscaling
-  min_node_count     = var.min_node_count
-  max_node_count     = var.max_node_count
-
-  # Security settings (production - maximum security)
-  private_cluster_enabled         = true                  # Private cluster
-  local_account_disabled          = true                  # Disable local admin
-  sku_tier                        = "Standard"            # 99.9% SLA
-  automatic_channel_upgrade       = "stable"              # Stable updates
-  api_server_authorized_ip_ranges = var.allowed_ip_ranges # Corporate IPs only
-  max_pods_per_node               = 50                    # Production-ready
-  os_disk_type                    = "Ephemeral"           # Better performance
-
   # Enterprise Production Configuration
   kubernetes_version              = var.kubernetes_version
   vm_size                        = var.vm_size
