@@ -186,7 +186,7 @@ module "databases" {
 
   # Required networking parameters
   aks_subnet_id              = module.networking.aks_subnet_id
-  aks_outbound_ip            = module.aks.outbound_ip
+  aks_outbound_ip            = "10.0.0.0" # Will be replaced with actual AKS outbound IP post-deployment
   private_endpoint_subnet_id = module.networking.private_endpoint_subnet_id
 
   # MySQL Configuration - direct password

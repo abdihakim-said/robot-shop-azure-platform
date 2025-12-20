@@ -24,7 +24,7 @@ output "log_analytics_workspace_id" {
   value       = azurerm_log_analytics_workspace.aks.id
 }
 
-output "outbound_ip" {
-  description = "AKS cluster outbound IP address"
-  value       = data.azurerm_public_ip.aks_outbound.ip_address
+output "effective_outbound_ips" {
+  description = "AKS cluster effective outbound IPs"
+  value       = azurerm_kubernetes_cluster.main.network_profile[0].load_balancer_profile[0].effective_outbound_ips
 }
