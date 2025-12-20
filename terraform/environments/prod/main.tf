@@ -179,9 +179,9 @@ module "databases" {
   location            = var.location
 
   # Required networking parameters
-  aks_subnet_id                = module.networking.aks_subnet_id
-  aks_outbound_ip             = module.aks.outbound_ip
-  private_endpoint_subnet_id   = module.networking.private_endpoint_subnet_id
+  aks_subnet_id              = module.networking.aks_subnet_id
+  aks_outbound_ip            = module.aks.outbound_ip
+  private_endpoint_subnet_id = module.networking.private_endpoint_subnet_id
 
   # MySQL Configuration
   mysql_admin_username = "mysqladmin"
