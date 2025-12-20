@@ -1,3 +1,4 @@
+# Robot Shop Development Environment - Updated 2025-12-20
 terraform {
   required_version = ">= 1.0"
 
