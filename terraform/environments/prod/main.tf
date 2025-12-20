@@ -174,46 +174,22 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
 module "databases" {
   source = "../../modules/databases"
 
-  name_prefix         = local.name_prefix
-  location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
   environment         = local.environment
+  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
 
-  # MySQL Configuration (Cost Optimized)
-  mysql_sku_name         = "B_Standard_B2s" # Basic tier (80% cost reduction)
-  mysql_storage_mb       = 51200            # 50GB storage (50% reduction)
-  mysql_backup_retention = 7                # 7 days backup (cost optimized)
-  mysql_admin_username   = "mysqladmin"
-  mysql_admin_password   = module.keyvault.secret_values["mysql"]
-  mysql_version          = "8.0"
+  # Required networking parameters
+  aks_subnet_id                = module.networking.aks_subnet_id
+  aks_outbound_ip             = module.aks.outbound_ip
+  private_endpoint_subnet_id   = module.networking.private_endpoint_subnet_id
 
-  # Redis Configuration (Cost Optimized)
-  redis_sku_name            = "Standard" # Standard tier (70% cost reduction)
-  redis_family              = "C"        # Standard family
-  redis_capacity            = 1          # C1 (6GB)
-  redis_enable_non_ssl_port = false      # SSL only
-
-  # CosmosDB Configuration (Cost Optimized)
-  cosmosdb_offer_type              = "Standard"
-  cosmosdb_consistency_level       = "Session"
-  cosmosdb_max_interval_in_seconds = 300
-  cosmosdb_max_staleness_prefix    = 100000
-  cosmosdb_throughput              = 400 # Minimum throughput (60% reduction)
-
-  # Network Security
-  subnet_id = module.networking.database_subnet_id
-
-  # Private Endpoints (Production Security)
-  enable_private_endpoints = var.enable_private_endpoints
-  private_dns_zone_ids = [
-    azurerm_private_dns_zone.mysql.id,
-    azurerm_private_dns_zone.redis.id,
-    azurerm_private_dns_zone.cosmosdb.id
-  ]
+  # MySQL Configuration
+  mysql_admin_username = "mysqladmin"
+  mysql_admin_password = module.keyvault.secret_values["mysql"]
 
   tags = local.common_tags
 
-  depends_on = [module.networking, module.keyvault]
+  depends_on = [module.networking, module.aks, module.keyvault]
 }
 
 # AKS Module

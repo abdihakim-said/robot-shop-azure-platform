@@ -23,3 +23,8 @@ output "log_analytics_workspace_id" {
   description = "Log Analytics workspace ID"
   value       = azurerm_log_analytics_workspace.aks.id
 }
+
+output "outbound_ip" {
+  description = "AKS cluster outbound IP address"
+  value       = data.azurerm_public_ip.aks_outbound.ip_address
+}

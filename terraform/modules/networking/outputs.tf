@@ -13,6 +13,11 @@ output "aks_subnet_id" {
   value       = azurerm_subnet.aks.id
 }
 
+output "private_endpoint_subnet_id" {
+  description = "Private endpoint subnet ID"
+  value       = azurerm_subnet.private_endpoints.id
+}
+
 output "nsg_id" {
   description = "NSG ID"
   value       = azurerm_network_security_group.aks.id
