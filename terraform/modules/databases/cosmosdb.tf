@@ -58,24 +58,12 @@ resource "azurerm_cosmosdb_mongo_database" "catalogue" {
   name                = "catalogue"
   resource_group_name = var.resource_group_name
   account_name        = azurerm_cosmosdb_account.main.name
-
-  dynamic "throughput" {
-    for_each = var.environment != "dev" ? [1] : []
-    content {
-      throughput = var.environment == "production" ? 800 : 400
-    }
-  }
+  throughput          = var.environment == "production" ? 800 : (var.environment == "staging" ? 400 : null)
 }
 
 resource "azurerm_cosmosdb_mongo_database" "ratings" {
   name                = "ratings"
   resource_group_name = var.resource_group_name
   account_name        = azurerm_cosmosdb_account.main.name
-
-  dynamic "throughput" {
-    for_each = var.environment != "dev" ? [1] : []
-    content {
-      throughput = var.environment == "production" ? 400 : 200
-    }
-  }
+  throughput          = var.environment == "production" ? 400 : (var.environment == "staging" ? 200 : null)
 }

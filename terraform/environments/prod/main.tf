@@ -22,7 +22,7 @@ provider "azurerm" {
 }
 
 locals {
-  environment = "prod"
+  environment = "production"
   name_prefix = "${var.project_name}-${local.environment}"
 
   common_tags = {
@@ -205,8 +205,8 @@ module "aks" {
   kubernetes_version = var.kubernetes_version
   vm_size            = var.vm_size
   node_count         = var.node_count
-  min_node_count     = var.min_count
-  max_node_count     = var.max_count
+  min_node_count     = var.min_node_count
+  max_node_count     = var.max_node_count
   enable_autoscaling = true
   enable_multi_az    = true
 

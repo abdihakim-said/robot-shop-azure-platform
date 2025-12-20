@@ -224,3 +224,9 @@ variable "compliance_frameworks" {
   type        = list(string)
   default     = ["PCI-DSS", "SOC2", "ISO27001"]
 }
+
+variable "private_cluster_enabled" {
+  description = "Enable private cluster"
+  type        = bool
+  default     = true
+}
