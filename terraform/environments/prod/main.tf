@@ -170,6 +170,12 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
   tags                  = local.common_tags
 }
 
+# Generate passwords directly for infrastructure
+resource "random_password" "mysql" {
+  length  = 32
+  special = true
+}
+
 # Databases Module (Production-Grade Managed Services)
 module "databases" {
   source = "../../modules/databases"
@@ -183,13 +189,13 @@ module "databases" {
   aks_outbound_ip            = module.aks.outbound_ip
   private_endpoint_subnet_id = module.networking.private_endpoint_subnet_id
 
-  # MySQL Configuration
+  # MySQL Configuration - direct password
   mysql_admin_username = "mysqladmin"
-  mysql_admin_password = module.keyvault.secret_values["mysql"]
+  mysql_admin_password = random_password.mysql.result
 
   tags = local.common_tags
 
-  depends_on = [module.networking, module.aks, module.keyvault]
+  depends_on = [module.networking, module.aks]
 }
 
 # AKS Module
