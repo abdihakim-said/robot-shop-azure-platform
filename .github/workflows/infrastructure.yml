@@ -1,4 +1,4 @@
-name: Infrastructure Pipeline (DevSecOps)
+name: Infrastructure Pipeline (Enterprise GitFlow)
 
 on:
   push:
@@ -12,68 +12,10 @@ permissions:
   contents: read
   security-events: write
   actions: read
-  id-token: write  # Required for Workload Identity
+  id-token: write
 
 jobs:
-  deploy-bootstrap:
-    name: Deploy Bootstrap
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    outputs:
-      backend_storage: ${{ steps.bootstrap.outputs.backend_storage }}
-      backend_rg: ${{ steps.bootstrap.outputs.backend_rg }}
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Deploy Bootstrap
-        id: bootstrap
-        run: |
-          cd terraform/bootstrap
-          terraform init
-          terraform apply -auto-approve
-          echo "backend_storage=$(terraform output -raw backend_storage_account_name)" >> $GITHUB_OUTPUT
-          echo "backend_rg=$(terraform output -raw backend_resource_group_name)" >> $GITHUB_OUTPUT
-
-  deploy-shared:
-    name: Deploy Shared Infrastructure
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: deploy-bootstrap
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Deploy Shared Infrastructure
-        run: |
-          cd terraform/shared
-          terraform init \
-            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
-            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
-          terraform apply -auto-approve
-
+  # Security and validation runs on all branches
   security-scan:
     name: Security Scanning
     runs-on: ubuntu-latest
@@ -106,31 +48,13 @@ jobs:
     name: Terraform Validate
     runs-on: ubuntu-latest
     needs: security-scan
-    permissions:
-      contents: write  # Needed for auto-fix commits
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.6.0'
-
-      - name: Auto-fix Terraform Format
-        run: |
-          terraform fmt -recursive terraform/
-          if ! git diff --quiet; then
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git add terraform/
-            git commit -m "style: auto-fix terraform formatting [skip ci]"
-            git push
-            echo "✅ Terraform formatting auto-fixed and committed"
-          else
-            echo "✅ Terraform formatting is already correct"
-          fi
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
@@ -138,7 +62,7 @@ jobs:
 
       - name: Terraform Init & Validate
         run: |
-          for env in dev staging production; do
+          for env in dev staging prod; do
             echo "Validating $env environment..."
             cd terraform/environments/$env
             terraform init -backend=false
@@ -146,20 +70,17 @@ jobs:
             cd ../../..
           done
 
-  terraform-plan-dev:
-    name: Plan Dev
+  # Bootstrap - runs once per pipeline, creates shared backend
+  deploy-bootstrap:
+    name: Deploy Bootstrap
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    needs: [deploy-bootstrap, terraform-validate]
-    permissions:
-      id-token: write
-      contents: read
+    needs: terraform-validate
+    outputs:
+      backend_storage: ${{ steps.bootstrap.outputs.backend_storage }}
+      backend_rg: ${{ steps.bootstrap.outputs.backend_rg }}
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -167,34 +88,56 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Plan
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Deploy Bootstrap
+        id: bootstrap
         run: |
-          cd terraform/environments/dev
+          cd terraform/bootstrap
+          terraform init
+          terraform apply -auto-approve
+          echo "backend_storage=$(terraform output -raw backend_storage_account_name)" >> $GITHUB_OUTPUT
+          echo "backend_rg=$(terraform output -raw backend_resource_group_name)" >> $GITHUB_OUTPUT
+
+  # Shared resources - runs once per pipeline
+  deploy-shared:
+    name: Deploy Shared Infrastructure
+    runs-on: ubuntu-latest
+    needs: deploy-bootstrap
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Deploy Shared Infrastructure
+        run: |
+          cd terraform/shared
           terraform init \
             -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
             -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
-          terraform plan -out=tfplan -lock-timeout=5m
+          terraform apply -auto-approve
 
-  terraform-apply-dev:
-    name: Apply Dev
+  # DEV ENVIRONMENT - auto-deploy on develop branch
+  deploy-dev:
+    name: Deploy Development
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    needs: [deploy-bootstrap, terraform-plan-dev]
+    needs: [deploy-bootstrap, deploy-shared]
     environment: development
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -202,66 +145,24 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Apply
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
+      - name: Deploy Dev Environment
         run: |
           cd terraform/environments/dev
           terraform init \
             -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
             -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
-          terraform apply -auto-approve -lock-timeout=5m
+          terraform apply -auto-approve
 
-  terraform-plan-staging:
-    name: Plan Staging
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/release/')
-    needs: [deploy-shared, terraform-validate]
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Terraform Plan
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
-        run: |
-          cd terraform/environments/staging
-          terraform init
-          terraform plan -out=tfplan -lock-timeout=5m
-
-  terraform-apply-staging:
-    name: Apply Staging
+  # STAGING ENVIRONMENT - auto-deploy on release branches
+  deploy-staging:
+    name: Deploy Staging
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/release/') && github.event_name == 'push'
-    needs: terraform-plan-staging
+    needs: [deploy-bootstrap, deploy-shared]
     environment: staging
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -269,64 +170,24 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Apply
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
+      - name: Deploy Staging Environment
         run: |
           cd terraform/environments/staging
-          terraform init
-          terraform apply -auto-approve tfplan -lock-timeout=5m
+          terraform init \
+            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
+          terraform apply -auto-approve
 
-  terraform-plan-prod:
-    name: Plan Production
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: [deploy-shared, terraform-validate]
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Terraform Plan
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
-        run: |
-          cd terraform/environments/production
-          terraform init
-          terraform plan -out=tfplan -lock-timeout=5m
-
-  terraform-apply-prod:
-    name: Apply Production
+  # PRODUCTION ENVIRONMENT - manual approval required
+  deploy-production:
+    name: Deploy Production
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: terraform-plan-prod
+    needs: [deploy-bootstrap, deploy-shared]
     environment: production
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -334,13 +195,10 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Apply
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_USE_OIDC: true
+      - name: Deploy Production Environment
         run: |
-          cd terraform/environments/production
-          terraform init
-          terraform apply -auto-approve tfplan -lock-timeout=5m
+          cd terraform/environments/prod
+          terraform init \
+            -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
+          terraform apply -auto-approve
