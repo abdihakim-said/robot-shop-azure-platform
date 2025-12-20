@@ -154,7 +154,7 @@ variable "mysql_sku_name" {
 variable "mysql_storage_mb" {
   description = "MySQL storage in MB"
   type        = number
-  default     = 51200  # Cost optimized: 50GB (50% reduction)
+  default     = 51200 # Cost optimized: 50GB (50% reduction)
 }
 
 variable "mysql_backup_retention" {
@@ -185,7 +185,7 @@ variable "cosmosdb_throughput" {
 variable "allowed_ip_ranges" {
   description = "Allowed IP ranges for production access"
   type        = list(string)
-  default     = []  # Configure with your corporate IPs
+  default     = [] # Configure with your corporate IPs
 }
 
 variable "enable_private_endpoints" {

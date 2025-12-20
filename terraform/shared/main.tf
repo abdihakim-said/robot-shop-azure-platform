@@ -54,7 +54,7 @@ resource "azurerm_role_assignment" "github_actions_contributor" {
 # GitHub federated identity module with dynamic configuration
 module "github_federated_identity" {
   source = "../modules/github-federated-identity"
-  
+
   application_id    = azuread_application.github_actions.client_id
   github_repository = var.github_repository
   branches          = ["develop", "main"]

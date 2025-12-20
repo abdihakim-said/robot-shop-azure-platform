@@ -173,46 +173,46 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
 # Databases Module (Production-Grade Managed Services)
 module "databases" {
   source = "../../modules/databases"
-  
+
   name_prefix         = local.name_prefix
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
   environment         = local.environment
-  
+
   # MySQL Configuration (Cost Optimized)
-  mysql_sku_name           = "B_Standard_B2s"           # Basic tier (80% cost reduction)
-  mysql_storage_mb         = 51200                      # 50GB storage (50% reduction)
-  mysql_backup_retention   = 7                         # 7 days backup (cost optimized)
-  mysql_admin_username     = "mysqladmin"
-  mysql_admin_password     = module.keyvault.secret_values["mysql"]
-  mysql_version           = "8.0"
-  
+  mysql_sku_name         = "B_Standard_B2s" # Basic tier (80% cost reduction)
+  mysql_storage_mb       = 51200            # 50GB storage (50% reduction)
+  mysql_backup_retention = 7                # 7 days backup (cost optimized)
+  mysql_admin_username   = "mysqladmin"
+  mysql_admin_password   = module.keyvault.secret_values["mysql"]
+  mysql_version          = "8.0"
+
   # Redis Configuration (Cost Optimized)
-  redis_sku_name     = "Standard"                       # Standard tier (70% cost reduction)
-  redis_family       = "C"                             # Standard family
-  redis_capacity     = 1                               # C1 (6GB)
-  redis_enable_non_ssl_port = false                    # SSL only
-  
+  redis_sku_name            = "Standard" # Standard tier (70% cost reduction)
+  redis_family              = "C"        # Standard family
+  redis_capacity            = 1          # C1 (6GB)
+  redis_enable_non_ssl_port = false      # SSL only
+
   # CosmosDB Configuration (Cost Optimized)
-  cosmosdb_offer_type                = "Standard"
-  cosmosdb_consistency_level         = "Session"
-  cosmosdb_max_interval_in_seconds   = 300
-  cosmosdb_max_staleness_prefix      = 100000
-  cosmosdb_throughput               = 400              # Minimum throughput (60% reduction)
-  
+  cosmosdb_offer_type              = "Standard"
+  cosmosdb_consistency_level       = "Session"
+  cosmosdb_max_interval_in_seconds = 300
+  cosmosdb_max_staleness_prefix    = 100000
+  cosmosdb_throughput              = 400 # Minimum throughput (60% reduction)
+
   # Network Security
   subnet_id = module.networking.database_subnet_id
-  
+
   # Private Endpoints (Production Security)
   enable_private_endpoints = var.enable_private_endpoints
-  private_dns_zone_ids     = [
+  private_dns_zone_ids = [
     azurerm_private_dns_zone.mysql.id,
     azurerm_private_dns_zone.redis.id,
     azurerm_private_dns_zone.cosmosdb.id
   ]
-  
+
   tags = local.common_tags
-  
+
   depends_on = [module.networking, module.keyvault]
 }
 
@@ -233,24 +233,24 @@ module "aks" {
   max_node_count     = var.max_node_count
 
   # Security settings (production - maximum security)
-  private_cluster_enabled         = true                    # Private cluster
-  local_account_disabled          = true                    # Disable local admin
-  sku_tier                        = "Standard"              # 99.9% SLA
-  automatic_channel_upgrade       = "stable"                # Stable updates
-  api_server_authorized_ip_ranges = var.allowed_ip_ranges   # Corporate IPs only
-  max_pods_per_node               = 50                      # Production-ready
-  os_disk_type                    = "Ephemeral"             # Better performance
-  
+  private_cluster_enabled         = true                  # Private cluster
+  local_account_disabled          = true                  # Disable local admin
+  sku_tier                        = "Standard"            # 99.9% SLA
+  automatic_channel_upgrade       = "stable"              # Stable updates
+  api_server_authorized_ip_ranges = var.allowed_ip_ranges # Corporate IPs only
+  max_pods_per_node               = 50                    # Production-ready
+  os_disk_type                    = "Ephemeral"           # Better performance
+
   # Production Security Features
-  azure_policy_enabled             = true                   # Azure Policy
-  microsoft_defender_enabled       = true                   # Defender for Containers
-  workload_identity_enabled        = true                   # Workload Identity
-  oidc_issuer_enabled             = true                    # OIDC Issuer
-  
+  azure_policy_enabled       = true # Azure Policy
+  microsoft_defender_enabled = true # Defender for Containers
+  workload_identity_enabled  = true # Workload Identity
+  oidc_issuer_enabled        = true # OIDC Issuer
+
   # Security Center Integration
-  log_analytics_workspace_enabled = true                    # Security monitoring
-  oms_agent_enabled               = true                    # Container insights
-  
+  log_analytics_workspace_enabled = true # Security monitoring
+  oms_agent_enabled               = true # Container insights
+
   # RBAC Configuration
   role_based_access_control_enabled = true
   azure_active_directory_role_based_access_control {
@@ -348,14 +348,14 @@ resource "helm_release" "prometheus_stack" {
 # Key Vault Module (Environment-specific)
 module "keyvault" {
   source = "../../modules/keyvault"
-  
-  name_prefix         = local.name_prefix
-  location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
-  random_suffix       = var.random_suffix
+
+  name_prefix              = local.name_prefix
+  location                 = var.location
+  resource_group_name      = azurerm_resource_group.main.name
+  random_suffix            = var.random_suffix
   github_actions_object_id = var.github_actions_object_id
-  
+
   secrets = var.secrets
-  
+
   tags = local.common_tags
 }

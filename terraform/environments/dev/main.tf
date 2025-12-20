@@ -48,7 +48,7 @@ locals {
   name_prefix = "${var.project_name}-${local.environment}"
 
   # Dynamic values from remote state
-  random_suffix = data.terraform_remote_state.bootstrap.outputs.random_suffix
+  random_suffix            = data.terraform_remote_state.bootstrap.outputs.random_suffix
   github_actions_object_id = data.terraform_remote_state.shared.outputs.github_service_principal_object_id
 
   common_tags = {
@@ -133,15 +133,15 @@ module "storage" {
 # Key Vault Module (Environment-specific)
 module "keyvault" {
   source = "../../modules/keyvault"
-  
-  name_prefix         = local.name_prefix
-  location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
-  random_suffix       = local.random_suffix
+
+  name_prefix              = local.name_prefix
+  location                 = var.location
+  resource_group_name      = azurerm_resource_group.main.name
+  random_suffix            = local.random_suffix
   github_actions_object_id = local.github_actions_object_id
-  
+
   secrets = var.secrets
-  
+
   tags = local.common_tags
 }
 
