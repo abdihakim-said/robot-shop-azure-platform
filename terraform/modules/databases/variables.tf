@@ -53,7 +53,6 @@ variable "mysql_admin_username" {
 variable "mysql_admin_password" {
   description = "MySQL administrator password"
   type        = string
-  sensitive   = true
 }
 
 variable "backup_storage_connection_string" {
