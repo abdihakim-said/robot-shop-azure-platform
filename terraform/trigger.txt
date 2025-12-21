@@ -1,2 +1,3 @@
 # Pipeline enabled
 # Authentication fixed
+# Authentication with client secret
