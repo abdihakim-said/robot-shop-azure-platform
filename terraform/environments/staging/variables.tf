@@ -14,7 +14,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "West US 2"  # Staging in different region from dev
+  default     = "West US 2" # Staging in different region from dev
 }
 
 variable "cost_center" {
@@ -27,13 +27,13 @@ variable "cost_center" {
 variable "vnet_address_space" {
   description = "VNet address space"
   type        = string
-  default     = "10.1.0.0/16"  # Different from dev (10.0.0.0/16)
+  default     = "10.1.0.0/16" # Different from dev (10.0.0.0/16)
 }
 
 variable "aks_subnet_address_prefix" {
   description = "AKS subnet address prefix"
   type        = string
-  default     = "10.1.1.0/24"  # Different from dev (10.0.1.0/24)
+  default     = "10.1.1.0/24" # Different from dev (10.0.1.0/24)
 }
 
 # AKS
@@ -47,38 +47,38 @@ variable "kubernetes_version" {
 variable "node_count" {
   description = "Number of nodes"
   type        = number
-  default     = 3  # Same as production
+  default     = 3 # Same as production
 }
 
 variable "vm_size" {
   description = "VM size"
   type        = string
-  default     = "Standard_D2s_v3"  # Same as production
+  default     = "Standard_D2s_v3" # Same as production
 }
 
 variable "min_node_count" {
   description = "Minimum node count"
   type        = number
-  default     = 3  # Same as production
+  default     = 3 # Same as production
 }
 
 variable "max_node_count" {
   description = "Maximum node count"
   type        = number
-  default     = 10  # Same as production
+  default     = 10 # Same as production
 }
 
 # Production-grade storage (identical to prod)
 variable "acr_sku" {
   description = "ACR SKU"
   type        = string
-  default     = "Standard"  # Same as production
+  default     = "Standard" # Same as production
 }
 
 variable "storage_replication_type" {
   description = "Storage replication type"
   type        = string
-  default     = "GRS"  # Same as production
+  default     = "GRS" # Same as production
 }
 
 # Monitoring

@@ -7,7 +7,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "North Europe"  # Production in different region for DR
+  default     = "North Europe" # Production in different region for DR
 }
 
 variable "cost_center" {
@@ -20,13 +20,13 @@ variable "cost_center" {
 variable "vnet_address_space" {
   description = "VNet address space"
   type        = string
-  default     = "10.2.0.0/16"  # Production CIDR (different from staging DR site)
+  default     = "10.2.0.0/16" # Production CIDR (different from staging DR site)
 }
 
 variable "aks_subnet_address_prefix" {
   description = "AKS subnet address prefix"
   type        = string
-  default     = "10.2.1.0/24"  # Production subnet
+  default     = "10.2.1.0/24" # Production subnet
 }
 
 # AKS
