@@ -9,9 +9,7 @@ terraform {
       version = "~> 3.0"
     }
   }
-  backend "azurerm" {
-    # Configuration provided via CLI
-  }
+  # Bootstrap uses local backend - it creates the remote backend for others
 }
 
 provider "azurerm" {
