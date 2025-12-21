@@ -4,3 +4,4 @@
 # YAML fixed
 # Authentication fixed with AZURE_CREDENTIALS
 # All Azure logins fixed
+# Trigger pipeline
