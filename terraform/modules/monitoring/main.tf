@@ -40,4 +40,12 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
     category = "AllMetrics"
     enabled  = true
   }
+
+  # Ignore changes to prevent conflicts with Azure-managed diagnostic settings
+  lifecycle {
+    ignore_changes = [
+      enabled_log,
+      metric
+    ]
+  }
 }
