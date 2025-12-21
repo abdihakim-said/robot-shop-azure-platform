@@ -134,10 +134,10 @@ module "storage" {
 module "keyvault" {
   source = "../../modules/keyvault"
 
-  name_prefix   = local.name_prefix
-  location      = var.location
+  name_prefix         = local.name_prefix
+  location            = var.location
   resource_group_name = azurerm_resource_group.main.name
-  random_suffix = local.random_suffix
+  random_suffix       = local.random_suffix
   # Remove github_actions_object_id dependency
 
   secrets = var.secrets
