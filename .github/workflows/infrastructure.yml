@@ -79,8 +79,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-validate
     outputs:
-      backend_storage: ${{ steps.bootstrap.outputs.backend_storage }}
-      backend_rg: ${{ steps.bootstrap.outputs.backend_rg }}
+      backend_storage: ${{ steps.check-bootstrap.outputs.backend_storage || steps.bootstrap.outputs.backend_storage }}
+      backend_rg: ${{ steps.check-bootstrap.outputs.backend_rg || steps.bootstrap.outputs.backend_rg }}
     steps:
       - uses: actions/checkout@v4
       
@@ -89,12 +89,27 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Check if Bootstrap Already Exists
+        id: check-bootstrap
+        run: |
+          if az storage account show --name robotshoptfstate --resource-group robot-shop-tfstate-rg >/dev/null 2>&1; then
+            echo "✅ Bootstrap already exists, skipping deployment"
+            echo "backend_storage=robotshoptfstate" >> $GITHUB_OUTPUT
+            echo "backend_rg=robot-shop-tfstate-rg" >> $GITHUB_OUTPUT
+            echo "skip_bootstrap=true" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 Bootstrap doesn't exist, will deploy"
+            echo "skip_bootstrap=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Terraform
+        if: steps.check-bootstrap.outputs.skip_bootstrap == 'false'
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
 
       - name: Deploy Bootstrap
+        if: steps.check-bootstrap.outputs.skip_bootstrap == 'false'
         id: bootstrap
         run: |
           cd terraform/bootstrap
