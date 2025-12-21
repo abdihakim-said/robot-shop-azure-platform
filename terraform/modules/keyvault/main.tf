@@ -41,11 +41,14 @@ resource "azurerm_key_vault" "secrets" {
     secret_permissions = ["Get", "List", "Set", "Delete", "Purge"]
   }
 
-  # GitHub Actions access policy
-  access_policy {
-    tenant_id          = data.azurerm_client_config.current.tenant_id
-    object_id          = var.github_actions_object_id
-    secret_permissions = ["Get", "List"]
+  # GitHub Actions access policy (conditional)
+  dynamic "access_policy" {
+    for_each = var.github_actions_object_id != "" ? [1] : []
+    content {
+      tenant_id          = data.azurerm_client_config.current.tenant_id
+      object_id          = var.github_actions_object_id
+      secret_permissions = ["Get", "List"]
+    }
   }
 
   # Additional dynamic access policies

@@ -22,6 +22,7 @@ variable "random_suffix" {
 variable "github_actions_object_id" {
   description = "GitHub Actions service principal object ID"
   type        = string
+  default     = ""
 }
 
 variable "secrets" {
