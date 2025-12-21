@@ -179,14 +179,12 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
 }
 
-# Prometheus + Grafana
-resource "kubernetes_namespace" "monitoring" {
-  metadata {
-    name = "monitoring"
-  }
-
-  depends_on = [module.aks]
-}
+# ENTERPRISE GITOPS PATTERN: Kubernetes resources managed by ArgoCD
+# The monitoring namespace will be created by ArgoCD when deploying
+# the monitoring Helm chart. This follows GitOps best practices where:
+# - Terraform manages Azure infrastructure (AKS, networking, storage)
+# - ArgoCD manages Kubernetes applications (namespaces, deployments)
+# - Clear separation of concerns prevents circular dependencies
 
 # Monitoring is now managed via Helm CLI
 # See: helm-charts/monitoring/ or use helm install directly
