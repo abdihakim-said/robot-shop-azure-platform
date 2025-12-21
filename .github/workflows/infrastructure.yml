@@ -94,12 +94,14 @@ jobs:
         run: |
           if az group show --name robot-shop-tfstate-rg >/dev/null 2>&1; then
             echo "✅ Bootstrap resource group exists, skipping deployment"
-            # Get storage account name from existing resources
+            # Get actual storage account name from existing resources
             STORAGE_NAME=$(az storage account list --resource-group robot-shop-tfstate-rg --query "[0].name" -o tsv 2>/dev/null || echo "")
             if [ -n "$STORAGE_NAME" ]; then
               echo "backend_storage=$STORAGE_NAME" >> $GITHUB_OUTPUT
             else
-              echo "backend_storage=robotshoptfstate" >> $GITHUB_OUTPUT
+              echo "❌ No storage account found in resource group"
+              echo "skip_bootstrap=false" >> $GITHUB_OUTPUT
+              exit 0
             fi
             echo "backend_rg=robot-shop-tfstate-rg" >> $GITHUB_OUTPUT
             echo "skip_bootstrap=true" >> $GITHUB_OUTPUT
