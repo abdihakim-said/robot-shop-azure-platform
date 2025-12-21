@@ -1,12 +1,41 @@
-# Production Environment Configuration - Maximum Security
+# Production Environment - Uses Azure Managed Services
 global:
   imageRegistry: robotshopprodacr.azurecr.io
   imagePullPolicy: IfNotPresent
   environment: production
   
-  monitoring:
-    enabled: true
-    scrapeInterval: 15s  # High-frequency monitoring
+  # Azure managed database connections
+  databases:
+    mysql:
+      enabled: false  # Use Azure Database for MySQL instead
+      external:
+        host: "{{ .Values.azure.mysql.fqdn }}"
+        port: 3306
+        username: "{{ .Values.azure.mysql.username }}"
+        password: "{{ .Values.azure.mysql.password }}"
+    redis:
+      enabled: false  # Use Azure Cache for Redis instead
+      external:
+        host: "{{ .Values.azure.redis.hostname }}"
+        port: 6380
+        password: "{{ .Values.azure.redis.password }}"
+        ssl: true
+    mongodb:
+      enabled: false  # Use Azure Cosmos DB instead
+      external:
+        connectionString: "{{ .Values.azure.cosmosdb.connectionString }}"
+
+# Azure managed services configuration (populated by Terraform)
+azure:
+  mysql:
+    fqdn: ""  # Populated by Terraform output
+    username: ""  # Populated by Terraform output  
+    password: ""  # Retrieved from KeyVault
+  redis:
+    hostname: ""  # Populated by Terraform output
+    password: ""  # Retrieved from KeyVault
+  cosmosdb:
+    connectionString: ""  # Retrieved from KeyVault
 
 # Production security configuration
 web:

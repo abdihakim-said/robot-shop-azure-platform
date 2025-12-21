@@ -166,6 +166,37 @@ resource "helm_release" "prometheus_stack" {
   depends_on = [module.aks, kubernetes_namespace.monitoring]
 }
 
+# Databases Module (Azure managed services)
+module "databases" {
+  source = "../../modules/databases"
+
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  
+  # MySQL configuration
+  mysql_admin_password = random_password.mysql_admin.result
+  mysql_sku_name      = var.mysql_sku_name
+  mysql_storage_mb    = var.mysql_storage_mb
+  
+  # Redis configuration  
+  redis_sku_name = var.redis_sku_name
+  redis_capacity = var.redis_capacity
+  
+  # CosmosDB configuration
+  cosmosdb_throughput = var.cosmosdb_throughput
+  
+  tags = local.common_tags
+  
+  depends_on = [module.networking]
+}
+
+# Generate database passwords
+resource "random_password" "mysql_admin" {
+  length  = 24
+  special = true
+}
+
 # Key Vault Module (Environment-specific)
 module "keyvault" {
   source = "../../modules/keyvault"
