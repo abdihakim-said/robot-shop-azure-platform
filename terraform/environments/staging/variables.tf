@@ -1,3 +1,10 @@
+# Backend configuration (required by pipeline)
+variable "backend_storage_account_name" {
+  description = "Backend storage account name"
+  type        = string
+  # No default - must be provided by pipeline
+}
+
 variable "project_name" {
   description = "Project name"
   type        = string
@@ -7,7 +14,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "East US"
+  default     = "West US 2"  # Staging in different region from dev
 }
 
 variable "cost_center" {
@@ -16,17 +23,17 @@ variable "cost_center" {
   default     = "engineering"
 }
 
-# Networking
+# Networking (staging-specific to avoid conflicts)
 variable "vnet_address_space" {
   description = "VNet address space"
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "10.1.0.0/16"  # Different from dev (10.0.0.0/16)
 }
 
 variable "aks_subnet_address_prefix" {
   description = "AKS subnet address prefix"
   type        = string
-  default     = "10.0.1.0/24"
+  default     = "10.1.1.0/24"  # Different from dev (10.0.1.0/24)
 }
 
 # AKS
@@ -36,53 +43,42 @@ variable "kubernetes_version" {
   default     = "1.28"
 }
 
+# Production-mirror staging (identical to prod for DR)
 variable "node_count" {
   description = "Number of nodes"
   type        = number
-  default     = 2 # Dev: smaller cluster
+  default     = 3  # Same as production
 }
 
 variable "vm_size" {
   description = "VM size"
   type        = string
-  default     = "Standard_B2s" # Dev: cost-effective
-}
-
-variable "enable_autoscaling" {
-  description = "Enable autoscaling"
-  type        = bool
-  default     = true
+  default     = "Standard_D2s_v3"  # Same as production
 }
 
 variable "min_node_count" {
   description = "Minimum node count"
   type        = number
-  default     = 1 # Dev: can scale to 1
+  default     = 3  # Same as production
 }
 
 variable "max_node_count" {
   description = "Maximum node count"
   type        = number
-  default     = 3 # Dev: limited scale
+  default     = 10  # Same as production
 }
 
-# Storage
+# Production-grade storage (identical to prod)
 variable "acr_sku" {
   description = "ACR SKU"
   type        = string
-  default     = "Basic" # Dev: basic tier
-}
-
-variable "storage_account_tier" {
-  description = "Storage account tier"
-  type        = string
-  default     = "Standard"
+  default     = "Standard"  # Same as production
 }
 
 variable "storage_replication_type" {
   description = "Storage replication type"
   type        = string
-  default     = "LRS" # Dev: locally redundant
+  default     = "GRS"  # Same as production
 }
 
 # Monitoring
@@ -143,4 +139,92 @@ variable "secrets" {
       length = 20
     }
   }
+}
+
+# Database Configuration (Production-Mirror for DR)
+variable "mysql_sku_name" {
+  description = "MySQL SKU name for staging (same as production)"
+  type        = string
+  default     = "B_Standard_B2s" # Same as production
+}
+
+variable "mysql_storage_mb" {
+  description = "MySQL storage in MB"
+  type        = number
+  default     = 51200 # Same as production
+}
+
+variable "mysql_backup_retention" {
+  description = "MySQL backup retention days"
+  type        = number
+  default     = 35 # Same as production
+}
+
+variable "redis_sku_name" {
+  description = "Redis SKU name for staging (same as production)"
+  type        = string
+  default     = "Standard" # Same as production
+}
+
+variable "redis_capacity" {
+  description = "Redis capacity (Standard C1=1, C2=2, etc)"
+  type        = number
+  default     = 1 # Same as production
+}
+
+variable "cosmosdb_throughput" {
+  description = "CosmosDB throughput (RU/s)"
+  type        = number
+  default     = 400 # Same as production
+}
+
+# Security Configuration (Production-Mirror)
+variable "allowed_ip_ranges" {
+  description = "Allowed IP ranges for staging access"
+  type        = list(string)
+  default     = [] # Same as production
+}
+
+variable "enable_private_endpoints" {
+  description = "Enable private endpoints for databases"
+  type        = bool
+  default     = true # Same as production
+}
+
+variable "backup_retention_days" {
+  description = "Backup retention for staging"
+  type        = number
+  default     = 35 # Same as production
+}
+
+# RBAC Configuration (Production-Mirror)
+variable "rbac_admin_group_object_ids" {
+  description = "Azure AD group object IDs for AKS admin access"
+  type        = list(string)
+  default     = [] # Same as production
+}
+
+variable "rbac_developer_group_object_ids" {
+  description = "Azure AD group object IDs for developer access"
+  type        = list(string)
+  default     = [] # Same as production
+}
+
+# Compliance Configuration (Production-Mirror)
+variable "enable_compliance_policies" {
+  description = "Enable compliance policies (PCI-DSS, SOC2)"
+  type        = bool
+  default     = true # Same as production
+}
+
+variable "compliance_frameworks" {
+  description = "Compliance frameworks to enable"
+  type        = list(string)
+  default     = ["PCI-DSS", "SOC2", "ISO27001"] # Same as production
+}
+
+variable "private_cluster_enabled" {
+  description = "Enable private cluster"
+  type        = bool
+  default     = true # Same as production
 }
