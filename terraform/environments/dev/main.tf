@@ -7,14 +7,7 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.24"
-    }
+    # Kubernetes and Helm providers removed - ArgoCD handles K8s resources
   }
 }
 
@@ -162,22 +155,9 @@ module "monitoring" {
   depends_on = [module.aks]
 }
 
-# Helm/Kubernetes Providers
-provider "helm" {
-  kubernetes {
-    host                   = module.aks.kube_config.host
-    client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-    client_key             = base64decode(module.aks.kube_config.client_key)
-    cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-  }
-}
-
-provider "kubernetes" {
-  host                   = module.aks.kube_config.host
-  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
-  client_key             = base64decode(module.aks.kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-}
+# ENTERPRISE GITOPS: Kubernetes and Helm providers removed
+# These are not needed when using ArgoCD for application deployment
+# ArgoCD handles all Kubernetes resources and Helm chart deployments
 
 # ENTERPRISE GITOPS PATTERN: Kubernetes resources managed by ArgoCD
 # The monitoring namespace will be created by ArgoCD when deploying
