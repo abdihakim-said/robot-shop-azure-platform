@@ -2,3 +2,4 @@
 # Authentication fixed
 # Authentication with client secret
 # YAML fixed
+# Authentication fixed with AZURE_CREDENTIALS
