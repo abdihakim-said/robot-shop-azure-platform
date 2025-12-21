@@ -178,7 +178,8 @@ jobs:
             -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}" \
             -backend-config="container_name=tfstate" \
             -backend-config="key=dev/terraform.tfstate"
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
 
   # STAGING ENVIRONMENT - auto-deploy on release branches
   deploy-staging:

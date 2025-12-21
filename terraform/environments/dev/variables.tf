@@ -20,7 +20,7 @@ variable "backend_resource_group_name" {
 variable "backend_storage_account_name" {
   description = "Backend storage account name"
   type        = string
-  default     = "robotshoptfstatew0dv4afu"
+  # No default - must be provided by pipeline
 }
 
 variable "backend_container_name" {
