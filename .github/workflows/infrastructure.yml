@@ -92,9 +92,15 @@ jobs:
       - name: Check if Bootstrap Already Exists
         id: check-bootstrap
         run: |
-          if az storage account show --name robotshoptfstate --resource-group robot-shop-tfstate-rg >/dev/null 2>&1; then
-            echo "✅ Bootstrap already exists, skipping deployment"
-            echo "backend_storage=robotshoptfstate" >> $GITHUB_OUTPUT
+          if az group show --name robot-shop-tfstate-rg >/dev/null 2>&1; then
+            echo "✅ Bootstrap resource group exists, skipping deployment"
+            # Get storage account name from existing resources
+            STORAGE_NAME=$(az storage account list --resource-group robot-shop-tfstate-rg --query "[0].name" -o tsv 2>/dev/null || echo "")
+            if [ -n "$STORAGE_NAME" ]; then
+              echo "backend_storage=$STORAGE_NAME" >> $GITHUB_OUTPUT
+            else
+              echo "backend_storage=robotshoptfstate" >> $GITHUB_OUTPUT
+            fi
             echo "backend_rg=robot-shop-tfstate-rg" >> $GITHUB_OUTPUT
             echo "skip_bootstrap=true" >> $GITHUB_OUTPUT
           else
