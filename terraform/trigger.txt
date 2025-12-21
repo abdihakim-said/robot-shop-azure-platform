@@ -7,3 +7,4 @@
 # Trigger pipeline
 # Trigger new pipeline with backend fix
 # Trigger with dev environment fix
+# Trigger with storage account fix
