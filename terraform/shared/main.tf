@@ -36,6 +36,6 @@ resource "azurerm_container_registry" "shared" {
   location            = azurerm_resource_group.shared.location
   sku                 = "Basic"
   admin_enabled       = true
-  
+
   tags = local.common_tags
 }
