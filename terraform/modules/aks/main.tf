@@ -57,5 +57,13 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   azure_policy_enabled = var.enable_azure_policy
 
+  # ENTERPRISE FIX: Ignore diagnostic settings changes
+  lifecycle {
+    ignore_changes = [
+      oms_agent,
+      monitor_metrics
+    ]
+  }
+
   tags = var.tags
 }
