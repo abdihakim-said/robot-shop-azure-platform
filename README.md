@@ -127,22 +127,36 @@ Code Push → Security Scan → Build → Tag (SHA) → Deploy (dev/staging/prod
 
 ## 🚦 Quick Start
 
-### Prerequisites
-```bash
-# Required
-az cli, kubectl, terraform, helm
+### Step 1: Azure Authentication Setup (REQUIRED FIRST)
+Before any deployment, configure Azure authentication:
 
-# Login to Azure
+```bash
+# 1. Login to Azure and GitHub CLI
 az login
+gh auth login
+
+# 2. One-liner setup (creates service principal + GitHub secrets)
+SP=$(az ad sp create-for-rbac --name "robot-shop-github" --role "Contributor" --json-auth) && \
+gh secret set AZURE_CREDENTIALS --body "$SP" --repo abdihakim-said/robot-shop-azure-platform && \
+echo "🎉 Authentication configured! Pipeline ready."
 ```
 
-### Deploy Infrastructure
-```bash
-cd terraform/environments/dev
-terraform init
-terraform apply
+**📖 Detailed setup:** See [Azure Setup Guide](docs/AZURE_SETUP.md)
 
-# Get cluster credentials
+### Step 2: Deploy Infrastructure (Automated)
+Push to `develop` branch triggers automatic deployment:
+```bash
+git push origin develop
+```
+
+**Deployment Flow:**
+```
+Bootstrap → Shared → Dev Environment
+```
+
+### Step 3: Access Your Infrastructure
+Once deployed, get cluster credentials:
+```bash
 az aks get-credentials --resource-group robot-shop-dev-rg --name robot-shop-dev-aks
 ```
 
