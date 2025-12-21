@@ -36,11 +36,36 @@ variable "aks_subnet_address_prefix" {
   default     = "10.1.1.0/24" # Different from dev (10.0.1.0/24)
 }
 
-# AKS
+# AKS Configuration (Production-Grade Security)
 variable "kubernetes_version" {
   description = "Kubernetes version"
   type        = string
   default     = "1.28"
+}
+
+variable "enable_autoscaling" {
+  description = "Enable autoscaling"
+  type        = bool
+  default     = true
+}
+
+# SECURITY: Critical security settings for staging
+variable "private_cluster_enabled" {
+  description = "Enable private cluster (API server not public)"
+  type        = bool
+  default     = true # SECURITY FIX: Private API server
+}
+
+variable "local_account_disabled" {
+  description = "Disable local admin account (use Azure AD only)"
+  type        = bool
+  default     = true # SECURITY FIX: No shared admin accounts
+}
+
+variable "api_server_authorized_ip_ranges" {
+  description = "Authorized IP ranges for API server access"
+  type        = list(string)
+  default     = [] # SECURITY: Configure with corporate IPs
 }
 
 # Production-mirror staging (identical to prod for DR)

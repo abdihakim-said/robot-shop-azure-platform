@@ -15,29 +15,29 @@ permissions:
   id-token: write
 
 jobs:
-  # Security and validation runs on all branches
+  # Security scanning with graduated enforcement
   security-scan:
     name: Security Scanning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run tfsec
+      - name: Run tfsec (Infrastructure Security)
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
           working_directory: terraform
-          soft_fail: true
+          soft_fail: ${{ github.ref == 'refs/heads/develop' }}  # Dev: warnings, Prod: block
 
-      - name: Run Checkov
+      - name: Run Checkov (Policy Compliance)
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: terraform
           framework: terraform
-          soft_fail: true
+          soft_fail: ${{ github.ref == 'refs/heads/develop' }}  # Dev: warnings, Prod: block
           output_format: sarif
           output_file_path: checkov-results.sarif
 
-      - name: Upload Checkov SARIF
+      - name: Upload Security Results to GitHub
         if: always() && hashFiles('checkov-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -196,13 +196,19 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Deploy Staging Environment
         run: |
           cd terraform/environments/staging
           terraform init \
             -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
-            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
-          terraform apply -auto-approve
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=staging/terraform.tfstate"
+          terraform apply -auto-approve \
+            -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
 
   # PRODUCTION ENVIRONMENT - manual approval required
   deploy-production:
@@ -219,10 +225,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Deploy Production Environment
         run: |
           cd terraform/environments/prod
           terraform init \
             -backend-config="resource_group_name=${{ needs.deploy-bootstrap.outputs.backend_rg }}" \
-            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
-          terraform apply -auto-approve
+            -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=prod/terraform.tfstate"
+          terraform apply -auto-approve \
+            -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
