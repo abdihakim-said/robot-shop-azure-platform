@@ -6,3 +6,4 @@
 # All Azure logins fixed
 # Trigger pipeline
 # Trigger new pipeline with backend fix
+# Trigger with dev environment fix
