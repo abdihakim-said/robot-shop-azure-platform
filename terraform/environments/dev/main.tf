@@ -97,12 +97,12 @@ module "aks" {
   max_node_count     = var.max_node_count
 
   # Security settings (enhanced for dev)
-  private_cluster_enabled         = true      # SECURITY FIX: Private cluster
-  local_account_disabled          = true      # SECURITY FIX: No local admin
-  sku_tier                        = "Standard" # SECURITY FIX: Paid SLA
-  automatic_channel_upgrade       = "stable"  # SECURITY FIX: Stable updates
-  api_server_authorized_ip_ranges = []        # SECURITY FIX: Restrict access
-  max_pods_per_node              = 50         # SECURITY FIX: Production density
+  private_cluster_enabled         = true        # SECURITY FIX: Private cluster
+  local_account_disabled          = true        # SECURITY FIX: No local admin
+  sku_tier                        = "Standard"  # SECURITY FIX: Paid SLA
+  automatic_channel_upgrade       = "stable"    # SECURITY FIX: Stable updates
+  api_server_authorized_ip_ranges = []          # SECURITY FIX: Restrict access
+  max_pods_per_node               = 50          # SECURITY FIX: Production density
   os_disk_type                    = "Ephemeral" # SECURITY FIX: Better performance
 
   tags = local.common_tags
