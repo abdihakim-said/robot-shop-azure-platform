@@ -16,6 +16,12 @@ provider "azurerm" {
   features {}
 }
 
+# Import existing resource group if it exists
+import {
+  to = module.backend.azurerm_resource_group.tfstate
+  id = "/subscriptions/00f5b0bc-d9f4-41da-99cd-abcc157e1035/resourceGroups/robot-shop-tfstate-rg"
+}
+
 locals {
   common_tags = {
     Environment = "bootstrap"
