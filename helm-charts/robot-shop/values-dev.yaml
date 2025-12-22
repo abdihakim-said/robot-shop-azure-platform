@@ -4,12 +4,26 @@ global:
   imagePullPolicy: Always  # Always pull latest in dev
   environment: dev
   
+  # Relaxed security for development
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: false  # Allow writes for debugging
+    allowPrivilegeEscalation: false
+  
+  # Network policies (relaxed for dev)
+  networkPolicy:
+    enabled: false  # Disabled for easier debugging
+  
   monitoring:
     enabled: true
     scrapeInterval: 60s  # Less frequent in dev
 
 # Dev-specific service configs
 web:
+  image:
+    tag: "latest"  # Updated by GitOps
+  replicas: 1
   service:
     type: ClusterIP  # Use Ingress instead of LoadBalancer
   ingress:
@@ -19,7 +33,8 @@ web:
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
     hosts:
-      - paths:
+      - host: dev.robot-shop.local
+        paths:
           - path: /
             pathType: Prefix
             service: web
@@ -34,21 +49,75 @@ web:
   monitoring:
     enabled: true
 
-# Minimal resources for dev
+# Minimal resources for dev infrastructure
 redis:
+  enabled: true
+  auth:
+    enabled: false  # Disabled for dev simplicity
   resources:
     requests:
       cpu: 20m
       memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
 
 mysql:
+  enabled: true
+  auth:
+    rootPassword: "dev-password"  # Simple password for dev
   resources:
     requests:
       cpu: 50m
       memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
 
 mongodb:
+  enabled: true
+  auth:
+    enabled: false  # Disabled for dev
   resources:
     requests:
       cpu: 50m
       memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+rabbitmq:
+  enabled: true
+  auth:
+    username: guest
+    password: guest  # Default for dev
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 150m
+      memory: 128Mi
+
+# All services get updated tags via GitOps
+cart:
+  image:
+    tag: "latest"
+catalogue:
+  image:
+    tag: "latest"
+user:
+  image:
+    tag: "latest"
+payment:
+  image:
+    tag: "latest"
+shipping:
+  image:
+    tag: "latest"
+ratings:
+  image:
+    tag: "latest"
+dispatch:
+  image:
+    tag: "latest"

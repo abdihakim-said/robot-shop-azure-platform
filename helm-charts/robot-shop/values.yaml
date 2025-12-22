@@ -1,14 +1,91 @@
-# Global Robot Shop Configuration
+# Enterprise Robot Shop Configuration
 global:
+  # Image configuration
   imageRegistry: robotshopdevacrmtttm8.azurecr.io
   imagePullPolicy: IfNotPresent
+  imageTag: "latest"  # Overridden by GitOps
   
-  # Global monitoring settings
+  # Security context (enterprise defaults)
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  
+  # Pod security standards
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  
+  # Network policies
+  networkPolicy:
+    enabled: true
+    ingress:
+      enabled: true
+    egress:
+      enabled: true
+  
+  # Resource quotas (enterprise defaults)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  
+  # Monitoring and observability
   monitoring:
     enabled: true
     namespace: monitoring
+    scrapeInterval: 30s
     
-  # Global resource defaults
+  # Service mesh (future)
+  serviceMesh:
+    enabled: false
+    istio:
+      enabled: false
+  
+  # Environment-specific settings
+  environment: dev  # Overridden by values-{env}.yaml
+
+# Application services with enterprise defaults
+web:
+  image:
+    tag: "latest"  # Updated by GitOps
+  replicas: 1
+  monitoring:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: robot-shop
+  service:
+    type: ClusterIP  # Use Ingress instead of LoadBalancer
+    port: 8080
+  ingress:
+    enabled: false  # Enabled per environment
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+
+cart:
+  image:
+    tag: "latest"
+  replicas: 1
+  monitoring:
+    enabled: true
   resources:
     requests:
       cpu: 30m
@@ -17,53 +94,148 @@ global:
       cpu: 200m
       memory: 128Mi
 
-# Service-specific overrides
-web:
+catalogue:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
     enabled: true
-    sidecar:
-      image: nginx/nginx-prometheus-exporter:0.11.0
-      port: 9113
-  service:
-    type: LoadBalancer
-
-cart:
-  monitoring:
-    enabled: false  # Will add later
-
-catalogue:
-  monitoring:
-    enabled: false  # Will add later
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 user:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
-    enabled: false
+    enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 payment:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
-    enabled: false
+    enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 shipping:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
-    enabled: false
+    enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 ratings:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
-    enabled: false
+    enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 dispatch:
+  image:
+    tag: "latest"
+  replicas: 1
   monitoring:
-    enabled: false
+    enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
-# Infrastructure services
+# Infrastructure services (enterprise configuration)
 redis:
   enabled: true
+  auth:
+    enabled: true
+  metrics:
+    enabled: true
+  securityContext:
+    enabled: true
+    runAsUser: 1001
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 rabbitmq:
   enabled: true
+  auth:
+    username: robot-shop
+    existingPasswordSecret: rabbitmq-secret
+  metrics:
+    enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
 
 mongodb:
   enabled: true
+  auth:
+    enabled: true
+    existingSecret: mongodb-secret
+  metrics:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
 
 mysql:
   enabled: true
+  auth:
+    existingSecret: mysql-secret
+  metrics:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

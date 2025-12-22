@@ -6,6 +6,11 @@ metadata:
   labels:
     environment: dev
     app: robot-shop
+    tier: development
+    security-level: standard
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: robot-shop-dev
 spec:
   project: default
   
@@ -16,6 +21,11 @@ spec:
     helm:
       valueFiles:
         - values-dev.yaml
+      parameters:
+        - name: global.environment
+          value: dev
+        - name: global.securityContext.runAsNonRoot
+          value: "true"
   
   destination:
     server: https://kubernetes.default.svc
@@ -30,11 +40,20 @@ spec:
       - CreateNamespace=true
       - PrunePropagationPolicy=foreground
       - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
     retry:
       limit: 5
       backoff:
         duration: 5s
         factor: 2
         maxDuration: 3m
+  
+  # Health checks for all resources
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   
   revisionHistoryLimit: 10

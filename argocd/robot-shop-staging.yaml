@@ -6,16 +6,29 @@ metadata:
   labels:
     environment: staging
     app: robot-shop
+    tier: pre-production
+    security-level: high
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: robot-shop-staging
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: robot-shop-alerts
 spec:
   project: default
   
   source:
     repoURL: https://github.com/abdihakim-said/robot-shop-azure-platform
-    targetRevision: release/v1.0-staging  # Deploy from release branches
+    targetRevision: HEAD  # Deploy from any release/* branch
     path: helm-charts/robot-shop
     helm:
       valueFiles:
         - values-staging.yaml
+      parameters:
+        - name: global.environment
+          value: staging
+        - name: global.securityContext.runAsNonRoot
+          value: "true"
+        - name: global.securityContext.readOnlyRootFilesystem
+          value: "true"
   
   destination:
     server: https://kubernetes.default.svc
@@ -24,17 +37,27 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false  # Manual healing for staging
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
       - PrunePropagationPolicy=foreground
       - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+      - Validate=true
     retry:
-      limit: 5
+      limit: 3
       backoff:
-        duration: 5s
+        duration: 10s
         factor: 2
-        maxDuration: 3m
+        maxDuration: 5m
   
-  revisionHistoryLimit: 10
+  # Stricter health checks for staging
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+  
+  revisionHistoryLimit: 15
