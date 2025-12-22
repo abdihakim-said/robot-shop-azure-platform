@@ -19,7 +19,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
 
-  # PREVENT CLUSTER REPLACEMENT - Stop destructive changes
+  # PREVENT CLUSTER REPLACEMENT AND DIAGNOSTIC CONFLICTS
   lifecycle {
     ignore_changes = [
       default_node_pool[0].upgrade_settings,
@@ -27,7 +27,8 @@ resource "azurerm_kubernetes_cluster" "main" {
       identity,
       oms_agent,
       windows_profile,
-      kubelet_identity
+      kubelet_identity,
+      monitor_metrics
     ]
   }
 
@@ -68,14 +69,6 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   azure_policy_enabled = var.enable_azure_policy
-
-  # ENTERPRISE FIX: Ignore diagnostic settings changes
-  lifecycle {
-    ignore_changes = [
-      oms_agent,
-      monitor_metrics
-    ]
-  }
 
   tags = var.tags
 }
