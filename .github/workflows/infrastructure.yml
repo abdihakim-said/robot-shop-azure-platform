@@ -179,6 +179,9 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=dev/terraform.tfstate"
           
+          # Clear any stale state locks from interrupted runs
+          terraform force-unlock -force 1734835568453751005 || true
+          
           # Import existing diagnostic settings to prevent destroy/recreate conflicts
           DIAG_ID="/subscriptions/00f5b0bc-d9f4-41da-99cd-abcc157e1035/resourceGroups/robot-shop-dev-rg/providers/Microsoft.ContainerService/managedClusters/robot-shop-dev-aks|robot-shop-dev-diagnostics"
           terraform import \
