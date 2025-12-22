@@ -19,10 +19,12 @@ resource "azurerm_kubernetes_cluster" "main" {
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
 
-  # PREVENT CLUSTER REPLACEMENT AND DIAGNOSTIC CONFLICTS
+  # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
   lifecycle {
     ignore_changes = [
       default_node_pool[0].upgrade_settings,
+      default_node_pool[0].max_pods,
+      default_node_pool[0].os_disk_type,
       network_profile,
       identity,
       oms_agent,
