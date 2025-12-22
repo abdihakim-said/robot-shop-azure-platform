@@ -179,12 +179,6 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=dev/terraform.tfstate"
           
-          # Remove orphaned Kubernetes resources from state  
-          terraform state rm 'kubernetes_namespace.monitoring' || true
-          
-          # Clear stale lock from previous failed run
-          terraform force-unlock -force 51768818-4634-b3a4-2dbf-79bd2409a7c7 || true
-          
           terraform apply -auto-approve \
             -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
 
