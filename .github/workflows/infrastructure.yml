@@ -179,6 +179,9 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=dev/terraform.tfstate"
           
+          # Clear any stale locks from previous failed runs
+          terraform force-unlock -force $(date +%s) || true
+          
           terraform apply -auto-approve \
             -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
 
