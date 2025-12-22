@@ -25,6 +25,7 @@ resource "azurerm_monitor_action_group" "main" {
 }
 
 # Diagnostic settings for SRE observability and incident response
+# Provides AKS logs and metrics for troubleshooting
 resource "azurerm_monitor_diagnostic_setting" "aks" {
   name                       = "${var.name_prefix}-diagnostics"
   target_resource_id         = var.aks_cluster_id
