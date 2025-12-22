@@ -24,7 +24,7 @@ resource "azurerm_monitor_action_group" "main" {
   tags = var.tags
 }
 
-# Diagnostic settings for SRE observability
+# Diagnostic settings for SRE observability and incident response
 resource "azurerm_monitor_diagnostic_setting" "aks" {
   name                       = "${var.name_prefix}-diagnostics"
   target_resource_id         = var.aks_cluster_id
