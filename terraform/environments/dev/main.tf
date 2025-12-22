@@ -91,7 +91,7 @@ module "aks" {
 
   # Security settings (enhanced for dev)
   private_cluster_enabled         = false       # Match current cluster to prevent replacement
-  local_account_disabled          = true        # SECURITY FIX: No local admin
+  local_account_disabled          = false       # Requires AAD integration
   sku_tier                        = "Standard"  # SECURITY FIX: Paid SLA
   automatic_channel_upgrade       = "stable"    # SECURITY FIX: Stable updates
   api_server_authorized_ip_ranges = []          # SECURITY FIX: Restrict access
