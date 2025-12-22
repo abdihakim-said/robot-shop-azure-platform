@@ -178,6 +178,11 @@ jobs:
             -backend-config="storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}" \
             -backend-config="container_name=tfstate" \
             -backend-config="key=dev/terraform.tfstate"
+          
+          # Import existing diagnostic settings to prevent destroy/recreate conflicts
+          DIAG_ID="/subscriptions/00f5b0bc-d9f4-41da-99cd-abcc157e1035/resourceGroups/robot-shop-dev-rg/providers/Microsoft.ContainerService/managedClusters/robot-shop-dev-aks|robot-shop-dev-diagnostics"
+          terraform import 'module.monitoring.azurerm_monitor_diagnostic_setting.aks' "$DIAG_ID" || true
+          
           terraform apply -auto-approve \
             -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
 

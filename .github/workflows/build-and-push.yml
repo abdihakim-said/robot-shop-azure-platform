@@ -186,9 +186,9 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
 
-  # Dynamic deployment for all changed services
+  # Enterprise GitOps deployment for all changed services
   deploy-services:
-    name: Deploy ${{ matrix.service }}
+    name: GitOps Deploy ${{ matrix.service }}
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
@@ -199,5 +199,11 @@ jobs:
     with:
       service-name: ${{ matrix.service }}
       image-tag: ${{ github.sha }}
-      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
+      environment: ${{ 
+        github.ref == 'refs/heads/develop' && 'dev' || 
+        startsWith(github.ref, 'refs/heads/release/') && 'staging' || 
+        github.ref == 'refs/heads/main' && 'production' || 
+        'dev' 
+      }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
