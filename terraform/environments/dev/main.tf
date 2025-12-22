@@ -90,7 +90,7 @@ module "aks" {
   max_node_count     = var.max_node_count
 
   # Security settings (enhanced for dev)
-  private_cluster_enabled         = true        # SECURITY FIX: Private cluster
+  private_cluster_enabled         = false       # Match current cluster to prevent replacement
   local_account_disabled          = true        # SECURITY FIX: No local admin
   sku_tier                        = "Standard"  # SECURITY FIX: Paid SLA
   automatic_channel_upgrade       = "stable"    # SECURITY FIX: Stable updates
