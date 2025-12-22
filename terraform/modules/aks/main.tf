@@ -19,6 +19,18 @@ resource "azurerm_kubernetes_cluster" "main" {
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
 
+  # PREVENT CLUSTER REPLACEMENT - Stop destructive changes
+  lifecycle {
+    ignore_changes = [
+      default_node_pool[0].upgrade_settings,
+      network_profile,
+      identity,
+      oms_agent,
+      windows_profile,
+      kubelet_identity
+    ]
+  }
+
   api_server_access_profile {
     authorized_ip_ranges = var.api_server_authorized_ip_ranges
   }
