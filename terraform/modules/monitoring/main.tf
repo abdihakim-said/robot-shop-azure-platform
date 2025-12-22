@@ -24,28 +24,8 @@ resource "azurerm_monitor_action_group" "main" {
   tags = var.tags
 }
 
-resource "azurerm_monitor_diagnostic_setting" "aks" {
-  name                       = "${var.name_prefix}-diagnostics"
-  target_resource_id         = var.aks_cluster_id
-  log_analytics_workspace_id = var.log_analytics_workspace_id
-
-  dynamic "enabled_log" {
-    for_each = var.enabled_log_categories
-    content {
-      category = enabled_log.value
-    }
-  }
-
-  metric {
-    category = "AllMetrics"
-    enabled  = true
-  }
-
-  # Ignore changes to prevent conflicts with Azure-managed diagnostic settings
-  lifecycle {
-    ignore_changes = [
-      enabled_log,
-      metric
-    ]
-  }
-}
+# Diagnostic settings removed - following platform engineering best practices:
+# - Azure automatically manages diagnostic settings for AKS
+# - Operational concern, not infrastructure
+# - Reduces complexity and state conflicts
+# - Use Azure Policy for governance if needed
