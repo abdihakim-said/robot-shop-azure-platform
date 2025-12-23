@@ -177,7 +177,7 @@ jobs:
       - name: Security Gate Check
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL'
@@ -187,7 +187,7 @@ jobs:
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
           format: 'cyclonedx'
           output: 'sbom-${{ matrix.service }}.json'
       
