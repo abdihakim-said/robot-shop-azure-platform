@@ -21,4 +21,9 @@ spec:
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 30m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
