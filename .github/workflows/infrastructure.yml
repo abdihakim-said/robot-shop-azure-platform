@@ -25,10 +25,9 @@ jobs:
       - name: Run tfsec (Infrastructure Security)
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-        with:
           working_directory: terraform
           soft_fail: ${{ github.ref == 'refs/heads/develop' }}  # Dev: warnings, Prod: block
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Checkov (Policy Compliance)
         uses: bridgecrewio/checkov-action@v12
