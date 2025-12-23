@@ -34,7 +34,20 @@ mysql:
   enabled: true
   replicas: 1
   service:
-    type: ClusterIP  # Use Ingress instead of LoadBalancer
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+web:
+  enabled: true
+  replicas: 1
+  service:
+    type: ClusterIP
   ingress:
     enabled: true
     className: nginx
@@ -42,7 +55,7 @@ mysql:
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
     hosts:
-      - host: dev.robot-shop.local
+      - host: robot-shop.robot-shop-dev.com
         paths:
           - path: /
             pathType: Prefix
