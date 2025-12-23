@@ -8,9 +8,7 @@ metadata:
     {{- include "robot-shop.labels" . | nindent 4 }}
     component: security
 spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "robot-shop.name" . }}
+  podSelector: {}  # Apply to all pods in namespace
   policyTypes:
     - Ingress
     - Egress
@@ -27,9 +25,7 @@ spec:
     
     # Allow inter-service communication
     - from:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: {{ include "robot-shop.name" . }}
+        - podSelector: {}  # Allow from all pods in namespace
       ports:
         - protocol: TCP
           port: 8080
@@ -70,9 +66,7 @@ spec:
     
     # Inter-service communication
     - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: {{ include "robot-shop.name" . }}
+        - podSelector: {}  # Allow communication between all pods
 
 ---
 # Default deny all
