@@ -1,4 +1,4 @@
-#
+# Test automatic ArgoCD image updates
 # Build
 #
 FROM maven:3.9-eclipse-temurin-17 AS build
