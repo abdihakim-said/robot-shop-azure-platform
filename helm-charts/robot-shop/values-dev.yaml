@@ -1,7 +1,7 @@
 # Development Environment Configuration
 global:
   imageRegistry: robotshopacr.azurecr.io
-  imageTag: dev-f787bb9f4efa06d7b5094f798d663eca4c6f10a8  # Full SHA from successful build
+  imageTag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735  # All 8 services built successfully
   imagePullPolicy: Always  # Always pull latest in dev
   environment: dev
   
