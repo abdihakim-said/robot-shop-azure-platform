@@ -1,1 +1,1 @@
-// Zero-touch GitOps deployment
+// AKS credentials fix test

@@ -1,0 +1,1 @@
+# AKS credentials fix test

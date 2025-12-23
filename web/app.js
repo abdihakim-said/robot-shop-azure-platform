@@ -1,1 +1,1 @@
-// Trigger all services build
+// Trigger all services - AKS credentials fix
