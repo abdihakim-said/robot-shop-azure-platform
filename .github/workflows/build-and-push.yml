@@ -206,24 +206,36 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
 
-  # Modern GitOps: CI builds, ArgoCD deploys
+  # Modern GitOps: CI builds, ArgoCD deploys with enhanced sync
   build-complete:
-    name: Build Complete - ArgoCD Takes Over
+    name: Build Complete - Configure ArgoCD
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure ArgoCD Repository Credentials
+        run: |
+          echo "🔧 Configuring ArgoCD for faster sync..."
+          
+          # Create GitHub repository secret for ArgoCD
+          kubectl create secret generic github-repo-secret \
+            --from-literal=type=git \
+            --from-literal=url=https://github.com/abdihakim-said/robot-shop-azure-platform \
+            --from-literal=username=abdihakim-said \
+            --from-literal=password=${{ secrets.GITHUB_TOKEN }} \
+            -n argocd --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Label secret for ArgoCD recognition
+          kubectl label secret github-repo-secret \
+            argocd.argoproj.io/secret-type=repository \
+            -n argocd --overwrite
+            
       - name: Build Summary
         run: |
-          echo "🎉 BUILD COMPLETE - Modern GitOps Pattern"
+          echo "🎉 BUILD COMPLETE - Enhanced GitOps Pattern"
           echo "✅ Immutable artifact: ${{ needs.detect-changes.outputs.image_tag }}"
           echo "✅ Images available in ACR: ${{ env.ACR_LOGIN_SERVER }}"
-          echo "✅ ArgoCD Image Updater will detect and deploy automatically"
-          echo ""
-          echo "MODERN GITOPS FLOW:"
-          echo "1. ✅ CI Pipeline: Built immutable artifacts"
-          echo "2. 🔄 ArgoCD Image Updater: Will detect new images"
-          echo "3. 🔄 ArgoCD: Will update Git and deploy"
-          echo "4. 🔄 Kubernetes: Will pull and run new images"
-          echo ""
-          echo "🚀 SEPARATION OF CONCERNS ACHIEVED!"
+          echo "✅ ArgoCD credentials configured for faster sync"
+          echo "✅ ArgoCD will detect and deploy automatically (faster polling)"
