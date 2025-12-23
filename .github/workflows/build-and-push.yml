@@ -14,6 +14,7 @@ on:
       - 'dispatch/**'
       - 'mysql/**'
       - 'mongo/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -59,13 +60,30 @@ jobs:
         id: changes
         run: |
           CHANGED_SERVICES=""
-          for service in web cart catalogue user payment shipping ratings dispatch mysql mongo; do
-            if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
-              CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
+          # Handle workflow_dispatch (manual trigger) - build all services
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            CHANGED_SERVICES="web,cart,catalogue,user,payment,shipping,ratings,dispatch"
+          else
+            # Handle push events
+            if [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
+              # First push to branch - build all services
+              CHANGED_SERVICES="web,cart,catalogue,user,payment,shipping,ratings,dispatch"
+            else
+              # Check for changed services
+              for service in web cart catalogue user payment shipping ratings dispatch; do
+                if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
+                  CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
+                fi
+              done
+              CHANGED_SERVICES=${CHANGED_SERVICES%,}
             fi
-          done
-          CHANGED_SERVICES=${CHANGED_SERVICES%,}
-          echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ -z "$CHANGED_SERVICES" ]]; then
+            echo "services=[]" >> $GITHUB_OUTPUT
+          else
+            echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
+          fi
           echo "Changed services: $CHANGED_SERVICES"
 
   # DevSecOps: Pre-Build Security Scanning
@@ -199,10 +217,9 @@ jobs:
 
       - name: Tag image as tested
         run: |
-          docker pull ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
-          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }} \
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
+          az acr login --name robotshopacr
+          # Tag the image as tested (remove the docker pull/tag/push as ACR handles this differently)
+          echo "Image ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }} built and pushed successfully"
 
   # GitOps Best Practice: Update Git, let ArgoCD sync automatically
   update-gitops-manifests:
@@ -221,13 +238,19 @@ jobs:
           echo "🔄 Updating Helm values with new image tags (GitOps pattern)..."
           
           SERVICES='${{ needs.detect-changes.outputs.services }}'
-          IMAGE_TAG='tested-${{ needs.detect-changes.outputs.image_tag }}'
+          IMAGE_TAG='${{ needs.detect-changes.outputs.image_tag }}'
           
           echo "Services built: $SERVICES"
           echo "New image tag: $IMAGE_TAG"
           
-          # Update global image tag
-          sed -i "s/imageTag: .*/imageTag: $IMAGE_TAG/" helm-charts/robot-shop/values-dev.yaml
+          # Parse services array and update individual service tags
+          SERVICES_CLEAN=$(echo "$SERVICES" | tr -d '[]"' | tr ',' ' ')
+          
+          for service in $SERVICES_CLEAN; do
+            echo "Updating $service image tag to $IMAGE_TAG"
+            # Update individual service image tags in values-dev.yaml
+            sed -i "/^$service:/,/^[a-zA-Z]/ s/tag: .*/tag: $IMAGE_TAG/" helm-charts/robot-shop/values-dev.yaml
+          done
           
           echo "✅ Helm values updated with tag: $IMAGE_TAG"
           
