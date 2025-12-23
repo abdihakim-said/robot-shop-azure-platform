@@ -30,8 +30,8 @@ jobs:
       
       - name: Validate Image Tag Format
         run: |
-          if [[ ! "${{ inputs.image-tag }}" =~ ^[a-f0-9]{7,40}$ ]]; then
-            echo "❌ Invalid image tag format. Must be Git SHA (7-40 hex characters)"
+          if [[ ! "${{ inputs.image-tag }}" =~ ^(dev|staging|prod)-(latest|[a-f0-9]{7,40})$ ]]; then
+            echo "❌ Invalid image tag format. Expected: env-sha or env-latest (e.g., dev-abc123, staging-latest)"
             exit 1
           fi
           echo "✅ Image tag validation passed: ${{ inputs.image-tag }}"
