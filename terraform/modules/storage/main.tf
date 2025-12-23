@@ -19,7 +19,7 @@ resource "azurerm_container_registry" "main" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.acr_sku
-  admin_enabled       = true  # Enable for dev environment
+  admin_enabled       = true # Enable for dev environment
 
   identity {
     type = "SystemAssigned"
