@@ -1,4 +1,4 @@
-# Test ACR login fix
+# Deploy SRE fixes - unblocked pipeline
 FROM nginx:stable
 
 EXPOSE 8080
