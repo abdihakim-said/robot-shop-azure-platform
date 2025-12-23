@@ -22,6 +22,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
   lifecycle {
     ignore_changes = [
+      default_node_pool[0].node_count, # Ignore autoscaling changes
       default_node_pool[0].upgrade_settings,
       default_node_pool[0].max_pods,
       default_node_pool[0].os_disk_type,
