@@ -16,7 +16,7 @@ on:
       - 'mongo/**'
 
 permissions:
-  contents: read
+  contents: write
   security-events: write
   actions: write
 
