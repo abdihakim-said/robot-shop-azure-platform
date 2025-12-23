@@ -16,7 +16,7 @@ on:
       - 'mongo/**'
 
 permissions:
-  contents: read
+  contents: write  # Allow GitOps automation to update Helm values
   actions: write
   security-events: write
 
@@ -219,6 +219,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
       
       - name: Update Helm values with new image tag
         run: |
