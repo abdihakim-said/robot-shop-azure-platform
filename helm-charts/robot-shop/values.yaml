@@ -1,7 +1,7 @@
 # Enterprise Robot Shop Configuration
 global:
   # Image configuration
-  imageRegistry: robotshopdevacrmtttm8.azurecr.io
+  imageRegistry: robotshopacr.azurecr.io
   imagePullPolicy: IfNotPresent
   imageTag: "latest"  # Overridden by GitOps
   

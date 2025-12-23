@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/user
+  repository: robotshopacr.azurecr.io/user
   tag: latest
   pullPolicy: IfNotPresent
 service:

@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/ratings
+  repository: robotshopacr.azurecr.io/ratings
   tag: latest
   pullPolicy: IfNotPresent
 service:

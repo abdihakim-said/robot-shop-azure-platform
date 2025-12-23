@@ -1,5 +1,5 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/dispatch
+  repository: robotshopacr.azurecr.io/dispatch
   tag: latest
   pullPolicy: IfNotPresent
 service:
