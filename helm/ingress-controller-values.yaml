@@ -1,0 +1,19 @@
+# NGINX Ingress Controller
+# Deploy once per cluster, used by all applications
+
+controller:
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
+  
+  metrics:
+    enabled: true
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 90Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

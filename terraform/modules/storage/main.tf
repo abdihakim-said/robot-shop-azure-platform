@@ -7,7 +7,7 @@ terraform {
   }
 }
 
-# Trigger pipeline - updated tfsec version to fix security scan
+# Trigger pipeline - added GitHub token to fix rate limit
 # Generate random suffix for globally unique ACR name
 resource "random_string" "acr_suffix" {
   length  = 6

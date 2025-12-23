@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: robot-shop-network-policy
+  namespace: robot-shop
+spec:
+  podSelector:
+    matchLabels:
+      app: robot-shop
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress controller access
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow inter-service communication
+  - from:
+    - podSelector:
+        matchLabels:
+          app: robot-shop
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow monitoring access
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow inter-service communication
+  - to:
+    - podSelector:
+        matchLabels:
+          app: robot-shop
+  # Allow external API calls (payment gateway)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443

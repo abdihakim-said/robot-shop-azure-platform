@@ -1,6 +1,6 @@
 # Development Environment Configuration
 global:
-  imageRegistry: robotshopdevacrmtttm8.azurecr.io
+  imageRegistry: robotshopdevacrattne2.azurecr.io
   imagePullPolicy: Always  # Always pull latest in dev
   environment: dev
   
