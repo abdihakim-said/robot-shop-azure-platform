@@ -11,7 +11,7 @@ instana({
 const redis = require('redis');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-// Test build pipeline trigger
+// Test build pipeline trigger - fixed validation
 const express = require('express');
 const pino = require('pino');
 const expPino = require('express-pino-logger');
