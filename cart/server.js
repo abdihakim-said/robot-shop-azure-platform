@@ -1,7 +1,7 @@
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
-// Test matrix deployment with inline steps - enterprise pattern
+// Test automated GitOps - pipeline updates Helm values
 instana({
     tracing: {
         enabled: true
