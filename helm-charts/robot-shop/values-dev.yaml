@@ -32,12 +32,6 @@ mongodb:
   enabled: true
 mysql:
   enabled: true
-    scrapeInterval: 60s  # Less frequent in dev
-
-# Dev-specific service configs
-web:
-  image:
-    tag: "latest"  # Updated by GitOps
   replicas: 1
   service:
     type: ClusterIP  # Use Ingress instead of LoadBalancer
