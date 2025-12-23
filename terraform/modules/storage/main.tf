@@ -19,13 +19,20 @@ resource "azurerm_container_registry" "main" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.acr_sku
-  admin_enabled       = false
+  admin_enabled       = true  # Enable for dev environment
 
   identity {
     type = "SystemAssigned"
   }
 
   tags = var.tags
+}
+
+# Grant AKS pull access to ACR
+resource "azurerm_role_assignment" "acr_pull" {
+  scope                = azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = var.kubelet_identity_object_id
 }
 
 resource "azurerm_storage_account" "main" {
