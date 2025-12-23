@@ -207,7 +207,7 @@ jobs:
 
   # Enterprise GitOps deployment for all changed services
   deploy-services:
-    name: GitOps Deploy ${{ matrix.service }}
+    name: GitOps Deploy
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
