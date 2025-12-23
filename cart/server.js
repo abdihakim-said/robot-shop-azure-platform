@@ -1,7 +1,7 @@
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
-// Test automated GitOps - pipeline updates Helm values
+// Test: Modern GitOps + ArgoCD credentials + SRE resources
 instana({
     tracing: {
         enabled: true
