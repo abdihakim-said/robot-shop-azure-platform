@@ -1,2 +1,2 @@
-// Trigger all services - ArgoCD sync fix v2
-// GitOps test - build all services
+// Trigger all services - GitOps permission fix test
+// Testing pipeline with write permissions enabled
