@@ -1,17 +1,28 @@
-name: Modern GitOps - Build Once Deploy Many
+name: Secure CI/CD - End-to-End Testing
 
 on:
   push:
     branches: [develop, 'release/**', main]
-    paths: ['**/Dockerfile', '**/package.json', '**/requirements.txt', '**/pom.xml']  # Only build on actual code changes
+    paths:
+      - 'web/**'
+      - 'cart/**'
+      - 'catalogue/**'
+      - 'user/**'
+      - 'payment/**'
+      - 'shipping/**'
+      - 'ratings/**'
+      - 'dispatch/**'
+      - 'mysql/**'
+      - 'mongo/**'
 
 permissions:
-  contents: read        # Modern: CI only reads, no Git modifications
+  contents: read
   security-events: write
-  id-token: write       # Modern: OIDC instead of service principal secrets
+  actions: write
 
 env:
-  REGISTRY: robotshopacr.azurecr.io
+  ACR_NAME: robotshopacr
+  ACR_LOGIN_SERVER: robotshopacr.azurecr.io
 
 jobs:
   detect-changes:
@@ -129,7 +140,7 @@ jobs:
 
       - name: Login to ACR
         run: |
-          az acr login --name ${{ env.ACR_NAME }}
+          az acr login --name robotshopacr
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
