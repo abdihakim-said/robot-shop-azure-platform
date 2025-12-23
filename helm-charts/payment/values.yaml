@@ -1,7 +1,7 @@
 image:
-  repository: robotshopacr.azurecr.io/payment
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: "{{ .Values.global.imageRegistry }}/payment"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
 service:
   type: ClusterIP
   port: 8080

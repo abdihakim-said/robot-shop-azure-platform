@@ -1,23 +1,37 @@
-# Development Environment Configuration
+# Global values override individual chart values
 global:
   imageRegistry: robotshopacr.azurecr.io
-  imageTag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735  # All 8 services built successfully
-  imagePullPolicy: Always  # Always pull latest in dev
+  imageTag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+  imagePullPolicy: Always
   environment: dev
-  
-  # Relaxed security for development
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    readOnlyRootFilesystem: false  # Allow writes for debugging
-    allowPrivilegeEscalation: false
-  
-  # Network policies (relaxed for dev)
-  networkPolicy:
-    enabled: false  # Disabled for easier debugging
-  
-  monitoring:
-    enabled: true
+
+# Individual services inherit from global
+cart:
+  enabled: true
+catalogue:
+  enabled: true
+user:
+  enabled: true
+payment:
+  enabled: true
+shipping:
+  enabled: true
+ratings:
+  enabled: true
+dispatch:
+  enabled: true
+web:
+  enabled: true
+
+# Infrastructure services
+redis:
+  enabled: true
+rabbitmq:
+  enabled: true
+mongodb:
+  enabled: true
+mysql:
+  enabled: true
     scrapeInterval: 60s  # Less frequent in dev
 
 # Dev-specific service configs

@@ -1,7 +1,7 @@
 image:
-  repository: robotshopacr.azurecr.io/cart
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: "{{ .Values.global.imageRegistry }}/cart"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
 
 service:
   type: ClusterIP

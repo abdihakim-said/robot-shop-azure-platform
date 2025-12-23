@@ -1,7 +1,7 @@
 image:
-  repository: robotshopacr.azurecr.io/user
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: "{{ .Values.global.imageRegistry }}/user"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
 service:
   type: ClusterIP
   port: 8080

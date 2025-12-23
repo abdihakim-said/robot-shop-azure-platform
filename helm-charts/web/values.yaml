@@ -1,7 +1,7 @@
 image:
-  repository: robotshopacr.azurecr.io/web
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: "{{ .Values.global.imageRegistry }}/web"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
 
 service:
   type: LoadBalancer

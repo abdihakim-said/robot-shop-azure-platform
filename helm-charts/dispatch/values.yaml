@@ -1,7 +1,7 @@
 image:
-  repository: robotshopacr.azurecr.io/dispatch
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: "{{ .Values.global.imageRegistry }}/dispatch"
+  tag: "{{ .Values.global.imageTag }}"
+  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
 service:
   type: ClusterIP
   port: 55555
