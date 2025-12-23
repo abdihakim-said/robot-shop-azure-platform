@@ -21,8 +21,8 @@ permissions:
   security-events: write
 
 env:
-  ACR_NAME: robotshopdevacrmtttm8
-  ACR_LOGIN_SERVER: robotshopdevacrmtttm8.azurecr.io
+  ACR_NAME: robotshopacr
+  ACR_LOGIN_SERVER: robotshopacr.azurecr.io
 
 jobs:
   detect-changes:
@@ -30,10 +30,29 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       services: ${{ steps.changes.outputs.services }}
+      environment: ${{ steps.env.outputs.environment }}
+      image_tag: ${{ steps.env.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set Environment and Tag
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "image_tag=dev-${{ github.sha }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "image_tag=staging-${{ github.sha }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+            echo "image_tag=prod-${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "image_tag=dev-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Detect changed services
         id: changes
@@ -132,8 +151,8 @@ jobs:
           context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.environment }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

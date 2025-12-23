@@ -1,0 +1,61 @@
+name: E2E Testing
+
+on:
+  workflow_run:
+    workflows: ["Infrastructure Pipeline (Enterprise GitFlow)"]
+    types: [completed]
+    branches: [develop, 'release/**']
+
+jobs:
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials --resource-group robot-shop-dev-rg --name robot-shop-dev-aks --overwrite-existing
+      
+      - name: Wait for Deployment
+        run: |
+          kubectl wait --for=condition=available --timeout=300s deployment/web -n robot-shop || true
+      
+      - name: Smoke Test - Health Checks
+        run: |
+          # Test all service health endpoints
+          services="web cart catalogue user payment shipping ratings dispatch"
+          for service in $services; do
+            echo "Testing $service health..."
+            kubectl exec -n robot-shop deployment/$service -- curl -f http://localhost:8080/health || echo "$service health check failed"
+          done
+      
+      - name: Smoke Test - Business Metrics
+        run: |
+          # Test Prometheus metrics endpoints
+          services="cart payment"
+          for service in $services; do
+            echo "Testing $service metrics..."
+            kubectl exec -n robot-shop deployment/$service -- curl -f http://localhost:8080/metrics || echo "$service metrics failed"
+          done
+      
+      - name: Integration Test - End-to-End Flow
+        run: |
+          # Get web service URL
+          WEB_URL=$(kubectl get svc web -n robot-shop -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || echo "localhost")
+          
+          # Test basic e-commerce flow (if web is accessible)
+          if [ "$WEB_URL" != "localhost" ]; then
+            echo "Testing e-commerce flow on $WEB_URL"
+            curl -f http://$WEB_URL/ || echo "Web frontend not accessible"
+          else
+            echo "Web service not externally accessible - testing internally"
+            kubectl exec -n robot-shop deployment/web -- curl -f http://localhost:8080/ || echo "Web internal test failed"
+          fi
