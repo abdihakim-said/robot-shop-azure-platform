@@ -1,4 +1,4 @@
-#
+# AKS credentials fix test
 # Build the app
 #
 FROM php:8.1-apache

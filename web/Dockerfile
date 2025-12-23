@@ -1,3 +1,4 @@
+# AKS credentials fix test
 FROM nginx:stable
 
 EXPOSE 8080
