@@ -1,0 +1,35 @@
+{{- if .Values.web.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "robot-shop.labels" . | nindent 4 }}
+    service: web
+  {{- with .Values.web.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.web.ingress.className }}
+  ingressClassName: {{ .Values.web.ingress.className }}
+  {{- end }}
+  rules:
+  {{- range .Values.web.ingress.hosts }}
+  - {{- if .host }}
+    host: {{ .host }}
+    {{- end }}
+    http:
+      paths:
+      {{- range .paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType | default "Prefix" }}
+        backend:
+          service:
+            name: {{ .service | default "web" }}
+            port:
+              number: {{ .port }}
+      {{- end }}
+  {{- end }}
+{{- end }}
