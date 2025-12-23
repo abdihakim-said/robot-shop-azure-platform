@@ -1,7 +1,7 @@
 image:
-  repository: "{{ .Values.global.imageRegistry }}/catalogue"
-  tag: "{{ .Values.global.imageTag }}"
-  pullPolicy: "{{ .Values.global.imagePullPolicy }}"
+  repository: robotshopacr.azurecr.io/catalogue
+  tag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+  pullPolicy: Always
 
 service:
   type: ClusterIP

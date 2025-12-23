@@ -18,10 +18,15 @@ spec:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.env }}
         env:
-          {{- toYaml .Values.env | nindent 10 }}
-        {{- end }}
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+        - name: MYSQL_DATABASE
+          value: "robot_shop"
+        - name: MYSQL_USER
+          value: "robot"
+        - name: MYSQL_PASSWORD
+          value: "robot"
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:
