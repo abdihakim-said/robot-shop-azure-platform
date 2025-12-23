@@ -1,4 +1,4 @@
-name: Secure CI/CD - Build and Push
+name: Secure CI/CD - End-to-End Testing
 
 on:
   push:
@@ -14,7 +14,6 @@ on:
       - 'dispatch/**'
       - 'mysql/**'
       - 'mongo/**'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -60,30 +59,13 @@ jobs:
         id: changes
         run: |
           CHANGED_SERVICES=""
-          # Handle workflow_dispatch (manual trigger) - build all services
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            CHANGED_SERVICES="web,cart,catalogue,user,payment,shipping,ratings,dispatch"
-          else
-            # Handle push events
-            if [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
-              # First push to branch - build all services
-              CHANGED_SERVICES="web,cart,catalogue,user,payment,shipping,ratings,dispatch"
-            else
-              # Check for changed services
-              for service in web cart catalogue user payment shipping ratings dispatch; do
-                if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
-                  CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
-                fi
-              done
-              CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          for service in web cart catalogue user payment shipping ratings dispatch mysql mongo; do
+            if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^${service}/"; then
+              CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
             fi
-          fi
-          
-          if [[ -z "$CHANGED_SERVICES" ]]; then
-            echo "services=[]" >> $GITHUB_OUTPUT
-          else
-            echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
-          fi
+          done
+          CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
           echo "Changed services: $CHANGED_SERVICES"
 
   # DevSecOps: Pre-Build Security Scanning
@@ -217,9 +199,10 @@ jobs:
 
       - name: Tag image as tested
         run: |
-          az acr login --name robotshopacr
-          # Tag the image as tested (remove the docker pull/tag/push as ACR handles this differently)
-          echo "Image ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }} built and pushed successfully"
+          docker pull ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }} \
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
 
   # GitOps Best Practice: Update Git, let ArgoCD sync automatically
   update-gitops-manifests:
@@ -232,7 +215,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Update Helm Values with New Image Tags
         run: |
           echo "🔄 Updating Helm values with new image tags (GitOps pattern)..."
@@ -244,9 +227,7 @@ jobs:
           echo "New image tag: $IMAGE_TAG"
           
           # Parse services array and update individual service tags
-          SERVICES_CLEAN=$(echo "$SERVICES" | tr -d '[]"' | tr ',' ' ')
-          
-          for service in $SERVICES_CLEAN; do
+          echo "$SERVICES" | jq -r '.[]' | while read service; do
             echo "Updating $service image tag to $IMAGE_TAG"
             # Update individual service image tags in values-dev.yaml
             sed -i "/^$service:/,/^[a-zA-Z]/ s/tag: .*/tag: $IMAGE_TAG/" helm-charts/robot-shop/values-dev.yaml
@@ -265,14 +246,7 @@ jobs:
           fi
           
           git add helm-charts/robot-shop/values-dev.yaml
-          git commit -m "🚀 GitOps: Update image tags to ${{ needs.detect-changes.outputs.image_tag }}
-
-Services updated: ${{ needs.detect-changes.outputs.services }}
-
-- Automated by CI/CD pipeline
-- ArgoCD will sync automatically within 3 minutes
-- Images tested and security scanned"
-          
+          git commit -m "🚀 GitOps: Update image tags to ${{ needs.detect-changes.outputs.image_tag }}"
           git push origin develop
           
           echo "✅ GitOps manifests updated in Git"
@@ -280,9 +254,8 @@ Services updated: ${{ needs.detect-changes.outputs.services }}
             
       - name: Build Summary
         run: |
-          echo "🎉 BUILD COMPLETE - Automated GitOps Pattern"
-          echo "✅ Immutable artifact: ${{ needs.detect-changes.outputs.image_tag }}"
-          echo "✅ Images available in ACR: ${{ env.ACR_LOGIN_SERVER }}"
-          echo "✅ ArgoCD credentials configured for faster sync"
-          echo "✅ ArgoCD image tags updated automatically"
-          echo "✅ ArgoCD will sync new images within 30 seconds"
+          echo "🎉 BUILD COMPLETE - GitOps Pattern"
+          echo "✅ Images built: ${{ needs.detect-changes.outputs.services }}"
+          echo "✅ Image tag: ${{ needs.detect-changes.outputs.image_tag }}"
+          echo "✅ Helm values updated in Git"
+          echo "✅ ArgoCD will sync new images automatically"
