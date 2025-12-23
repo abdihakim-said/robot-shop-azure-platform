@@ -1,7 +1,7 @@
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
-// Test dynamic matrix deployment - scalable approach
+// Test matrix deployment with inline steps - enterprise pattern
 instana({
     tracing: {
         enabled: true
