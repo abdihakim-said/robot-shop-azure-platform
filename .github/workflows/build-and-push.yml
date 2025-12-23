@@ -217,9 +217,20 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Deploy ${{ matrix.service }} via ArgoCD
+      - name: Update Helm values with new image tag
         run: |
-          echo "🚀 Deploying ${{ matrix.service }} to ${{ needs.detect-changes.outputs.environment }}"
-          echo "Image: robotshopacr.azurecr.io/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}"
-          echo "✅ GitOps deployment triggered (ArgoCD will sync automatically)"
+          # Update the correct environment values file
+          VALUES_FILE="./helm-charts/robot-shop/values-${{ needs.detect-changes.outputs.environment }}.yaml"
+          sed -i "s/imageTag: ${{ needs.detect-changes.outputs.environment }}-.*/imageTag: ${{ needs.detect-changes.outputs.image_tag }}/" $VALUES_FILE
+          
+      - name: Commit updated Helm values
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          VALUES_FILE="./helm-charts/robot-shop/values-${{ needs.detect-changes.outputs.environment }}.yaml"
+          git add $VALUES_FILE
+          git commit -m "auto: update ${{ needs.detect-changes.outputs.environment }} image tag to ${{ needs.detect-changes.outputs.image_tag }}" || exit 0
+          git push
