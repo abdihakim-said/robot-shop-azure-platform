@@ -1,4 +1,4 @@
-# AKS credentials fix test
+# Test TruffleHog fix
 FROM nginx:stable
 
 EXPOSE 8080
