@@ -26,6 +26,22 @@ spec:
           value: dev
         - name: global.securityContext.runAsNonRoot
           value: "true"
+        - name: cart.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: web.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: catalogue.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: user.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: payment.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: shipping.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: ratings.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+        - name: dispatch.image.tag
+          value: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
   
   destination:
     server: https://kubernetes.default.svc
