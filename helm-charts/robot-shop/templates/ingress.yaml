@@ -1,4 +1,4 @@
-{{- if .Values.web.ingress.enabled }}
+{{- if .Values.web.umbrella.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,16 +7,16 @@ metadata:
   labels:
     {{- include "robot-shop.labels" . | nindent 4 }}
     service: web
-  {{- with .Values.web.ingress.annotations }}
+  {{- with .Values.web.umbrella.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.web.ingress.className }}
-  ingressClassName: {{ .Values.web.ingress.className }}
+  {{- if .Values.web.umbrella.ingress.className }}
+  ingressClassName: {{ .Values.web.umbrella.ingress.className }}
   {{- end }}
   rules:
-  {{- range .Values.web.ingress.hosts }}
+  {{- range .Values.web.umbrella.ingress.hosts }}
   - {{- if .host }}
     host: {{ .host }}
     {{- end }}
