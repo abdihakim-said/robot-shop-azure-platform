@@ -218,7 +218,6 @@ jobs:
     with:
       service-name: ${{ matrix.service }}
       image-tag: ${{ needs.detect-changes.outputs.image_tag }}
-      environment: ${{ needs.detect-changes.outputs.environment }} 
-      }}
+      environment: ${{ needs.detect-changes.outputs.environment }}
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
