@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+# Trigger pipeline - fixed service principal permissions
 # Generate random suffix for globally unique ACR name
 resource "random_string" "acr_suffix" {
   length  = 6
