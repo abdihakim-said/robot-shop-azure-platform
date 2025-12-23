@@ -1,7 +1,7 @@
 # Development Environment Configuration
 global:
   imageRegistry: robotshopacr.azurecr.io
-  imageTag: dev-latest  # Environment-specific tag
+  imageTag: dev-696f660  # Latest successful build
   imagePullPolicy: Always  # Always pull latest in dev
   environment: dev
   
