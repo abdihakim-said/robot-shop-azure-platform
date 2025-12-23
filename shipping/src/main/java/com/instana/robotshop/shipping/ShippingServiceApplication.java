@@ -72,3 +72,4 @@ public class ShippingServiceApplication implements WebMvcConfigurer {
         }
     }
 }
+// GitOps test

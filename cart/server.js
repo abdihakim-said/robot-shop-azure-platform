@@ -408,3 +408,4 @@ app.listen(port, () => {
 // Auto-deploy test
 // Final test
 // DevSecOps pipeline test
+// GitOps test - trigger all services

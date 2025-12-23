@@ -1,7 +1,7 @@
 # Global values override individual chart values
 global:
   imageRegistry: robotshopacr.azurecr.io
-  imageTag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+  imageTag: tested-v20251223-d5d1466
   imagePullPolicy: Always
   environment: dev
 

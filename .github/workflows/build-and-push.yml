@@ -204,70 +204,56 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
 
-  # Modern GitOps: CI builds, ArgoCD deploys with enhanced sync
-  build-complete:
-    name: Build Complete - Configure ArgoCD
+  # GitOps Best Practice: Update Git, let ArgoCD sync automatically
+  update-gitops-manifests:
+    name: Update GitOps Manifests
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Azure Login
-        uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
       
-      - name: Get AKS Credentials
+      - name: Update Helm Values with New Image Tags
         run: |
-          az aks get-credentials \
-            --resource-group robot-shop-dev-rg \
-            --name robot-shop-dev-aks \
-            --overwrite-existing
-      
-      - name: Configure ArgoCD Repository Credentials
-        run: |
-          echo "🔧 Configuring ArgoCD for faster sync..."
+          echo "🔄 Updating Helm values with new image tags (GitOps pattern)..."
           
-          # Create GitHub repository secret for ArgoCD
-          kubectl create secret generic github-repo-secret \
-            --from-literal=type=git \
-            --from-literal=url=https://github.com/abdihakim-said/robot-shop-azure-platform \
-            --from-literal=username=abdihakim-said \
-            --from-literal=password=${{ secrets.GITHUB_TOKEN }} \
-            -n argocd --dry-run=client -o yaml | kubectl apply -f -
-          
-          # Label secret for ArgoCD recognition
-          kubectl label secret github-repo-secret \
-            argocd.argoproj.io/secret-type=repository \
-            -n argocd --overwrite
-
-      - name: Update ArgoCD Image Tags
-        run: |
-          echo "🚀 Updating ArgoCD with new image tags..."
-          
-          # Update ArgoCD application with new image tags for all built services
           SERVICES='${{ needs.detect-changes.outputs.services }}'
-          IMAGE_TAG='${{ needs.detect-changes.outputs.image_tag }}'
+          IMAGE_TAG='tested-${{ needs.detect-changes.outputs.image_tag }}'
           
-          echo "Services: $SERVICES"
-          echo "Image Tag: $IMAGE_TAG"
+          echo "Services built: $SERVICES"
+          echo "New image tag: $IMAGE_TAG"
           
-          # Convert services JSON array to bash array and update each service
-          echo "$SERVICES" | jq -r '.[]' | while read service; do
-            echo "Updating $service to tag $IMAGE_TAG"
-            kubectl patch application robot-shop-dev -n argocd --type merge -p "{
-              \"spec\": {
-                \"source\": {
-                  \"helm\": {
-                    \"parameters\": [
-                      {\"name\": \"$service.image.tag\", \"value\": \"$IMAGE_TAG\"}
-                    ]
-                  }
-                }
-              }
-            }"
-          done
+          # Update global image tag
+          sed -i "s/imageTag: .*/imageTag: $IMAGE_TAG/" helm-charts/robot-shop/values-dev.yaml
+          
+          echo "✅ Helm values updated with tag: $IMAGE_TAG"
+          
+      - name: Commit and Push GitOps Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git add helm-charts/robot-shop/values-dev.yaml
+          git commit -m "🚀 GitOps: Update image tags to ${{ needs.detect-changes.outputs.image_tag }}
+
+Services updated: ${{ needs.detect-changes.outputs.services }}
+
+- Automated by CI/CD pipeline
+- ArgoCD will sync automatically within 3 minutes
+- Images tested and security scanned"
+          
+          git push origin develop
+          
+          echo "✅ GitOps manifests updated in Git"
+          echo "🎯 ArgoCD will detect changes and sync automatically"
             
       - name: Build Summary
         run: |

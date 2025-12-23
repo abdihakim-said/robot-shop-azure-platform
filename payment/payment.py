@@ -155,3 +155,4 @@ if __name__ == "__main__":
     port = int(os.getenv("SHOP_PAYMENT_PORT", "8080"))
     app.logger.info('Starting on port {}'.format(port))
     app.run(host='0.0.0.0', port=port)
+# GitOps test
