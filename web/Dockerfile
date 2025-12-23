@@ -1,4 +1,4 @@
-# Test TruffleHog fix
+# Test ACR login fix
 FROM nginx:stable
 
 EXPOSE 8080
