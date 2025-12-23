@@ -12,6 +12,7 @@ const redis = require('redis');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 // Test build pipeline trigger - fixed validation
+// Trigger pipeline test - AKS credentials fix
 const express = require('express');
 const pino = require('pino');
 const expPino = require('express-pino-logger');

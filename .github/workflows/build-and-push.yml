@@ -1,28 +1,17 @@
-name: Build & Push Images
+name: Modern GitOps - Build Once Deploy Many
 
 on:
   push:
     branches: [develop, 'release/**', main]
-    paths:
-      - 'web/**'
-      - 'cart/**'
-      - 'catalogue/**'
-      - 'user/**'
-      - 'payment/**'
-      - 'shipping/**'
-      - 'ratings/**'
-      - 'dispatch/**'
-      - 'mysql/**'
-      - 'mongo/**'
+    paths: ['**/Dockerfile', '**/package.json', '**/requirements.txt', '**/pom.xml']  # Only build on actual code changes
 
 permissions:
-  contents: read  # Modern GitOps: CI only reads, ArgoCD handles writes
-  actions: write
+  contents: read        # Modern: CI only reads, no Git modifications
   security-events: write
+  id-token: write       # Modern: OIDC instead of service principal secrets
 
 env:
-  ACR_NAME: robotshopacr
-  ACR_LOGIN_SERVER: robotshopacr.azurecr.io
+  REGISTRY: robotshopacr.azurecr.io
 
 jobs:
   detect-changes:
@@ -81,24 +70,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 1. Secret Detection
+      # 1. Secret Detection - SECURITY GATE
       - name: Secret Detection (TruffleHog)
         uses: trufflesecurity/trufflehog@main
-        continue-on-error: true
         with:
           path: ./
-          extra_args: --only-verified
+          extra_args: --only-verified --fail
       
-      # 2. Dependency Vulnerability Scanning
+      # 2. Dependency Vulnerability Scanning - SECURITY GATE
       - name: Dependency Scan (Trivy)
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         with:
           scan-type: 'fs'
           scan-ref: './${{ matrix.service }}'
           format: 'sarif'
           output: 'trivy-deps-${{ matrix.service }}.sarif'
-          severity: 'CRITICAL,HIGH,MEDIUM'
+          severity: 'CRITICAL'
+          exit-code: '1'
       
       - name: Upload Dependency Scan Results
         uses: github/codeql-action/upload-sarif@v4
@@ -214,6 +202,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials \
+            --resource-group robot-shop-dev-rg \
+            --name robot-shop-dev-aks \
+            --overwrite-existing
       
       - name: Configure ArgoCD Repository Credentials
         run: |
