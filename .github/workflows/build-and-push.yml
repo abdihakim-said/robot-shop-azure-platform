@@ -1,4 +1,4 @@
-name: Secure CI/CD - End-to-End Testing
+name: Secure CI/CD - Build and Push
 
 on:
   push:
