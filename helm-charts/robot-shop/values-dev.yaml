@@ -124,25 +124,25 @@ rabbitmq:
 # All services get updated tags via GitOps
 cart:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 catalogue:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 user:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 payment:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 shipping:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 ratings:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 dispatch:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
 web:
   image:
-    tag: "latest"
+    tag: "v20251223-f9c148e"
