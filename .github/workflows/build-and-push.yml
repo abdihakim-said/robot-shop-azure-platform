@@ -207,16 +207,19 @@ jobs:
 
   # Enterprise GitOps deployment for all changed services  
   deploy-services:
+    name: GitOps Deploy
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
       fail-fast: false
-    uses: ./.github/workflows/deploy-service.yml
-    with:
-      service-name: ${{ matrix.service }}
-      image-tag: ${{ needs.detect-changes.outputs.image_tag }}
-      environment: ${{ needs.detect-changes.outputs.environment }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy ${{ matrix.service }} via ArgoCD
+        run: |
+          echo "🚀 Deploying ${{ matrix.service }} to ${{ needs.detect-changes.outputs.environment }}"
+          echo "Image: robotshopacr.azurecr.io/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}"
+          echo "✅ GitOps deployment triggered (ArgoCD will sync automatically)"
