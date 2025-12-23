@@ -205,9 +205,8 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
 
-  # Enterprise GitOps deployment for all changed services
+  # Enterprise GitOps deployment for all changed services  
   deploy-services:
-    name: GitOps Deploy
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
