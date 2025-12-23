@@ -1,2 +1,2 @@
-// Trigger all services - AKS credentials fix
-// GitOps test
+// Trigger all services - ArgoCD sync fix v2
+// GitOps test - build all services
