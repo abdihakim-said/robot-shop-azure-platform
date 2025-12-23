@@ -143,3 +143,6 @@ ratings:
 dispatch:
   image:
     tag: "latest"
+web:
+  image:
+    tag: "latest"

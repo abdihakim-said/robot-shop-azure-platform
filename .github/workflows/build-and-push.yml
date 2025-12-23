@@ -230,7 +230,7 @@ jobs:
           echo "$SERVICES" | jq -r '.[]' | while read service; do
             echo "Updating $service image tag to $IMAGE_TAG"
             # Update individual service image tags in values-dev.yaml
-            sed -i "/^$service:/,/^[a-zA-Z]/ s/tag: .*/tag: $IMAGE_TAG/" helm-charts/robot-shop/values-dev.yaml
+            sed -i "/^$service:/,/^[a-zA-Z]/ s/tag: .*/tag: \"$IMAGE_TAG\"/" helm-charts/robot-shop/values-dev.yaml
           done
           
           echo "✅ Helm values updated with tag: $IMAGE_TAG"
