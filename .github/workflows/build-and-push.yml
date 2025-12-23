@@ -241,11 +241,39 @@ jobs:
           kubectl label secret github-repo-secret \
             argocd.argoproj.io/secret-type=repository \
             -n argocd --overwrite
+
+      - name: Update ArgoCD Image Tags
+        run: |
+          echo "🚀 Updating ArgoCD with new image tags..."
+          
+          # Update ArgoCD application with new image tags for all built services
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+          IMAGE_TAG='${{ needs.detect-changes.outputs.image_tag }}'
+          
+          echo "Services: $SERVICES"
+          echo "Image Tag: $IMAGE_TAG"
+          
+          # Convert services JSON array to bash array and update each service
+          echo "$SERVICES" | jq -r '.[]' | while read service; do
+            echo "Updating $service to tag $IMAGE_TAG"
+            kubectl patch application robot-shop-dev -n argocd --type merge -p "{
+              \"spec\": {
+                \"source\": {
+                  \"helm\": {
+                    \"parameters\": [
+                      {\"name\": \"$service.image.tag\", \"value\": \"$IMAGE_TAG\"}
+                    ]
+                  }
+                }
+              }
+            }"
+          done
             
       - name: Build Summary
         run: |
-          echo "🎉 BUILD COMPLETE - Enhanced GitOps Pattern"
+          echo "🎉 BUILD COMPLETE - Automated GitOps Pattern"
           echo "✅ Immutable artifact: ${{ needs.detect-changes.outputs.image_tag }}"
           echo "✅ Images available in ACR: ${{ env.ACR_LOGIN_SERVER }}"
           echo "✅ ArgoCD credentials configured for faster sync"
-          echo "✅ ArgoCD will detect and deploy automatically (faster polling)"
+          echo "✅ ArgoCD image tags updated automatically"
+          echo "✅ ArgoCD will sync new images within 30 seconds"
