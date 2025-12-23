@@ -29,4 +29,4 @@ spec:
             memory: 128Mi   # SRE: JVM minimum heap
           limits:
             cpu: 300m      # SRE: Allow JVM optimization
-            memory: 256Mi   # SRE: Prevent OOM during startup
+            memory: 512Mi   # SRE FIX: Java/Spring Boot needs 512Mi minimum
