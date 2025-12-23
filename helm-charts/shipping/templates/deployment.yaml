@@ -25,8 +25,8 @@ spec:
         - containerPort: {{ .Values.service.port }}
         resources:
           requests:
-            cpu: 30m
-            memory: 64Mi
+            cpu: 50m       # SRE: Spring Boot needs more CPU
+            memory: 128Mi   # SRE: JVM minimum heap
           limits:
-            cpu: 200m
-            memory: 128Mi
+            cpu: 300m      # SRE: Allow JVM optimization
+            memory: 256Mi   # SRE: Prevent OOM during startup

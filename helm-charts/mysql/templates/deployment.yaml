@@ -31,8 +31,8 @@ spec:
         - containerPort: {{ .Values.service.port }}
         resources:
           requests:
-            cpu: 30m
-            memory: 64Mi
+            cpu: 100m      # SRE: Database needs guaranteed CPU
+            memory: 256Mi   # SRE: MySQL minimum for stability
           limits:
-            cpu: 200m
-            memory: 128Mi
+            cpu: 500m      # SRE: Allow burst for queries
+            memory: 512Mi   # SRE: Prevent OOMKilled
