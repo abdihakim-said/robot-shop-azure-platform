@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    service: {{ .Chart.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        service: {{ .Chart.Name }}
+    spec:
+      serviceAccountName: mysql-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: mysql-secrets
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.global.imageRegistry | default .Values.image.repository }}/mysql:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: "cities"
+        - name: MYSQL_USER
+          value: "shipping"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+        resources:
+          requests:
+            cpu: 100m      # SRE: Database needs guaranteed CPU
+            memory: 2Gi     # SRE: MySQL minimum for cities database
+          limits:
+            cpu: 500m      # SRE: Allow burst for queries
+            memory: 4Gi     # SRE: Large cities database requires more memory
