@@ -91,7 +91,7 @@ redis:
 mysql:
   enabled: true
   image:
-    tag: "v20251223-f9c148e"
+    tag: "v20251225-75e48a2"
   auth:
     rootPassword: "dev-password"  # Simple password for dev
   resources:
