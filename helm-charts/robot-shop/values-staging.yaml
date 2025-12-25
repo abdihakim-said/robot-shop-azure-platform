@@ -1,8 +1,24 @@
 # Staging Environment Configuration - Production-like Security
 global:
   imageRegistry: robotshopstagingacrx85x6u.azurecr.io
+  imageTag: latest  # Overridden by GitOps
   imagePullPolicy: IfNotPresent
   environment: staging
+  
+  # Global ingress configuration
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: robot-shop.robot-shop-staging.com
+        paths:
+          - path: /
+            pathType: Prefix
+            service: web
+            port: 8080
   
   monitoring:
     enabled: true

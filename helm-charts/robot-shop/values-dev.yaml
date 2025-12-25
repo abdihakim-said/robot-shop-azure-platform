@@ -4,6 +4,16 @@ global:
   imageTag: tested-v20251223-d5d1466
   imagePullPolicy: Always
   environment: dev
+  
+  # Azure Key Vault integration
+  azure:
+    keyVaultName: "robot-shop-dev-kv"
+    managedIdentityClientId: "{{ .Values.azure.managedIdentityClientId }}"
+  
+  # Database security (retrieved from Key Vault)
+  mysql:
+    rootPassword: ""  # Retrieved from Key Vault
+    userPassword: ""  # Retrieved from Key Vault
   # Global ingress configuration for umbrella chart
   ingress:
     enabled: true
@@ -92,8 +102,9 @@ mysql:
   enabled: true
   image:
     tag: "v20251225-75e48a2"
+  # Security: Passwords retrieved from Azure Key Vault
   auth:
-    rootPassword: "dev-password"  # Simple password for dev
+    useKeyVault: true
   resources:
     requests:
       cpu: 50m

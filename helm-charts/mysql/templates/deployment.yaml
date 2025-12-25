@@ -20,13 +20,19 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: "root"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
         - name: MYSQL_DATABASE
-          value: "robot_shop"
+          value: "cities"
         - name: MYSQL_USER
-          value: "robot"
+          value: "shipping"
         - name: MYSQL_PASSWORD
-          value: "robot"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:

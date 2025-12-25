@@ -24,3 +24,13 @@ env:
     value: "shipping"
   - name: MYSQL_PASSWORD
     value: "secret"
+
+# Security configuration
+auth:
+  rootPassword: "{{ .Values.global.mysql.rootPassword | default \"auto-generated\" }}"
+  userPassword: "{{ .Values.global.mysql.userPassword | default \"auto-generated\" }}"
+
+# Azure Key Vault integration
+keyVault:
+  enabled: true
+  secretProviderClass: mysql-secrets

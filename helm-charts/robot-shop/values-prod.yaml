@@ -1,8 +1,25 @@
 # Production Environment - Uses Azure Managed Services
 global:
   imageRegistry: robotshopprodacr.azurecr.io
+  imageTag: latest  # Overridden by GitOps
   imagePullPolicy: IfNotPresent
   environment: production
+  
+  # Global ingress configuration  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/rate-limit-connections: "20"
+    hosts:
+      - host: robot-shop.production.com
+        paths:
+          - path: /
+            pathType: Prefix
+            service: web
+            port: 8080
   
   # Azure managed database connections
   databases:
