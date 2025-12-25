@@ -2,10 +2,11 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "robot-shop.fullname" . }}-allow-ingress
+  name: {{ .Release.Name }}-allow-ingress
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "robot-shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     component: security
 spec:
   podSelector: {}  # Apply to all pods in namespace
@@ -73,10 +74,11 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "robot-shop.fullname" . }}-default-deny
+  name: {{ .Release.Name }}-default-deny
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "robot-shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     component: security
 spec:
   podSelector: {}
