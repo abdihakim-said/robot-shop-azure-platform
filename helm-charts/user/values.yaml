@@ -1,6 +1,6 @@
 image:
   repository: robotshopacr.azurecr.io/user
-  tag: dev-f35465f6ca5fe3f0f5ed6d386bd1f5c9142af735
+  tag: latest
   pullPolicy: Always
 service:
   type: ClusterIP
