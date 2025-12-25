@@ -14,6 +14,14 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: mysql-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: mysql-secrets
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.global.imageRegistry | default .Values.image.repository }}/mysql:{{ .Values.image.tag }}
@@ -35,6 +43,10 @@ spec:
               key: user-password
         ports:
         - containerPort: {{ .Values.service.port }}
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
         resources:
           requests:
             cpu: 100m      # SRE: Database needs guaranteed CPU
