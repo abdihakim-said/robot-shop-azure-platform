@@ -16,6 +16,7 @@ public class JpaConfig {
         String JDBC_URL = String.format("jdbc:mysql://%s/cities?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true", System.getenv("DB_HOST") == null ? "mysql" : System.getenv("DB_HOST"));
 
         logger.info("jdbc url {}", JDBC_URL);
+        logger.info("Using DB_PASSWORD from environment for secure authentication");
 
         DataSourceBuilder bob = DataSourceBuilder.create();
 
