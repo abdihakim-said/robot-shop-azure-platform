@@ -1,6 +1,6 @@
 image:
   repository: robotshopacr.azurecr.io/mysql
-  tag: "latest"  # Overridden by GitOps
+  tag: "v20251225-75e48a2"
   pullPolicy: Always
 
 service:
