@@ -1,7 +1,7 @@
 image:
-  repository: mysql
-  tag: "8.0"
-  pullPolicy: IfNotPresent
+  repository: robotshopacr.azurecr.io/mysql
+  tag: "latest"  # Overridden by GitOps
+  pullPolicy: Always
 
 service:
   type: ClusterIP
@@ -20,3 +20,7 @@ env:
     value: "root"
   - name: MYSQL_DATABASE
     value: "cities"
+  - name: MYSQL_USER
+    value: "shipping"
+  - name: MYSQL_PASSWORD
+    value: "secret"
