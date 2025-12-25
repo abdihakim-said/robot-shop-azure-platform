@@ -38,7 +38,7 @@ spec:
         resources:
           requests:
             cpu: 100m      # SRE: Database needs guaranteed CPU
-            memory: 512Mi   # SRE: MySQL minimum for cities database
+            memory: 2Gi     # SRE: MySQL minimum for cities database
           limits:
             cpu: 500m      # SRE: Allow burst for queries
-            memory: 1Gi     # SRE: Sufficient for cities data + buffer
+            memory: 4Gi     # SRE: Large cities database requires more memory
