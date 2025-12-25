@@ -10,7 +10,7 @@ dependencies:
   version: 1.0.0
 - name: mysql
   repository: file://../mysql
-  version: 1.0.2
+  version: 1.0.3
 - name: catalogue
   repository: file://../catalogue
   version: 1.0.0
@@ -35,5 +35,5 @@ dependencies:
 - name: web
   repository: file://../web
   version: 1.0.0
-digest: sha256:f03d7575bbf5f5586f0da62020ae116d7cf26d93b86984d894d004a3fa1f0e70
-generated: "2025-12-25T08:46:56.834581Z"
+digest: sha256:7422c0cb95f6aee2c8759ac964e0914dfe640b467d014d30968e5bcc710ed757
+generated: "2025-12-25T09:02:45.132082Z"
