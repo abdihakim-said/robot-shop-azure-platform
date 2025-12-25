@@ -101,7 +101,7 @@ redis:
 mysql:
   enabled: true
   image:
-    tag: "v20251225-75e48a2"
+    tag: "v20251225-b261c8b"
   # Security: Passwords retrieved from Azure Key Vault
   auth:
     useKeyVault: true
