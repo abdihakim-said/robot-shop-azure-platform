@@ -21,6 +21,11 @@ spec:
         env:
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:mysql://mysql:3306/cities?useSSL=false&allowPublicKeyRetrieval=true"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:
