@@ -153,7 +153,7 @@ payment:
     tag: "v20251223-f9c148e"
 shipping:
   image:
-    tag: "v20251225-1193d40"
+    tag: "v20251225-66ff23c"
 ratings:
   image:
     tag: "v20251223-f9c148e"
