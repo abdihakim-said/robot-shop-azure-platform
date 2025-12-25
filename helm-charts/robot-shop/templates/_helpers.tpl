@@ -193,6 +193,14 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          {{- if eq $service "shipping" }}
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: user-password
+          {{- end }}
           {{- if $config.resources }}
           {{- include "robot-shop.resources" $config.resources | nindent 10 }}
           {{- else }}
