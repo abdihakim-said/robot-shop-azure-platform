@@ -20,6 +20,14 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.port }}
+        env:
+        - name: AMQP_USER
+          value: "admin"
+        - name: AMQP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-secret
+              key: password
         resources:
           requests:
             cpu: 30m

@@ -1,14 +1,45 @@
 image:
-  repository: robotshop/rs-mongodb
-  tag: latest
-  pullPolicy: IfNotPresent
-service:
-  type: ClusterIP
-  port: 27017
+  repository: robotshopacr.azurecr.io/mongodb  # Move to ACR for security scanning
+  tag: "v20251227-secure"  # Will build with mongo:7.0.5 base
+  pullPolicy: Always
+
+# Enable authentication
+auth:
+  enabled: true
+  rootUser: admin
+  rootPassword: ""  # Retrieved from Azure Key Vault
+  # Database-specific users
+  databases:
+    - name: catalogue
+      username: catalogue
+      password: ""  # Retrieved from Azure Key Vault
+    - name: users  
+      username: users
+      password: ""  # Retrieved from Azure Key Vault
+
+# Add persistence
+persistence:
+  enabled: true
+  storageClass: "managed-csi"
+  size: 20Gi
+  accessMode: ReadWriteOnce
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  fsGroup: 999
+
+# Resource limits
 resources:
   requests:
-    cpu: 50m
-    memory: 128Mi
+    cpu: 100m
+    memory: 256Mi
   limits:
     cpu: 500m
-    memory: 256Mi
+    memory: 512Mi
+
+# Azure Key Vault integration (following MySQL pattern)
+keyVault:
+  enabled: true
+  secretProviderClass: mongodb-secrets

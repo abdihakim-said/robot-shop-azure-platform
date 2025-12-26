@@ -269,7 +269,18 @@ redisClient.on('ready', (r) => {
 // set up Mongo
 function mongoConnect() {
     return new Promise((resolve, reject) => {
-        var mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
+        // Build MongoDB URL with authentication
+        var mongoHost = process.env.MONGO_HOST || 'mongodb';
+        var mongoUser = process.env.MONGO_USER || 'users';
+        var mongoPassword = process.env.MONGO_PASSWORD || '';
+        var mongoURL;
+        
+        if (mongoPassword) {
+            mongoURL = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:27017/users`;
+        } else {
+            mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
+        }
+        
         mongoClient.connect(mongoURL, (error, client) => {
             if(error) {
                 reject(error);

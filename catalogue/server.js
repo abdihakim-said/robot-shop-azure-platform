@@ -154,7 +154,18 @@ app.get('/search/:text', (req, res) => {
 // set up Mongo
 function mongoConnect() {
     return new Promise((resolve, reject) => {
-        var mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/catalogue';
+        // Build MongoDB URL with authentication
+        var mongoHost = process.env.MONGO_HOST || 'mongodb';
+        var mongoUser = process.env.MONGO_USER || 'catalogue';
+        var mongoPassword = process.env.MONGO_PASSWORD || '';
+        var mongoURL;
+        
+        if (mongoPassword) {
+            mongoURL = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:27017/catalogue`;
+        } else {
+            mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/catalogue';
+        }
+        
         mongoClient.connect(mongoURL, (error, client) => {
             if(error) {
                 reject(error);

@@ -20,6 +20,14 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 8080
+        env:
+        - name: MONGO_USER
+          value: "users"
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: users-password
         resources:
           requests:
             cpu: 30m

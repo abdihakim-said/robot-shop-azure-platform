@@ -31,6 +31,7 @@ const counter = new promClient.Counter({
 var redisConnected = false;
 
 var redisHost = process.env.REDIS_HOST || 'redis'
+var redisPassword = process.env.REDIS_PASSWORD || ''  // From Azure Key Vault
 var catalogueHost = process.env.CATALOGUE_HOST || 'catalogue'
 
 const logger = pino({
@@ -387,7 +388,8 @@ function saveCart(id, cart) {
 
 // connect to Redis
 var redisClient = redis.createClient({
-    host: redisHost
+    host: redisHost,
+    password: redisPassword  // Add authentication support
 });
 
 redisClient.on('error', (e) => {

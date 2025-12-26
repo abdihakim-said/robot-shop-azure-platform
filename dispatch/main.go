@@ -180,7 +180,18 @@ func main() {
 	if !ok {
 		amqpHost = "rabbitmq"
 	}
-	amqpUri = fmt.Sprintf("amqp://guest:guest@%s:5672/", amqpHost)
+	
+	// get credentials from environment
+	amqpUser, ok := os.LookupEnv("AMQP_USER")
+	if !ok {
+		amqpUser = "admin"
+	}
+	amqpPassword, ok := os.LookupEnv("AMQP_PASSWORD")
+	if !ok {
+		amqpPassword = "guest"
+	}
+	
+	amqpUri = fmt.Sprintf("amqp://%s:%s@%s:5672/", amqpUser, amqpPassword, amqpHost)
 
 	// get error threshold from environment
 	errorPercent = 0

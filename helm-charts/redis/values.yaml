@@ -1,14 +1,36 @@
 image:
   repository: redis
-  tag: latest
+  tag: "7.2.4-alpine"  # Secure version with Alpine base
   pullPolicy: IfNotPresent
-service:
-  type: ClusterIP
-  port: 6379
+
+# Enable authentication
+auth:
+  enabled: true
+  password: ""  # Retrieved from Azure Key Vault
+
+# Add persistence
+persistence:
+  enabled: true
+  storageClass: "managed-csi"
+  size: 8Gi
+  accessMode: ReadWriteOnce
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  fsGroup: 999
+
+# Resource limits
 resources:
   requests:
     cpu: 50m
     memory: 128Mi
   limits:
-    cpu: 500m
+    cpu: 200m
     memory: 256Mi
+
+# Azure Key Vault integration (following MySQL pattern)
+keyVault:
+  enabled: true
+  secretProviderClass: redis-secrets
