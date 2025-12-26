@@ -1,5 +1,5 @@
-# Use specific secure version instead of latest
-FROM mongo:7.0.5
+# Use latest secure version instead of 7.0.5
+FROM mongo:8.0
 
 # Copy initialization scripts
 COPY *.js /docker-entrypoint-initdb.d/
@@ -9,5 +9,5 @@ USER mongodb
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD mongo --eval "db.adminCommand('ping')" || exit 1
+  CMD mongosh --eval "db.adminCommand('ping')" || exit 1
 
