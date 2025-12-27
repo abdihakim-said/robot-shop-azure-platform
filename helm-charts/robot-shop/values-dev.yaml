@@ -20,7 +20,7 @@ keyVault:
   secretProviderClass: mongodb-secrets
 
 # Database security (retrieved from Key Vault)
-mongodb:
+mysql:
   userPassword: ""  # Retrieved from Key Vault
   # Global ingress configuration for umbrella chart
   ingress:
@@ -59,8 +59,6 @@ web:
 redis:
   enabled: true
 rabbitmq:
-  enabled: true
-mongodb:
   enabled: true
 mysql:
   enabled: true
