@@ -13,6 +13,11 @@ global:
   # Database security (retrieved from Key Vault)
   mysql:
     rootPassword: ""  # Retrieved from Key Vault
+
+# Azure Key Vault integration
+keyVault:
+  enabled: true
+  secretProviderClass: mongodb-secrets
     userPassword: ""  # Retrieved from Key Vault
   # Global ingress configuration for umbrella chart
   ingress:
