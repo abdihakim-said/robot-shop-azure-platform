@@ -251,6 +251,63 @@ jobs:
           
           echo "✅ GitOps manifests updated in Git"
           echo "🎯 ArgoCD will detect changes and sync automatically"
+
+  # Best Practice: Separate stage for chart versioning
+  bump-chart-versions:
+    name: Bump Chart Versions
+    needs: [detect-changes, update-gitops-manifests]
+    if: needs.detect-changes.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Auto-bump Chart Versions (Trigger ArgoCD Sync)
+        run: |
+          echo "🔄 Auto-bumping chart versions to trigger ArgoCD sync..."
+          
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+          
+          # Bump chart version for any changed service
+          echo "$SERVICES" | jq -r '.[]' | while read service; do
+            chart_path="helm-charts/$service/Chart.yaml"
+            if [[ -f "$chart_path" ]]; then
+              current_version=$(grep "^version:" "$chart_path" | awk '{print $2}')
+              new_version=$(echo $current_version | awk -F. '{$NF = $NF + 1; print}' OFS=.)
+              sed -i "s/^version: $current_version/version: $new_version/" "$chart_path"
+              echo "✅ Bumped $service chart: $current_version → $new_version"
+            fi
+          done
+          
+          # Bump umbrella chart version
+          umbrella_chart="helm-charts/robot-shop/Chart.yaml"
+          current_version=$(grep "^version:" "$umbrella_chart" | awk '{print $2}')
+          new_version=$(echo $current_version | awk -F. '{$NF = $NF + 1; print}' OFS=.)
+          sed -i "s/^version: $current_version/version: $new_version/" "$umbrella_chart"
+          echo "✅ Bumped umbrella chart: $current_version → $new_version"
+
+      - name: Update Helm Dependencies
+        run: |
+          echo "🔄 Updating Helm dependencies..."
+          cd helm-charts/robot-shop
+          helm dependency update
+          echo "✅ Dependencies updated"
+
+      - name: Commit Chart Version Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet; then
+            echo "No chart version changes to commit"
+            exit 0
+          fi
+          
+          git add helm-charts/*/Chart.yaml helm-charts/robot-shop/Chart.lock
+          git commit -m "🔄 Auto-bump: Chart versions for ArgoCD sync trigger"
+          git push origin develop
             
       - name: Build Summary
         run: |
