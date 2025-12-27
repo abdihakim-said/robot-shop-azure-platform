@@ -175,7 +175,7 @@ ratings:
     tag: "v20251223-f9c148e"
 dispatch:
   image:
-    tag: "v20251227-6545af7"
+    tag: "v20251227-bc54ffa"
 web:
   image:
     tag: "v20251223-f9c148e"
