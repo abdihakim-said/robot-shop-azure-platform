@@ -4,6 +4,7 @@
 
 // Get passwords from environment variables (set by Azure Key Vault)
 const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD || 'defaultpassword';
+const usersPassword = process.env.MONGO_USERS_PASSWORD || 'defaultpassword';
 const rootPassword = process.env.MONGO_INITDB_ROOT_PASSWORD || 'defaultrootpassword';
 
 print('Creating MongoDB users...');
@@ -47,6 +48,27 @@ try {
         print('Catalogue user already exists');
     } else {
         print('Error creating catalogue user: ' + e);
+    }
+}
+
+// Switch to users database
+db = db.getSiblingDB('users');
+
+// Create users user with read/write access to users database
+try {
+    db.createUser({
+        user: 'users',
+        pwd: usersPassword,
+        roles: [
+            { role: 'readWrite', db: 'users' }
+        ]
+    });
+    print('Users user created successfully');
+} catch (e) {
+    if (e.code === 51003) {
+        print('Users user already exists');
+    } else {
+        print('Error creating users user: ' + e);
     }
 }
 
