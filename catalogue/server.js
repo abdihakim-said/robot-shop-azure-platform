@@ -161,7 +161,9 @@ function mongoConnect() {
         var mongoURL;
         
         if (mongoPassword && mongoUser) {
-            mongoURL = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:27017/catalogue`;
+            // URL encode the password to handle special characters
+            const encodedPassword = encodeURIComponent(mongoPassword);
+            mongoURL = `mongodb://${mongoUser}:${encodedPassword}@${mongoHost}:27017/catalogue`;
         } else {
             mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/catalogue';
         }
