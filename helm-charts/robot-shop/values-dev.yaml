@@ -5,23 +5,6 @@ global:
   imagePullPolicy: Always
   environment: dev
   
-  # Azure Key Vault integration
-  azure:
-    keyVaultName: "robot-shop-dev-kv"
-    managedIdentityClientId: "{{ .Values.azure.managedIdentityClientId }}"
-  
-  # Database security (retrieved from Key Vault)
-  mysql:
-    rootPassword: ""  # Retrieved from Key Vault
-
-# Azure Key Vault integration
-keyVault:
-  enabled: true
-  secretProviderClass: mongodb-secrets
-
-# Database security (retrieved from Key Vault)
-mysql:
-  userPassword: ""  # Retrieved from Key Vault
   # Global ingress configuration for umbrella chart
   ingress:
     enabled: true
@@ -36,6 +19,21 @@ mysql:
             pathType: Prefix
             service: web
             port: 8080
+  
+  # Azure Key Vault integration
+  azure:
+    keyVaultName: "robot-shop-dev-kv"
+    managedIdentityClientId: "{{ .Values.azure.managedIdentityClientId }}"
+  
+  # Database security (retrieved from Key Vault)
+  mysql:
+    rootPassword: ""  # Retrieved from Key Vault
+    userPassword: ""  # Retrieved from Key Vault
+
+# Azure Key Vault integration
+keyVault:
+  enabled: true
+  secretProviderClass: mongodb-secrets
 
 # Individual services inherit from global
 cart:
@@ -60,18 +58,6 @@ redis:
   enabled: true
 rabbitmq:
   enabled: true
-mysql:
-  enabled: true
-  replicas: 1
-  service:
-    type: ClusterIP
-  resources:
-    requests:
-      cpu: 30m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
 
 web:
   enabled: true
@@ -104,10 +90,14 @@ redis:
       cpu: 100m
       memory: 64Mi
 
+# Infrastructure services configuration
 mysql:
   enabled: true
   image:
     tag: "v20251225-b261c8b"
+  replicas: 1
+  service:
+    type: ClusterIP
   # Security: Passwords retrieved from Azure Key Vault
   auth:
     useKeyVault: true
