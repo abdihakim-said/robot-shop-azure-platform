@@ -80,6 +80,7 @@ redis:
   enabled: true
   service:
     type: ClusterIP
+    port: 6379
   auth:
     enabled: false  # Disabled for dev simplicity
   resources:
@@ -113,6 +114,7 @@ mongodb:
   enabled: true
   service:
     type: ClusterIP
+    port: 27017
   image:
     repository: robotshopacr.azurecr.io/mongo
     tag: "v20251227-30d18aa"
@@ -139,6 +141,7 @@ rabbitmq:
   enabled: true
   service:
     type: ClusterIP
+    port: 5672
   auth:
     username: guest
     password: guest  # Default for dev
