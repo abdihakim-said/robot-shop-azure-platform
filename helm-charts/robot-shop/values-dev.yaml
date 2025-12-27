@@ -163,7 +163,7 @@ catalogue:
     tag: "v20251227-33a7e5d"
 user:
   image:
-    tag: "v20251223-f9c148e"
+    tag: "v20251227-970960a"
 payment:
   image:
     tag: "v20251223-f9c148e"
