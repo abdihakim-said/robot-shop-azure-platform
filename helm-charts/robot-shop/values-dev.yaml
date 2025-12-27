@@ -82,7 +82,7 @@ redis:
     type: ClusterIP
     port: 6379
   auth:
-    enabled: false  # Disabled for dev simplicity
+    enabled: true  # Enable auth to match Azure Key Vault integration
   resources:
     requests:
       cpu: 20m
@@ -121,7 +121,7 @@ mongodb:
   keyVault:
     enabled: true
   auth:
-    enabled: false  # Disabled for dev
+    enabled: true  # Enable auth to match Azure Key Vault integration
   resources:
     requests:
       cpu: 100m
