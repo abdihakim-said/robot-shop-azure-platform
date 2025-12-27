@@ -160,7 +160,7 @@ cart:
     tag: "v20251227-33a7e5d"
 catalogue:
   image:
-    tag: "v20251227-33a7e5d"
+    tag: "v20251227-59987d7"
 user:
   image:
     tag: "v20251227-970960a"
