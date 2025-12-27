@@ -156,11 +156,11 @@ function mongoConnect() {
     return new Promise((resolve, reject) => {
         // Build MongoDB URL with authentication
         var mongoHost = process.env.MONGO_HOST || 'mongodb';
-        var mongoUser = process.env.MONGO_USER || 'catalogue';
+        var mongoUser = process.env.MONGO_USER || '';
         var mongoPassword = process.env.MONGO_PASSWORD || '';
         var mongoURL;
         
-        if (mongoPassword) {
+        if (mongoPassword && mongoUser) {
             mongoURL = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:27017/catalogue`;
         } else {
             mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/catalogue';

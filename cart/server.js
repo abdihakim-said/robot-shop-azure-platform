@@ -389,7 +389,7 @@ function saveCart(id, cart) {
 // connect to Redis
 var redisClient = redis.createClient({
     host: redisHost,
-    password: redisPassword  // Add authentication support
+    password: redisPassword || undefined  // Only authenticate if password exists
 });
 
 redisClient.on('error', (e) => {
