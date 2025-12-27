@@ -116,7 +116,7 @@ mysql:
 mongodb:
   enabled: true
   image:
-    repository: robotshopacr.azurecr.io/mongodb
+    repository: robotshopacr.azurecr.io/mongo
     tag: "v20251227-30d18aa"
   keyVault:
     enabled: true
