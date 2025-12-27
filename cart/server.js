@@ -389,7 +389,7 @@ function saveCart(id, cart) {
 // connect to Redis
 var redisClient = redis.createClient({
     host: redisHost,
-    password: redisPassword || undefined  // Only authenticate if password exists
+    password: redisPassword || undefined  // Authenticate with Azure Key Vault password
 });
 
 redisClient.on('error', (e) => {
