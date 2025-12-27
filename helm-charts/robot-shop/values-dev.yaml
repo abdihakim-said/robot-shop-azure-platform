@@ -144,8 +144,8 @@ rabbitmq:
     type: ClusterIP
     port: 5672
   auth:
-    username: guest
-    password: guest  # Default for dev
+    username: admin
+    password: ""  # Retrieved from Azure Key Vault
   resources:
     requests:
       cpu: 30m

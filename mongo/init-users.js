@@ -3,9 +3,19 @@
 // It runs automatically when MongoDB starts for the first time
 
 // Get passwords from environment variables (set by Azure Key Vault)
-const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD || 'defaultpassword';
-const usersPassword = process.env.MONGO_USERS_PASSWORD || 'defaultpassword';
-const rootPassword = process.env.MONGO_INITDB_ROOT_PASSWORD || 'defaultrootpassword';
+const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD;
+const usersPassword = process.env.MONGO_USERS_PASSWORD;
+const rootPassword = process.env.MONGO_INITDB_ROOT_PASSWORD;
+
+// Validate required environment variables
+if (!cataloguePassword || !usersPassword || !rootPassword) {
+    print('ERROR: Required password environment variables not set');
+    print('MONGO_CATALOGUE_PASSWORD:', cataloguePassword ? 'SET' : 'MISSING');
+    print('MONGO_USERS_PASSWORD:', usersPassword ? 'SET' : 'MISSING');
+    print('MONGO_INITDB_ROOT_PASSWORD:', rootPassword ? 'SET' : 'MISSING');
+    print('Cannot create users without Azure Key Vault passwords');
+    quit(1);
+}
 
 print('Creating MongoDB users...');
 
