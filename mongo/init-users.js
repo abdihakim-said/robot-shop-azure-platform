@@ -1,0 +1,53 @@
+// MongoDB User Initialization Script
+// This script creates users with passwords from environment variables
+// It runs automatically when MongoDB starts for the first time
+
+// Get passwords from environment variables (set by Azure Key Vault)
+const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD || 'defaultpassword';
+const rootPassword = process.env.MONGO_INITDB_ROOT_PASSWORD || 'defaultrootpassword';
+
+print('Creating MongoDB users...');
+
+// Switch to admin database to create root user
+db = db.getSiblingDB('admin');
+
+// Create root user if it doesn't exist
+try {
+    db.createUser({
+        user: 'root',
+        pwd: rootPassword,
+        roles: [
+            { role: 'root', db: 'admin' }
+        ]
+    });
+    print('Root user created successfully');
+} catch (e) {
+    if (e.code === 51003) {
+        print('Root user already exists');
+    } else {
+        print('Error creating root user: ' + e);
+    }
+}
+
+// Switch to catalogue database
+db = db.getSiblingDB('catalogue');
+
+// Create catalogue user with read/write access to catalogue database
+try {
+    db.createUser({
+        user: 'catalogue',
+        pwd: cataloguePassword,
+        roles: [
+            { role: 'readWrite', db: 'catalogue' }
+        ]
+    });
+    print('Catalogue user created successfully');
+} catch (e) {
+    if (e.code === 51003) {
+        print('Catalogue user already exists');
+    } else {
+        print('Error creating catalogue user: ' + e);
+    }
+}
+
+print('User initialization completed');

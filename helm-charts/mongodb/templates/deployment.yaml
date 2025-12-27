@@ -36,6 +36,11 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: root-password
+        - name: MONGO_CATALOGUE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: password
         volumeMounts:
         - name: secrets-store
           mountPath: "/mnt/secrets-store"
