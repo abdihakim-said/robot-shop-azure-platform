@@ -49,8 +49,8 @@ spec:
           readOnly: true
         resources:
           requests:
-            cpu: 100m      # SRE: Database needs guaranteed CPU
-            memory: 2Gi     # SRE: MySQL minimum for cities database
+            cpu: 50m       # SRE: Optimized based on actual usage (6m observed)
+            memory: 512Mi  # SRE: Optimized based on actual usage (459Mi observed)
           limits:
-            cpu: 500m      # SRE: Allow burst for queries
-            memory: 4Gi     # SRE: Large cities database requires more memory
+            cpu: 200m      # SRE: Reduced from 500m, sufficient for query bursts
+            memory: 1Gi    # SRE: Reduced from 4Gi, 2x actual usage for safety

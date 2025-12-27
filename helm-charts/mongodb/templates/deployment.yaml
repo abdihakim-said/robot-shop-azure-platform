@@ -62,8 +62,8 @@ spec:
           readOnly: true
         resources:
           requests:
-            cpu: 100m      # MongoDB 8.0 minimum CPU
-            memory: 256Mi   # MongoDB 8.0 minimum memory
+            cpu: 50m       # SRE: Optimized based on actual usage (6m observed)
+            memory: 256Mi  # SRE: Keep current, matches actual usage (234Mi observed)
           limits:
-            cpu: 500m      # Allow burst for operations
-            memory: 512Mi   # Sufficient for MongoDB 8.0
+            cpu: 200m      # SRE: Reduced from 500m, sufficient for operations
+            memory: 384Mi  # SRE: Reduced from 512Mi, 1.6x actual usage for safety
