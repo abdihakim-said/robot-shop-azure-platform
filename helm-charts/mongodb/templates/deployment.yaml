@@ -42,8 +42,8 @@ spec:
           readOnly: true
         resources:
           requests:
-            cpu: 30m
-            memory: 64Mi
+            cpu: 100m      # MongoDB 8.0 minimum CPU
+            memory: 256Mi   # MongoDB 8.0 minimum memory
           limits:
-            cpu: 200m
-            memory: 128Mi
+            cpu: 500m      # Allow burst for operations
+            memory: 512Mi   # Sufficient for MongoDB 8.0
