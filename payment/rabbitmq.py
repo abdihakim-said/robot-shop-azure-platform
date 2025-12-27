@@ -13,7 +13,7 @@ class Publisher:
         self._logger = logger
         # Get credentials from environment or use defaults
         amqp_user = os.getenv('AMQP_USER', 'admin')
-        amqp_password = os.getenv('AMQP_PASSWORD', 'guest')
+        amqp_password = os.getenv('AMQP_PASSWORD', 'admin')
         
         self._params = pika.connection.ConnectionParameters(
             host=self.HOST,
