@@ -18,7 +18,10 @@ global:
 keyVault:
   enabled: true
   secretProviderClass: mongodb-secrets
-    userPassword: ""  # Retrieved from Key Vault
+
+# Database security (retrieved from Key Vault)
+mongodb:
+  userPassword: ""  # Retrieved from Key Vault
   # Global ingress configuration for umbrella chart
   ingress:
     enabled: true
