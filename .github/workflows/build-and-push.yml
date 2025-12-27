@@ -14,6 +14,7 @@ on:
       - 'dispatch/**'
       - 'mysql/**'
       - 'mongo/**'
+      - 'mongo/**'
 
 permissions:
   contents: write
