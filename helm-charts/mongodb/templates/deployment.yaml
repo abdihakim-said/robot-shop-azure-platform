@@ -40,7 +40,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: mongodb-secret
-              key: password
+              key: catalogue-password
+        - name: MONGO_USERS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: users-password
         volumeMounts:
         - name: secrets-store
           mountPath: "/mnt/secrets-store"
