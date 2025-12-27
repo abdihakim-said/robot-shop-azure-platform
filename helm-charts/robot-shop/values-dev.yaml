@@ -56,8 +56,6 @@ web:
 # Infrastructure services
 redis:
   enabled: true
-rabbitmq:
-  enabled: true
 
 web:
   enabled: true
@@ -80,6 +78,8 @@ web:
 # Minimal resources for dev infrastructure
 redis:
   enabled: true
+  service:
+    type: ClusterIP
   auth:
     enabled: false  # Disabled for dev simplicity
   resources:
@@ -135,6 +135,8 @@ mongodb:
 
 rabbitmq:
   enabled: true
+  service:
+    type: ClusterIP
   auth:
     username: guest
     password: guest  # Default for dev
