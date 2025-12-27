@@ -1,5 +1,7 @@
 package main
 
+// Test comment to trigger rebuild - fix RabbitMQ connection
+
 import (
 	"encoding/json"
 	"fmt"
