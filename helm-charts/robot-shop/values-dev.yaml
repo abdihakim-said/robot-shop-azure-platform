@@ -111,6 +111,8 @@ mysql:
 
 mongodb:
   enabled: true
+  service:
+    type: ClusterIP
   image:
     repository: robotshopacr.azurecr.io/mongo
     tag: "v20251227-30d18aa"
