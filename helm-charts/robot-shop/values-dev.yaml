@@ -129,6 +129,7 @@ mongodb:
     limits:
       cpu: 500m
       memory: 512Mi
+      memory: 512Mi
   resources:
     requests:
       cpu: 50m
