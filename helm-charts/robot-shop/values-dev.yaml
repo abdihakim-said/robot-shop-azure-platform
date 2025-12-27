@@ -158,7 +158,7 @@ rabbitmq:
 # All services get updated tags via GitOps
 cart:
   image:
-    tag: "v20251223-f9c148e"
+    tag: "v20251227-33cc8b0"
 catalogue:
   image:
     tag: "v20251223-f9c148e"
