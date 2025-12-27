@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -193,7 +194,7 @@ func main() {
 		amqpPassword = "guest"
 	}
 	
-	amqpUri = fmt.Sprintf("amqp://%s:%s@%s:5672/", amqpUser, amqpPassword, amqpHost)
+	amqpUri = fmt.Sprintf("amqp://%s:%s@%s:5672/", amqpUser, url.QueryEscape(amqpPassword), amqpHost)
 
 	// get error threshold from environment
 	errorPercent = 0
