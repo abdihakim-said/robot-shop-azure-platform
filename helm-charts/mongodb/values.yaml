@@ -1,6 +1,6 @@
 image:
   repository: robotshopacr.azurecr.io/mongodb  # Move to ACR for security scanning
-  tag: "v20251227-secure"  # Will build with mongo:7.0.5 base
+  tag: "v20251227-a94e952"  # Fixed MongoDB user creation script
   pullPolicy: Always
 
 # Enable authentication
