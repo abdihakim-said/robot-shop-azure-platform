@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slo-alert-rules
+  namespace: monitoring
+data:
+  slo-alerts.yaml: |
+    groups:
+      - name: slo_availability
+        interval: 30s
+        rules:
+          - alert: ServiceDown
+            expr: up{namespace="robot-shop"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              slo: availability
+            annotations:
+              summary: "Service {{`{{ $labels`}}.job }} is down"
+              description: "{{`{{ $labels`}}.job }} has been down for 1 minute. SLO at risk."
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/service-down.md"
+          
+          - alert: MultipleServicesDown
+            expr: count(up{namespace="robot-shop"} == 0) >= 3
+            for: 2m
+            labels:
+              severity: critical
+              slo: platform_availability
+            annotations:
+              summary: "Multiple services down"
+              description: "{{`{{ $value`}} }} services are down. Platform SLO breached."
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/platform-outage.md"
+      
+      - name: slo_latency
+        interval: 30s
+        rules:
+          - alert: HighLatencyP95
+            expr: |
+              histogram_quantile(0.95, 
+                rate(http_request_duration_seconds_bucket{namespace="robot-shop"}[5m])
+              ) > 0.5
+            for: 5m
+            labels:
+              severity: warning
+              slo: latency
+            annotations:
+              summary: "High latency on {{`{{ $labels`}}.job }}"
+              description: "P95 latency is {{`{{ $value`}} }}s (target: 500ms)"
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/high-latency.md"
+          
+          - alert: HighLatencyP99
+            expr: |
+              histogram_quantile(0.99, 
+                rate(http_request_duration_seconds_bucket{namespace="robot-shop"}[5m])
+              ) > 1
+            for: 5m
+            labels:
+              severity: critical
+              slo: latency
+            annotations:
+              summary: "Critical latency on {{`{{ $labels`}}.job }}"
+              description: "P99 latency is {{`{{ $value`}} }}s (target: 1s)"
+      
+      - name: slo_errors
+        interval: 30s
+        rules:
+          - alert: HighErrorRate
+            expr: |
+              rate(http_requests_total{namespace="robot-shop",status=~"5.."}[5m]) 
+              / rate(http_requests_total{namespace="robot-shop"}[5m]) > 0.01
+            for: 5m
+            labels:
+              severity: critical
+              slo: error_rate
+            annotations:
+              summary: "High error rate on {{`{{ $labels`}}.job }}"
+              description: "Error rate is {{`{{ $value`}} | humanizePercentage }} (target: < 1%)"
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/high-error-rate.md"
+          
+          - alert: ErrorBudgetBurnRate
+            expr: |
+              (1 - (rate(http_requests_total{namespace="robot-shop",status!~"5.."}[1h]) 
+              / rate(http_requests_total{namespace="robot-shop"}[1h]))) > 0.001
+            for: 1h
+            labels:
+              severity: warning
+              slo: error_budget
+            annotations:
+              summary: "Error budget burning fast"
+              description: "Consuming error budget at {{`{{ $value`}} | humanizePercentage }}/hour"
+      
+      - name: slo_saturation
+        interval: 30s
+        rules:
+          - alert: HighCPUUsage
+            expr: |
+              rate(container_cpu_usage_seconds_total{namespace="robot-shop"}[5m]) > 0.8
+            for: 10m
+            labels:
+              severity: warning
+              slo: saturation
+            annotations:
+              summary: "High CPU on {{`{{ $labels`}}.pod }}"
+              description: "CPU usage is {{`{{ $value`}} | humanizePercentage }}"
+          
+          - alert: HighMemoryUsage
+            expr: |
+              container_memory_usage_bytes{namespace="robot-shop"} 
+              / container_spec_memory_limit_bytes{namespace="robot-shop"} > 0.9
+            for: 10m
+            labels:
+              severity: warning
+              slo: saturation
+            annotations:
+              summary: "High memory on {{`{{ $labels`}}.pod }}"
+              description: "Memory usage is {{`{{ $value`}} | humanizePercentage }}"
+          
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total{namespace="robot-shop"}[15m]) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod {{`{{ $labels`}}.pod }} is crash looping"
+              description: "Pod has restarted {{`{{ $value`}} }} times in 15 minutes"
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/crash-loop.md"

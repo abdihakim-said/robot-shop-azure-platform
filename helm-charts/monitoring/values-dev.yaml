@@ -1,0 +1,14 @@
+global:
+  environment: dev
+  monitoring:
+    enabled: true
+    namespace: monitoring
+
+alerts:
+  enabled: true
+  
+dashboards:
+  enabled: true
+
+ingress:
+  enabled: false

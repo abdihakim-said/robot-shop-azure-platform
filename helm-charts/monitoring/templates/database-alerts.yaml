@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-alert-rules
+  namespace: monitoring
+data:
+  database-alerts.yaml: |
+    groups:
+      - name: mysql_alerts
+        interval: 30s
+        rules:
+          - alert: MySQLDown
+            expr: mysql_up == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "MySQL is down"
+              description: "MySQL database has been down for 1 minute"
+              runbook: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/mysql-down.md"
+          
+          - alert: MySQLConnectionPoolExhausted
+            expr: |
+              mysql_global_status_threads_connected 
+              / mysql_global_variables_max_connections > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "MySQL connection pool at 80%"
+              description: "{{`{{ $value`}} | humanizePercentage }} of connections in use"
+          
+          - alert: MySQLSlowQueries
+            expr: rate(mysql_global_status_slow_queries[5m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "High number of slow queries"
+              description: "{{`{{ $value`}} }} slow queries per second"
+          
+          - alert: MySQLReplicationLag
+            expr: mysql_slave_status_seconds_behind_master > 30
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "MySQL replication lag detected"
+              description: "Replication is {{`{{ $value`}} }}s behind master"
+          
+          - alert: MySQLHighDiskUsage
+            expr: |
+              (mysql_global_status_innodb_data_written 
+              + mysql_global_status_innodb_data_read) > 1e9
+            for: 10m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "High disk I/O on MySQL"
+              description: "Disk I/O is {{`{{ $value`}} | humanize }}B/s"
+      
+      - name: mongodb_alerts
+        interval: 30s
+        rules:
+          - alert: MongoDBDown
+            expr: mongodb_up == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "MongoDB is down"
+              description: "MongoDB has been down for 1 minute"
+          
+          - alert: MongoDBHighConnections
+            expr: |
+              mongodb_connections{state="current"} 
+              / mongodb_connections{state="available"} > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "MongoDB connection pool at 80%"
+              description: "{{`{{ $value`}} | humanizePercentage }} of connections in use"
+          
+          - alert: MongoDBReplicationLag
+            expr: mongodb_replset_member_replication_lag > 10
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "MongoDB replication lag"
+              description: "Replication lag is {{`{{ $value`}} }}s"
+          
+          - alert: MongoDBHighMemoryUsage
+            expr: |
+              mongodb_memory{type="resident"} 
+              / mongodb_memory{type="virtual"} > 0.9
+            for: 10m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "MongoDB high memory usage"
+              description: "Memory usage at {{`{{ $value`}} | humanizePercentage }}"
+      
+      - name: redis_alerts
+        interval: 30s
+        rules:
+          - alert: RedisDown
+            expr: redis_up == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: cache
+            annotations:
+              summary: "Redis is down"
+              description: "Redis has been down for 1 minute"
+          
+          - alert: RedisHighMemoryUsage
+            expr: |
+              redis_memory_used_bytes 
+              / redis_memory_max_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+              component: cache
+            annotations:
+              summary: "Redis memory usage high"
+              description: "Memory at {{`{{ $value`}} | humanizePercentage }}"
+          
+          - alert: RedisHighEvictionRate
+            expr: rate(redis_evicted_keys_total[5m]) > 100
+            for: 5m
+            labels:
+              severity: warning
+              component: cache
+            annotations:
+              summary: "High Redis eviction rate"
+              description: "{{`{{ $value`}} }} keys evicted per second"
+          
+          - alert: RedisSlowCommands
+            expr: redis_slowlog_length > 100
+            for: 5m
+            labels:
+              severity: warning
+              component: cache
+            annotations:
+              summary: "Redis slow commands detected"
+              description: "{{`{{ $value`}} }} slow commands in log"

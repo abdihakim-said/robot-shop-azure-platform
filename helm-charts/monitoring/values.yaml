@@ -1,0 +1,17 @@
+global:
+  environment: dev
+  monitoring:
+    enabled: true
+    namespace: monitoring
+
+alerts:
+  enabled: true
+  
+dashboards:
+  enabled: true
+
+ingress:
+  enabled: false
+  # Enable for external access to Grafana
+  # className: nginx
+  # host: grafana-dev.yourdomain.com
