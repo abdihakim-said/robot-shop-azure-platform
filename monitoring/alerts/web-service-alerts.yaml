@@ -1,0 +1,87 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: web-service-alerts
+  namespace: monitoring
+  labels:
+    app: robot-shop
+    component: web
+spec:
+  groups:
+  - name: web.critical
+    rules:
+    - alert: WebServiceDown
+      expr: up{job="web"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: web
+      annotations:
+        summary: "Web service is down"
+        description: "Web service has been down for more than 1 minute - complete site outage"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/web-service-down.md"
+
+    - alert: WebHighErrorRate
+      expr: rate(web_http_errors_total[5m]) / rate(web_http_requests_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: critical
+        service: web
+      annotations:
+        summary: "Web service high error rate"
+        description: "Web service error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/web-service-down.md"
+
+    - alert: WebResponseTimeSlow
+      expr: histogram_quantile(0.95, rate(web_page_response_time_seconds_bucket[5m])) > 3
+      for: 3m
+      labels:
+        severity: critical
+        service: web
+      annotations:
+        summary: "Web service response time is slow"
+        description: "95th percentile web response time is {{ $value }}s (threshold: 3s)"
+
+  - name: web.warning
+    rules:
+    - alert: WebHighLatency
+      expr: histogram_quantile(0.95, rate(web_page_response_time_seconds_bucket[5m])) > 1
+      for: 5m
+      labels:
+        severity: warning
+        service: web
+      annotations:
+        summary: "Web service latency is high"
+        description: "95th percentile web response time is {{ $value }}s"
+
+    - alert: WebBackendCallFailures
+      expr: rate(web_backend_calls_total{status!="success"}[5m]) > 0.05
+      for: 3m
+      labels:
+        severity: warning
+        service: web
+      annotations:
+        summary: "Web service backend call failures"
+        description: "Web service experiencing backend call failures: {{ $value }} per second"
+
+    - alert: WebLowUserActivity
+      expr: rate(web_user_actions_total[10m]) < 0.1
+      for: 10m
+      labels:
+        severity: warning
+        service: web
+      annotations:
+        summary: "Low user activity on website"
+        description: "User activity rate is {{ $value }} actions per second"
+
+  - name: web.info
+    rules:
+    - alert: WebHighTraffic
+      expr: rate(web_page_views_total[5m]) > 10
+      for: 2m
+      labels:
+        severity: info
+        service: web
+      annotations:
+        summary: "High traffic on website"
+        description: "Page view rate is {{ $value }} views per second"

@@ -1,0 +1,20 @@
+{
+  "name": "robot-shop-web-metrics",
+  "version": "1.0.0",
+  "description": "Web service metrics exporter for Robot Shop",
+  "main": "metrics-server.js",
+  "scripts": {
+    "start": "node metrics-server.js",
+    "dev": "nodemon metrics-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "prom-client": "^14.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "keywords": ["metrics", "prometheus", "sre", "monitoring"],
+  "author": "SRE Team",
+  "license": "MIT"
+}

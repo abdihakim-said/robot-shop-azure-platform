@@ -16,7 +16,7 @@ from flask import jsonify
 from rabbitmq import Publisher
 # Prometheus
 import prometheus_client
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Histogram, Gauge
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -28,8 +28,15 @@ PAYMENT_GATEWAY = os.getenv('PAYMENT_GATEWAY', 'https://paypal.com/')
 # Prometheus
 PromMetrics = {}
 PromMetrics['SOLD_COUNTER'] = Counter('sold_count', 'Running count of items sold')
-PromMetrics['AUS'] = Histogram('units_sold', 'Avergae Unit Sale', buckets=(1, 2, 5, 10, 100))
-PromMetrics['AVS'] = Histogram('cart_value', 'Avergae Value Sale', buckets=(100, 200, 500, 1000, 2000, 5000, 10000))
+PromMetrics['AUS'] = Histogram('units_sold', 'Average Unit Sale', buckets=(1, 2, 5, 10, 100))
+PromMetrics['AVS'] = Histogram('cart_value', 'Average Value Sale', buckets=(100, 200, 500, 1000, 2000, 5000, 10000))
+
+# SRE Business Metrics
+PromMetrics['PAYMENT_REQUESTS'] = Counter('payment_requests_total', 'Total payment requests', ['status'])
+PromMetrics['PAYMENT_DURATION'] = Histogram('payment_duration_seconds', 'Payment processing duration')
+PromMetrics['PAYMENT_FAILURES'] = Counter('payment_failures_total', 'Payment failures', ['error_type'])
+PromMetrics['ACTIVE_PAYMENTS'] = Gauge('active_payments', 'Currently processing payments')
+PromMetrics['GATEWAY_ERRORS'] = Counter('payment_gateway_errors_total', 'Payment gateway errors', ['gateway'])
 
 
 @app.errorhandler(Exception)
@@ -53,75 +60,109 @@ def metrics():
 
 @app.route('/pay/<id>', methods=['POST'])
 def pay(id):
-    app.logger.info('payment for {}'.format(id))
-    cart = request.get_json()
-    app.logger.info(cart)
-
-    anonymous_user = True
-
-    # check user exists
+    start_time = time.time()
+    PromMetrics['ACTIVE_PAYMENTS'].inc()  # Track active payments
+    
     try:
-        req = requests.get('http://{user}:8080/check/{id}'.format(user=USER, id=id))
-    except requests.exceptions.RequestException as err:
-        app.logger.error(err)
-        return str(err), 500
-    if req.status_code == 200:
-        anonymous_user = False
+        app.logger.info('payment for {}'.format(id))
+        cart = request.get_json()
+        app.logger.info(cart)
 
-    # check that the cart is valid
-    # this will blow up if the cart is not valid
-    has_shipping = False
-    for item in cart.get('items'):
-        if item.get('sku') == 'SHIP':
-            has_shipping = True
+        anonymous_user = True
 
-    if cart.get('total', 0) == 0 or has_shipping == False:
-        app.logger.warn('cart not valid')
-        return 'cart not valid', 400
-
-    # dummy call to payment gateway, hope they dont object
-    try:
-        req = requests.get(PAYMENT_GATEWAY)
-        app.logger.info('{} returned {}'.format(PAYMENT_GATEWAY, req.status_code))
-    except requests.exceptions.RequestException as err:
-        app.logger.error(err)
-        return str(err), 500
-    if req.status_code != 200:
-        return 'payment error', req.status_code
-
-    # Prometheus
-    # items purchased
-    item_count = countItems(cart.get('items', []))
-    PromMetrics['SOLD_COUNTER'].inc(item_count)
-    PromMetrics['AUS'].observe(item_count)
-    PromMetrics['AVS'].observe(cart.get('total', 0))
-
-    # Generate order id
-    orderid = str(uuid.uuid4())
-    queueOrder({ 'orderid': orderid, 'user': id, 'cart': cart })
-
-    # add to order history
-    if not anonymous_user:
+        # check user exists
         try:
-            req = requests.post('http://{user}:8080/order/{id}'.format(user=USER, id=id),
-                    data=json.dumps({'orderid': orderid, 'cart': cart}),
-                    headers={'Content-Type': 'application/json'})
-            app.logger.info('order history returned {}'.format(req.status_code))
+            req = requests.get('http://{user}:8080/check/{id}'.format(user=USER, id=id))
         except requests.exceptions.RequestException as err:
             app.logger.error(err)
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='user_service_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
             return str(err), 500
+        if req.status_code == 200:
+            anonymous_user = False
+        elif req.status_code != 404:  # 404 is expected for anonymous users
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='user_service_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return 'user service error', req.status_code
 
-    # delete cart
-    try:
-        req = requests.delete('http://{cart}:8080/cart/{id}'.format(cart=CART, id=id));
-        app.logger.info('cart delete returned {}'.format(req.status_code))
-    except requests.exceptions.RequestException as err:
-        app.logger.error(err)
-        return str(err), 500
-    if req.status_code != 200:
-        return 'order history update error', req.status_code
+        # check that the cart is valid
+        has_shipping = False
+        for item in cart.get('items'):
+            if item.get('sku') == 'SHIP':
+                has_shipping = True
 
-    return jsonify({ 'orderid': orderid })
+        if cart.get('total', 0) == 0 or has_shipping == False:
+            app.logger.warn('cart not valid')
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='invalid_cart').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return 'cart not valid', 400
+
+        # dummy call to payment gateway
+        try:
+            req = requests.get(PAYMENT_GATEWAY)
+            app.logger.info('{} returned {}'.format(PAYMENT_GATEWAY, req.status_code))
+        except requests.exceptions.RequestException as err:
+            app.logger.error(err)
+            PromMetrics['GATEWAY_ERRORS'].labels(gateway='paypal').inc()
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='gateway_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return str(err), 500
+        if req.status_code != 200:
+            PromMetrics['GATEWAY_ERRORS'].labels(gateway='paypal').inc()
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='gateway_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return 'payment error', req.status_code
+
+        # Prometheus - items purchased
+        item_count = countItems(cart.get('items', []))
+        PromMetrics['SOLD_COUNTER'].inc(item_count)
+        PromMetrics['AUS'].observe(item_count)
+        PromMetrics['AVS'].observe(cart.get('total', 0))
+
+        # Generate order id
+        orderid = str(uuid.uuid4())
+        queueOrder({ 'orderid': orderid, 'user': id, 'cart': cart })
+
+        # add to order history
+        if not anonymous_user:
+            try:
+                req = requests.post('http://{user}:8080/order/{id}'.format(user=USER, id=id),
+                        data=json.dumps({'orderid': orderid, 'cart': cart}),
+                        headers={'Content-Type': 'application/json'})
+                app.logger.info('order history returned {}'.format(req.status_code))
+            except requests.exceptions.RequestException as err:
+                app.logger.error(err)
+                PromMetrics['PAYMENT_FAILURES'].labels(error_type='user_service_error').inc()
+                PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+                return str(err), 500
+            if req.status_code != 200:
+                PromMetrics['PAYMENT_FAILURES'].labels(error_type='user_service_error').inc()
+                PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+                return 'order history update error', req.status_code
+
+        # delete cart
+        try:
+            req = requests.delete('http://{cart}:8080/cart/{id}'.format(cart=CART, id=id));
+            app.logger.info('cart delete returned {}'.format(req.status_code))
+        except requests.exceptions.RequestException as err:
+            app.logger.error(err)
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='cart_service_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return str(err), 500
+        if req.status_code != 200:
+            PromMetrics['PAYMENT_FAILURES'].labels(error_type='cart_service_error').inc()
+            PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+            return 'cart delete error', req.status_code
+
+        # Success metrics
+        PromMetrics['PAYMENT_REQUESTS'].labels(status='success').inc()
+        return jsonify({ 'orderid': orderid })
+        
+    finally:
+        # Always record duration and decrement active payments
+        duration = time.time() - start_time
+        PromMetrics['PAYMENT_DURATION'].observe(duration)
+        PromMetrics['ACTIVE_PAYMENTS'].dec()
 
 
 def queueOrder(order):

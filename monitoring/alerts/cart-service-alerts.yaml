@@ -1,0 +1,97 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cart-service-alerts
+  namespace: monitoring
+  labels:
+    app: robot-shop
+    component: cart
+spec:
+  groups:
+  - name: cart.critical
+    rules:
+    - alert: CartServiceDown
+      expr: up{job="cart"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: cart
+      annotations:
+        summary: "Cart service is down"
+        description: "Cart service has been down for more than 1 minute - customers cannot manage shopping carts"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/cart-service-down.md"
+
+    - alert: CartHighErrorRate
+      expr: rate(cart_operations_total{status="error"}[5m]) / rate(cart_operations_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: critical
+        service: cart
+      annotations:
+        summary: "Cart service high error rate"
+        description: "Cart service error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/cart-service-down.md"
+
+    - alert: CartRedisConnectionFailure
+      expr: rate(cart_redis_connections_total{status="error"}[5m]) > 0.1
+      for: 1m
+      labels:
+        severity: critical
+        service: cart
+      annotations:
+        summary: "Cart service Redis connection failures"
+        description: "Cart service experiencing Redis connection failures: {{ $value }} per second"
+
+  - name: cart.warning
+    rules:
+    - alert: CartHighLatency
+      expr: histogram_quantile(0.95, rate(cart_operation_duration_seconds_bucket[5m])) > 2
+      for: 3m
+      labels:
+        severity: warning
+        service: cart
+      annotations:
+        summary: "Cart service high latency"
+        description: "95th percentile cart operation time is {{ $value }}s (threshold: 2s)"
+
+    - alert: CartHighAbandonmentRate
+      expr: rate(cart_abandonment_total[10m]) / rate(cart_operations_total{operation="add_item"}[10m]) > 0.7
+      for: 5m
+      labels:
+        severity: warning
+        service: cart
+      annotations:
+        summary: "High cart abandonment rate"
+        description: "Cart abandonment rate is {{ $value | humanizePercentage }} over the last 10 minutes"
+
+    - alert: CartLowActivity
+      expr: rate(cart_operations_total[10m]) < 0.1
+      for: 10m
+      labels:
+        severity: warning
+        service: cart
+      annotations:
+        summary: "Low cart activity"
+        description: "Cart operations rate is {{ $value }} per second - unusually low activity"
+
+  - name: cart.info
+    rules:
+    - alert: CartHighTraffic
+      expr: rate(cart_operations_total[5m]) > 10
+      for: 2m
+      labels:
+        severity: info
+        service: cart
+      annotations:
+        summary: "High cart traffic"
+        description: "Cart operations rate is {{ $value }} per second - consider scaling"
+
+    - alert: CartLargeBaskets
+      expr: histogram_quantile(0.95, rate(cart_items_per_cart_bucket[10m])) > 20
+      for: 5m
+      labels:
+        severity: info
+        service: cart
+      annotations:
+        summary: "Unusually large shopping baskets"
+        description: "95th percentile items per cart is {{ $value }} items"
