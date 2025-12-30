@@ -178,4 +178,4 @@ dispatch:
     tag: "v20251227-bc54ffa"
 web:
   image:
-    tag: "v20251230-2dd5359"
+    tag: "v20251230-570e469"
