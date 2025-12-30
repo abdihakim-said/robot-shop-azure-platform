@@ -28,6 +28,11 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: users-password
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
         resources:
           requests:
             cpu: 30m
