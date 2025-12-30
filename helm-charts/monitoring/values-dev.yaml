@@ -4,17 +4,24 @@ global:
     enabled: true
     namespace: monitoring
 
+# Prometheus Stack Configuration
+kube-prometheus-stack:
+  prometheus:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - prometheus.robot-shop-dev.com
+  
+  grafana:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - grafana.robot-shop-dev.com
+
 alerts:
   enabled: true
   
 dashboards:
   enabled: true
-
-ingress:
-  enabled: true
-  className: nginx
-  annotations: {}
-  grafana:
-    host: grafana.robot-shop-dev.com
-  prometheus:
-    host: prometheus.robot-shop-dev.com
