@@ -157,7 +157,7 @@ rabbitmq:
 # All services get updated tags via GitOps
 cart:
   image:
-    tag: "v20251227-0e47bff"
+    tag: "v20251230-2dd5359"
 catalogue:
   image:
     tag: "v20251227-59987d7"
@@ -166,7 +166,7 @@ user:
     tag: "v20251227-970960a"
 payment:
   image:
-    tag: "v20251227-3202564"
+    tag: "v20251230-2dd5359"
 shipping:
   image:
     tag: "v20251225-66ff23c"
@@ -178,4 +178,4 @@ dispatch:
     tag: "v20251227-bc54ffa"
 web:
   image:
-    tag: "v20251223-f9c148e"
+    tag: "v20251230-2dd5359"
