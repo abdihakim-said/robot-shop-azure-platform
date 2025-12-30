@@ -19,5 +19,14 @@ eum:
   key: null
   url: https://eum-eu-west-1.instana.io
 
+monitoring:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: monitoring-dev
+
 psp:
   enabled: false
