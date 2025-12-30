@@ -17,6 +17,7 @@ spec:
   - targetPort: 8080
     path: /metrics
     interval: 30s
+    scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
     - robot-shop
@@ -39,6 +40,7 @@ spec:
   - targetPort: 8080
     path: /metrics
     interval: 30s
+    scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
     - robot-shop
@@ -61,6 +63,7 @@ spec:
   - targetPort: 8080
     path: /metrics
     interval: 30s
+    scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
     - robot-shop
