@@ -1,0 +1,64 @@
+{{- if .Values.serviceMonitors.enabled }}
+# Web Service ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: web-metrics
+  namespace: robot-shop
+  labels:
+    app: robot-shop
+    service: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+---
+# Payment Service ServiceMonitor  
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payment-metrics
+  namespace: robot-shop
+  labels:
+    app: robot-shop
+    service: payment
+spec:
+  selector:
+    matchLabels:
+      app: payment
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+---
+# Cart Service ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cart-metrics
+  namespace: robot-shop
+  labels:
+    app: robot-shop
+    service: cart
+spec:
+  selector:
+    matchLabels:
+      app: cart
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+{{- end }}

@@ -25,3 +25,6 @@ alerts:
   
 dashboards:
   enabled: true
+
+serviceMonitors:
+  enabled: true
