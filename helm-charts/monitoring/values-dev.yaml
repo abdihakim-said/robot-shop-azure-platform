@@ -11,4 +11,10 @@ dashboards:
   enabled: true
 
 ingress:
-  enabled: false
+  enabled: true
+  className: nginx
+  annotations: {}
+  grafana:
+    host: grafana.robot-shop-dev.com
+  prometheus:
+    host: prometheus.robot-shop-dev.com
