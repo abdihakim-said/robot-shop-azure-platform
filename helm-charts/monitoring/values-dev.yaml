@@ -6,6 +6,7 @@ global:
 
 # Prometheus Stack Configuration
 kube-prometheus-stack:
+  namespaceOverride: monitoring
   prometheus:
     ingress:
       enabled: true
