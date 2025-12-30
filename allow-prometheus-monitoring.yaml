@@ -1,11 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "robot-shop.fullname" . }}-allow-prometheus
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "robot-shop.labels" . | nindent 4 }}
-    component: monitoring
+  name: allow-prometheus-monitoring
+  namespace: robot-shop
 spec:
   podSelector: {}
   policyTypes:
