@@ -11,9 +11,9 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: web
+      service: web
   endpoints:
-  - port: http
+  - targetPort: 8080
     path: /metrics
     interval: 30s
   namespaceSelector:
@@ -32,9 +32,9 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: payment
+      service: payment
   endpoints:
-  - port: http
+  - targetPort: 8080
     path: /metrics
     interval: 30s
   namespaceSelector:
@@ -53,9 +53,9 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: cart
+      service: cart
   endpoints:
-  - port: http
+  - targetPort: 8080
     path: /metrics
     interval: 30s
   namespaceSelector:
