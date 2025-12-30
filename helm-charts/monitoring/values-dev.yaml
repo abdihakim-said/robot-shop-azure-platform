@@ -6,10 +6,9 @@ global:
 
 # Prometheus Stack Configuration
 kube-prometheus-stack:
+  fullnameOverride: "monitoring-dev"
   namespaceOverride: monitoring
-  prometheusOperator:
-    admissionWebhooks:
-      enabled: false
+  
   prometheus:
     ingress:
       enabled: true
@@ -32,3 +31,7 @@ dashboards:
 
 serviceMonitors:
   enabled: true
+
+# Disable custom ingress to avoid conflicts
+ingress:
+  enabled: false
