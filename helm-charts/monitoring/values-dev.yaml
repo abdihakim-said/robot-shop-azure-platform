@@ -7,6 +7,9 @@ global:
 # Prometheus Stack Configuration
 kube-prometheus-stack:
   namespaceOverride: monitoring
+  prometheusOperator:
+    admissionWebhooks:
+      enabled: false
   prometheus:
     ingress:
       enabled: true
