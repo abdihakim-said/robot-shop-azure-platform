@@ -1,0 +1,14 @@
+{{- if .Values.dashboards.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-dashboards
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}
