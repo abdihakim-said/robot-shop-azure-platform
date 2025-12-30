@@ -4,7 +4,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: web-metrics
-  namespace: robot-shop
+  namespace: {{ .Values.global.monitoring.namespace }}
   labels:
     app: robot-shop
     service: web
@@ -25,7 +25,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: payment-metrics
-  namespace: robot-shop
+  namespace: {{ .Values.global.monitoring.namespace }}
   labels:
     app: robot-shop
     service: payment
@@ -46,7 +46,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: cart-metrics
-  namespace: robot-shop
+  namespace: {{ .Values.global.monitoring.namespace }}
   labels:
     app: robot-shop
     service: cart
