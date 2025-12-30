@@ -66,5 +66,9 @@ else
     sed -i '1,3d' /etc/nginx/conf.d/default.conf
 fi
 
+# Start metrics server in background
+echo "Starting metrics server..."
+cd /metrics && node metrics-server.js &
+
 exec nginx-debug -g "daemon off;"
 

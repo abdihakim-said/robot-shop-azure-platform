@@ -14,7 +14,7 @@ spec:
     matchLabels:
       service: web
   endpoints:
-  - targetPort: 8080
+  - targetPort: 9090
     path: /metrics
     interval: 30s
     scrapeTimeout: 10s

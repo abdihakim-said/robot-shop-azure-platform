@@ -27,6 +27,7 @@ spec:
         {{- end }}
         ports:
         - containerPort: 8080
+        - containerPort: 9090
         # SRE Best Practice: Health Checks
         livenessProbe:
           httpGet:
