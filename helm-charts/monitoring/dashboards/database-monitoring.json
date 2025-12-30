@@ -1,192 +1,280 @@
 {
-  "dashboard": {
-    "title": "Database Monitoring - Robot Shop",
-    "tags": ["database", "mysql", "mongodb", "redis"],
-    "panels": [
-      {
-        "id": 1,
-        "title": "MySQL - Connection Pool Usage",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "mysql_global_status_threads_connected",
-            "legendFormat": "Active Connections"
-          },
-          {
-            "expr": "mysql_global_variables_max_connections",
-            "legendFormat": "Max Connections"
-          }
-        ],
-        "alert": {
-          "conditions": [
-            {
-              "evaluator": {"params": [0.8], "type": "gt"},
-              "query": {"params": ["A", "5m", "now"]},
-              "reducer": {"params": [], "type": "avg"},
-              "type": "query"
-            }
-          ],
-          "name": "MySQL Connection Pool High"
+  "title": "Database Monitoring - Robot Shop",
+  "tags": [
+    "database",
+    "mysql",
+    "mongodb",
+    "redis"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "MySQL - Connection Pool Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "mysql_global_status_threads_connected",
+          "legendFormat": "Active Connections"
+        },
+        {
+          "expr": "mysql_global_variables_max_connections",
+          "legendFormat": "Max Connections"
         }
-      },
-      {
-        "id": 2,
-        "title": "MySQL - Query Performance",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-        "targets": [
+      ],
+      "alert": {
+        "conditions": [
           {
-            "expr": "rate(mysql_global_status_queries[5m])",
-            "legendFormat": "Queries/sec"
-          },
-          {
-            "expr": "rate(mysql_global_status_slow_queries[5m])",
-            "legendFormat": "Slow Queries/sec"
-          }
-        ]
-      },
-      {
-        "id": 3,
-        "title": "MySQL - InnoDB Buffer Pool",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-        "targets": [
-          {
-            "expr": "mysql_global_status_innodb_buffer_pool_read_requests",
-            "legendFormat": "Read Requests"
-          },
-          {
-            "expr": "mysql_global_status_innodb_buffer_pool_reads",
-            "legendFormat": "Disk Reads"
-          }
-        ]
-      },
-      {
-        "id": 4,
-        "title": "MySQL - Disk I/O",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-        "targets": [
-          {
-            "expr": "rate(mysql_global_status_innodb_data_read[5m])",
-            "legendFormat": "Read"
-          },
-          {
-            "expr": "rate(mysql_global_status_innodb_data_written[5m])",
-            "legendFormat": "Write"
+            "evaluator": {
+              "params": [
+                0.8
+              ],
+              "type": "gt"
+            },
+            "query": {
+              "params": [
+                "A",
+                "5m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "avg"
+            },
+            "type": "query"
           }
         ],
-        "yaxes": [{"format": "Bps"}]
+        "name": "MySQL Connection Pool High"
+      }
+    },
+    {
+      "id": 2,
+      "title": "MySQL - Query Performance",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
       },
-      {
-        "id": 5,
-        "title": "MongoDB - Connections",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-        "targets": [
-          {
-            "expr": "mongodb_connections{state=\"current\"}",
-            "legendFormat": "Current"
-          },
-          {
-            "expr": "mongodb_connections{state=\"available\"}",
-            "legendFormat": "Available"
-          }
-        ]
-      },
-      {
-        "id": 6,
-        "title": "MongoDB - Operations",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-        "targets": [
-          {
-            "expr": "rate(mongodb_op_counters_total{type=\"query\"}[5m])",
-            "legendFormat": "Queries"
-          },
-          {
-            "expr": "rate(mongodb_op_counters_total{type=\"insert\"}[5m])",
-            "legendFormat": "Inserts"
-          },
-          {
-            "expr": "rate(mongodb_op_counters_total{type=\"update\"}[5m])",
-            "legendFormat": "Updates"
-          },
-          {
-            "expr": "rate(mongodb_op_counters_total{type=\"delete\"}[5m])",
-            "legendFormat": "Deletes"
-          }
-        ]
-      },
-      {
-        "id": 7,
-        "title": "MongoDB - Memory Usage",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
-        "targets": [
-          {
-            "expr": "mongodb_memory{type=\"resident\"}",
-            "legendFormat": "Resident"
-          },
-          {
-            "expr": "mongodb_memory{type=\"virtual\"}",
-            "legendFormat": "Virtual"
-          }
-        ],
-        "yaxes": [{"format": "bytes"}]
-      },
-      {
-        "id": 8,
-        "title": "Redis - Memory Usage",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
-        "targets": [
-          {
-            "expr": "redis_memory_used_bytes",
-            "legendFormat": "Used"
-          },
-          {
-            "expr": "redis_memory_max_bytes",
-            "legendFormat": "Max"
-          }
-        ],
-        "yaxes": [{"format": "bytes"}]
-      },
-      {
-        "id": 9,
-        "title": "Redis - Hit Rate",
-        "type": "gauge",
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 32},
-        "targets": [
-          {
-            "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100"
-          }
-        ],
-        "thresholds": {
-          "steps": [
-            {"value": 0, "color": "red"},
-            {"value": 80, "color": "yellow"},
-            {"value": 95, "color": "green"}
-          ]
+      "targets": [
+        {
+          "expr": "rate(mysql_global_status_queries[5m])",
+          "legendFormat": "Queries/sec"
+        },
+        {
+          "expr": "rate(mysql_global_status_slow_queries[5m])",
+          "legendFormat": "Slow Queries/sec"
         }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "MySQL - InnoDB Buffer Pool",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
       },
-      {
-        "id": 10,
-        "title": "Redis - Commands/sec",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 18, "x": 6, "y": 32},
-        "targets": [
+      "targets": [
+        {
+          "expr": "mysql_global_status_innodb_buffer_pool_read_requests",
+          "legendFormat": "Read Requests"
+        },
+        {
+          "expr": "mysql_global_status_innodb_buffer_pool_reads",
+          "legendFormat": "Disk Reads"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "MySQL - Disk I/O",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "rate(mysql_global_status_innodb_data_read[5m])",
+          "legendFormat": "Read"
+        },
+        {
+          "expr": "rate(mysql_global_status_innodb_data_written[5m])",
+          "legendFormat": "Write"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "Bps"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "MongoDB - Connections",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "mongodb_connections{state=\"current\"}",
+          "legendFormat": "Current"
+        },
+        {
+          "expr": "mongodb_connections{state=\"available\"}",
+          "legendFormat": "Available"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "MongoDB - Operations",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "rate(mongodb_op_counters_total{type=\"query\"}[5m])",
+          "legendFormat": "Queries"
+        },
+        {
+          "expr": "rate(mongodb_op_counters_total{type=\"insert\"}[5m])",
+          "legendFormat": "Inserts"
+        },
+        {
+          "expr": "rate(mongodb_op_counters_total{type=\"update\"}[5m])",
+          "legendFormat": "Updates"
+        },
+        {
+          "expr": "rate(mongodb_op_counters_total{type=\"delete\"}[5m])",
+          "legendFormat": "Deletes"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "MongoDB - Memory Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "mongodb_memory{type=\"resident\"}",
+          "legendFormat": "Resident"
+        },
+        {
+          "expr": "mongodb_memory{type=\"virtual\"}",
+          "legendFormat": "Virtual"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "bytes"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Redis - Memory Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "redis_memory_max_bytes",
+          "legendFormat": "Max"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "bytes"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Redis - Hit Rate",
+      "type": "gauge",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100"
+        }
+      ],
+      "thresholds": {
+        "steps": [
           {
-            "expr": "rate(redis_commands_processed_total[5m])",
-            "legendFormat": "Commands"
+            "value": 0,
+            "color": "red"
           },
           {
-            "expr": "rate(redis_evicted_keys_total[5m])",
-            "legendFormat": "Evictions"
+            "value": 80,
+            "color": "yellow"
+          },
+          {
+            "value": 95,
+            "color": "green"
           }
         ]
       }
-    ]
-  }
+    },
+    {
+      "id": 10,
+      "title": "Redis - Commands/sec",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "rate(redis_commands_processed_total[5m])",
+          "legendFormat": "Commands"
+        },
+        {
+          "expr": "rate(redis_evicted_keys_total[5m])",
+          "legendFormat": "Evictions"
+        }
+      ]
+    }
+  ]
 }

@@ -1,142 +1,228 @@
 {
-  "dashboard": {
-    "title": "Golden Signals - Robot Shop",
-    "tags": ["sre", "golden-signals", "robot-shop"],
-    "timezone": "browser",
-    "panels": [
-      {
-        "id": 1,
-        "title": "Latency - P50, P95, P99",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
-            "legendFormat": "P50 - {{ job }}"
-          },
-          {
-            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
-            "legendFormat": "P95 - {{ job }}"
-          },
-          {
-            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
-            "legendFormat": "P99 - {{ job }}"
-          }
-        ],
-        "yaxes": [
-          {"format": "s", "label": "Latency"},
-          {"format": "short"}
-        ],
-        "alert": {
-          "conditions": [
-            {
-              "evaluator": {"params": [0.5], "type": "gt"},
-              "query": {"params": ["C", "5m", "now"]},
-              "type": "query"
-            }
-          ],
-          "name": "High Latency P95"
-        }
+  "title": "Golden Signals - Robot Shop",
+  "tags": [
+    "sre",
+    "golden-signals",
+    "robot-shop"
+  ],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Latency - P50, P95, P99",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
       },
-      {
-        "id": 2,
-        "title": "Traffic - Requests per Second",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-        "targets": [
-          {
-            "expr": "sum(rate(http_requests_total{namespace=\"robot-shop\"}[5m])) by (job)",
-            "legendFormat": "{{ job }}"
-          }
-        ],
-        "yaxes": [
-          {"format": "reqps", "label": "Requests/sec"},
-          {"format": "short"}
-        ]
-      },
-      {
-        "id": 3,
-        "title": "Errors - Error Rate %",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-        "targets": [
-          {
-            "expr": "sum(rate(http_requests_total{namespace=\"robot-shop\",status=~\"5..\"}[5m])) by (job) / sum(rate(http_requests_total{namespace=\"robot-shop\"}[5m])) by (job) * 100",
-            "legendFormat": "{{ job }}"
-          }
-        ],
-        "yaxes": [
-          {"format": "percent", "label": "Error Rate"},
-          {"format": "short"}
-        ],
-        "thresholds": [
-          {"value": 1, "colorMode": "critical"}
-        ]
-      },
-      {
-        "id": 4,
-        "title": "Saturation - CPU Usage",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-        "targets": [
-          {
-            "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"robot-shop\"}[5m])) by (pod) * 100",
-            "legendFormat": "{{ pod }}"
-          }
-        ],
-        "yaxes": [
-          {"format": "percent", "label": "CPU %"},
-          {"format": "short"}
-        ],
-        "thresholds": [
-          {"value": 80, "colorMode": "warning"}
-        ]
-      },
-      {
-        "id": 5,
-        "title": "Saturation - Memory Usage",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-        "targets": [
-          {
-            "expr": "sum(container_memory_usage_bytes{namespace=\"robot-shop\"}) by (pod) / sum(container_spec_memory_limit_bytes{namespace=\"robot-shop\"}) by (pod) * 100",
-            "legendFormat": "{{ pod }}"
-          }
-        ],
-        "yaxes": [
-          {"format": "percent", "label": "Memory %"},
-          {"format": "short"}
-        ],
-        "thresholds": [
-          {"value": 90, "colorMode": "critical"}
-        ]
-      },
-      {
-        "id": 6,
-        "title": "Service Availability",
-        "type": "stat",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-        "targets": [
-          {
-            "expr": "count(up{namespace=\"robot-shop\"} == 1) / count(up{namespace=\"robot-shop\"}) * 100",
-            "legendFormat": "Availability"
-          }
-        ],
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "orientation": "auto",
-          "textMode": "value_and_name"
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
+          "legendFormat": "P50 - {{ job }}"
         },
-        "thresholds": {
-          "mode": "absolute",
-          "steps": [
-            {"value": 0, "color": "red"},
-            {"value": 95, "color": "yellow"},
-            {"value": 99, "color": "green"}
-          ]
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
+          "legendFormat": "P95 - {{ job }}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m]))",
+          "legendFormat": "P99 - {{ job }}"
         }
+      ],
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "Latency"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                0.5
+              ],
+              "type": "gt"
+            },
+            "query": {
+              "params": [
+                "C",
+                "5m",
+                "now"
+              ]
+            },
+            "type": "query"
+          }
+        ],
+        "name": "High Latency P95"
       }
-    ]
-  }
+    },
+    {
+      "id": 2,
+      "title": "Traffic - Requests per Second",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{namespace=\"robot-shop\"}[5m])) by (job)",
+          "legendFormat": "{{ job }}"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "reqps",
+          "label": "Requests/sec"
+        },
+        {
+          "format": "short"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Errors - Error Rate %",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{namespace=\"robot-shop\",status=~\"5..\"}[5m])) by (job) / sum(rate(http_requests_total{namespace=\"robot-shop\"}[5m])) by (job) * 100",
+          "legendFormat": "{{ job }}"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Error Rate"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "thresholds": [
+        {
+          "value": 1,
+          "colorMode": "critical"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Saturation - CPU Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"robot-shop\"}[5m])) by (pod) * 100",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "CPU %"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "thresholds": [
+        {
+          "value": 80,
+          "colorMode": "warning"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Saturation - Memory Usage",
+      "type": "graph",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{namespace=\"robot-shop\"}) by (pod) / sum(container_spec_memory_limit_bytes{namespace=\"robot-shop\"}) by (pod) * 100",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Memory %"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "thresholds": [
+        {
+          "value": 90,
+          "colorMode": "critical"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Service Availability",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "count(up{namespace=\"robot-shop\"} == 1) / count(up{namespace=\"robot-shop\"}) * 100",
+          "legendFormat": "Availability"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "orientation": "auto",
+        "textMode": "value_and_name"
+      },
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": 0,
+            "color": "red"
+          },
+          {
+            "value": 95,
+            "color": "yellow"
+          },
+          {
+            "value": 99,
+            "color": "green"
+          }
+        ]
+      }
+    }
+  ]
 }
