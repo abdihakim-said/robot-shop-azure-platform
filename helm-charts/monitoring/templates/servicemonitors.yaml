@@ -8,6 +8,7 @@ metadata:
   labels:
     app: robot-shop
     service: web
+    release: monitoring-dev
 spec:
   selector:
     matchLabels:
@@ -29,6 +30,7 @@ metadata:
   labels:
     app: robot-shop
     service: payment
+    release: monitoring-dev
 spec:
   selector:
     matchLabels:
@@ -50,6 +52,7 @@ metadata:
   labels:
     app: robot-shop
     service: cart
+    release: monitoring-dev
 spec:
   selector:
     matchLabels:
