@@ -48,6 +48,12 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
       nodeSelector = {
         "kubernetes.io/os" = "linux"
       }
+
+      # Don't create ServiceAccount - use existing one
+      serviceAccount = {
+        create = false
+        name   = "secrets-store-csi-driver"
+      }
     })
   ]
 
