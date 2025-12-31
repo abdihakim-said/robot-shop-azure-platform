@@ -7,7 +7,14 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
-    # Kubernetes and Helm providers removed - ArgoCD handles K8s resources
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -101,6 +108,23 @@ module "aks" {
   tags = local.common_tags
 
   depends_on = [module.networking]
+}
+
+# Helm/Kubernetes Providers for infrastructure components
+provider "helm" {
+  kubernetes {
+    host                   = module.aks.kube_config.host
+    client_certificate     = base64decode(module.aks.kube_config.client_certificate)
+    client_key             = base64decode(module.aks.kube_config.client_key)
+    cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
+  }
+}
+
+provider "kubernetes" {
+  host                   = module.aks.kube_config.host
+  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
+  client_key             = base64decode(module.aks.kube_config.client_key)
+  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
 }
 
 # Storage Module
