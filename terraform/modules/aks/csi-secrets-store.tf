@@ -1,50 +1,111 @@
 # Azure Key Vault Provider for Secrets Store CSI Driver
-resource "helm_release" "csi_secrets_store_provider_azure" {
-  name       = "csi-secrets-store-provider-azure"
-  repository = "https://azure.github.io/secrets-store-csi-driver-provider-azure/charts"
-  chart      = "csi-secrets-store-provider-azure"
-  version    = "1.5.3" # Pin to specific version
-  namespace  = "kube-system"
+# This installs the Azure provider as a DaemonSet to work with the existing CSI driver
+resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
+  metadata {
+    name      = "csi-secrets-store-provider-azure"
+    namespace = "kube-system"
+    labels = {
+      app = "csi-secrets-store-provider-azure"
+    }
+  }
+
+  spec {
+    selector {
+      match_labels = {
+        app = "csi-secrets-store-provider-azure"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "csi-secrets-store-provider-azure"
+        }
+      }
+
+      spec {
+        service_account_name = "csi-secrets-store-provider-azure"
+        
+        container {
+          name  = "provider-azure-installer"
+          image = "mcr.microsoft.com/oss/azure/secrets-store/provider-azure:v1.5.3"
+          
+          args = [
+            "--endpoint=unix:///etc/kubernetes/secrets-store-csi-providers/azure.sock",
+            "--construct-pem-chain=true",
+            "--write-secrets=false",
+            "--write-secrets-timeout=20s"
+          ]
+
+          resources {
+            limits = {
+              cpu    = "50m"
+              memory = "100Mi"
+            }
+            requests = {
+              cpu    = "50m"
+              memory = "100Mi"
+            }
+          }
+
+          security_context {
+            allow_privilege_escalation = false
+            read_only_root_filesystem  = true
+            run_as_non_root           = true
+            run_as_user               = 1000
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+
+          volume_mount {
+            name       = "providervol"
+            mount_path = "/etc/kubernetes/secrets-store-csi-providers"
+          }
+
+          volume_mount {
+            name       = "mountpoint-dir"
+            mount_path = "/var/lib/kubelet/pods"
+            mount_propagation = "Bidirectional"
+          }
+        }
+
+        volume {
+          name = "providervol"
+          host_path {
+            path = "/etc/kubernetes/secrets-store-csi-providers"
+            type = "DirectoryOrCreate"
+          }
+        }
+
+        volume {
+          name = "mountpoint-dir"
+          host_path {
+            path = "/var/lib/kubelet/pods"
+            type = "Directory"
+          }
+        }
+
+        node_selector = {
+          "kubernetes.io/os" = "linux"
+        }
+
+        toleration {
+          operator = "Exists"
+        }
+      }
+    }
+  }
 
   depends_on = [azurerm_kubernetes_cluster.main]
+}
 
-  values = [
-    yamlencode({
-      linux = {
-        image = {
-          repository = "mcr.microsoft.com/oss/azure/secrets-store/provider-azure"
-          tag        = "v1.5.3"
-        }
-      }
+# ServiceAccount for the Azure provider
+resource "kubernetes_service_account" "csi_secrets_store_provider_azure" {
+  metadata {
+    name      = "csi-secrets-store-provider-azure"
+    namespace = "kube-system"
+  }
 
-      # Resource limits for production
-      resources = {
-        limits = {
-          cpu    = "50m"
-          memory = "100Mi"
-        }
-        requests = {
-          cpu    = "50m"
-          memory = "100Mi"
-        }
-      }
-
-      # Security context
-      securityContext = {
-        allowPrivilegeEscalation = false
-        readOnlyRootFilesystem   = true
-        runAsNonRoot             = true
-        runAsUser                = 1000
-        capabilities = {
-          drop = ["ALL"]
-        }
-      }
-    })
-  ]
-
-  # Ensure clean upgrades
-  force_update    = true
-  cleanup_on_fail = true
-  wait            = true
-  timeout         = 300
+  depends_on = [azurerm_kubernetes_cluster.main]
 }
