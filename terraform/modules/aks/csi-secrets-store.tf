@@ -31,6 +31,8 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
             memory = "100Mi"
           }
         }
+        # Align provider directory with existing CSI driver
+        providersDir = "/var/run/secrets-store-csi-providers"
       }
 
       # Security context aligned with your setup
@@ -53,11 +55,6 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
       serviceAccount = {
         create = false
         name   = "secrets-store-csi-driver"
-      }
-
-      # Align provider directory with existing CSI driver
-      linux = {
-        providersDir = "/var/run/secrets-store-csi-providers"
       }
     })
   ]
