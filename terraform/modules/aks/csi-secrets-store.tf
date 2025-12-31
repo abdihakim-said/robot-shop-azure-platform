@@ -51,10 +51,10 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
         "kubernetes.io/os" = "linux"
       }
 
-      # Don't create ServiceAccount - use existing one
+      # Create separate ServiceAccount for Azure provider
       serviceAccount = {
-        create = false
-        name   = "secrets-store-csi-driver"
+        create = true
+        name   = "csi-secrets-store-provider-azure"
       }
     })
   ]
