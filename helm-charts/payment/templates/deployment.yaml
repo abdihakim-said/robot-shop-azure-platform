@@ -14,6 +14,14 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: payment-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.x-k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: stripe-secrets
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -28,6 +36,20 @@ spec:
             secretKeyRef:
               name: rabbitmq-secret
               key: password
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-secret
+              key: stripe-secret-key
+        - name: STRIPE_PUBLISHABLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-secret
+              key: stripe-publishable-key
+        volumeMounts:
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+          readOnly: true
         resources:
           requests:
             cpu: 30m
