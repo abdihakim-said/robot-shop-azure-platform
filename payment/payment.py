@@ -48,6 +48,10 @@ def exception_handler(err):
 def health():
     return 'OK'
 
+@app.route('/mock-gateway', methods=['GET'])
+def mock_gateway():
+    return 'OK', 200
+
 # Prometheus
 @app.route('/metrics', methods=['GET'])
 def metrics():
