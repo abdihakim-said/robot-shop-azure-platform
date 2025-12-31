@@ -54,6 +54,11 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
         create = false
         name   = "secrets-store-csi-driver"
       }
+
+      # Align provider directory with existing CSI driver
+      linux = {
+        providersDir = "/var/run/secrets-store-csi-providers"
+      }
     })
   ]
 
