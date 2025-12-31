@@ -132,19 +132,49 @@ def pay(id):
             PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
             return 'cart not valid', 400
 
-        # Production payment gateway with circuit breaker and fallback
-        try:
-            req = requests.get(PAYMENT_GATEWAY, timeout=5)  # 5-second timeout
-            app.logger.info('{} returned {}'.format(PAYMENT_GATEWAY, req.status_code))
-            if req.status_code != 200:
-                raise requests.exceptions.RequestException(f"Gateway returned {req.status_code}")
-        except (requests.exceptions.RequestException, requests.exceptions.Timeout) as err:
-            app.logger.error('Payment gateway failed: {}, using fallback processing'.format(err))
-            PromMetrics['GATEWAY_ERRORS'].labels(gateway='fallback').inc()
-            PromMetrics['FALLBACK_PAYMENTS'].inc()  # Track fallback usage
-            # Production fallback: Process payment locally for demo
-            app.logger.info('Processing payment in fallback mode - order will be fulfilled')
-            req = type('MockResponse', (), {'status_code': 200})()
+        # Generate order id first
+        orderid = str(uuid.uuid4())
+
+        # Real Stripe integration (using test keys - no real charges)
+        if STRIPE_ENABLED:
+            try:
+                app.logger.info('🔄 Processing payment with Stripe API (TEST MODE)')
+                
+                # Create real Stripe PaymentIntent
+                payment_intent = stripe.PaymentIntent.create(
+                    amount=int(cart.get('total', 0) * 100),  # Convert to pence
+                    currency='gbp',
+                    automatic_payment_methods={'enabled': True},
+                    metadata={
+                        'orderid': orderid, 
+                        'user': id,
+                        'items': str(len(cart.get('items', []))),
+                        'robot_shop': 'true'
+                    }
+                )
+                
+                # Simulate successful payment with test payment method
+                stripe.PaymentIntent.confirm(
+                    payment_intent.id,
+                    payment_method='pm_card_visa'  # Stripe test payment method
+                )
+                
+                # Fetch updated payment intent
+                updated_intent = stripe.PaymentIntent.retrieve(payment_intent.id)
+                
+                app.logger.info('✅ Stripe Payment SUCCESS!')
+                app.logger.info('   💳 Payment ID: {}'.format(updated_intent.id))
+                app.logger.info('   💰 Amount: £{:.2f} GBP'.format(updated_intent.amount / 100))
+                app.logger.info('   📊 Status: {}'.format(updated_intent.status))
+                app.logger.info('   🔗 View in Stripe: https://dashboard.stripe.com/test/payments/{}'.format(updated_intent.id))
+                
+            except stripe.error.StripeError as e:
+                app.logger.error('❌ Stripe payment failed: {} (Code: {})'.format(str(e), e.code if hasattr(e, 'code') else 'N/A'))
+                PromMetrics['PAYMENT_FAILURES'].labels(error_type='stripe_error').inc()
+                PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
+                return 'Payment processing failed: {}'.format(str(e)), 400
+        else:
+            app.logger.info('⚠️  Stripe keys not found - using demo mode')
 
         # Prometheus - items purchased
         item_count = countItems(cart.get('items', []))
@@ -152,8 +182,6 @@ def pay(id):
         PromMetrics['AUS'].observe(item_count)
         PromMetrics['AVS'].observe(cart.get('total', 0))
 
-        # Generate order id
-        orderid = str(uuid.uuid4())
         queueOrder({ 'orderid': orderid, 'user': id, 'cart': cart })
 
         # add to order history
