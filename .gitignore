@@ -2,6 +2,9 @@
 *.md
 !README.md
 
+# Keep docs folder local only (contains personal preparation materials)
+docs/
+
 # Terraform
 .terraform/
 *.tfstate
