@@ -62,12 +62,6 @@ resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
             name       = "providervol"
             mount_path = "/etc/kubernetes/secrets-store-csi-providers"
           }
-
-          volume_mount {
-            name              = "mountpoint-dir"
-            mount_path        = "/var/lib/kubelet/pods"
-            mount_propagation = "Bidirectional"
-          }
         }
 
         volume {
@@ -75,14 +69,6 @@ resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
           host_path {
             path = "/etc/kubernetes/secrets-store-csi-providers"
             type = "DirectoryOrCreate"
-          }
-        }
-
-        volume {
-          name = "mountpoint-dir"
-          host_path {
-            path = "/var/lib/kubelet/pods"
-            type = "Directory"
           }
         }
 
