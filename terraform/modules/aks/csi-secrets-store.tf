@@ -25,11 +25,11 @@ resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
 
       spec {
         service_account_name = "csi-secrets-store-provider-azure"
-        
+
         container {
           name  = "provider-azure-installer"
           image = "mcr.microsoft.com/oss/azure/secrets-store/provider-azure:v1.5.3"
-          
+
           args = [
             "--endpoint=unix:///etc/kubernetes/secrets-store-csi-providers/azure.sock",
             "--construct-pem-chain=true",
@@ -51,8 +51,8 @@ resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
           security_context {
             allow_privilege_escalation = false
             read_only_root_filesystem  = true
-            run_as_non_root           = true
-            run_as_user               = 1000
+            run_as_non_root            = true
+            run_as_user                = 1000
             capabilities {
               drop = ["ALL"]
             }
@@ -64,8 +64,8 @@ resource "kubernetes_daemonset" "csi_secrets_store_provider_azure" {
           }
 
           volume_mount {
-            name       = "mountpoint-dir"
-            mount_path = "/var/lib/kubelet/pods"
+            name              = "mountpoint-dir"
+            mount_path        = "/var/lib/kubelet/pods"
             mount_propagation = "Bidirectional"
           }
         }
