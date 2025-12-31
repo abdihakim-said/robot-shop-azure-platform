@@ -33,6 +33,8 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
         }
         # Align provider directory with existing CSI driver
         providersDir = "/var/run/secrets-store-csi-providers"
+        # Use different health port to avoid conflicts
+        healthzPort = "8990"
       }
 
       # Security context aligned with your setup
@@ -55,6 +57,9 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
       "secrets-store-csi-driver" = {
         install = false
       }
+
+      # Use different metrics port to avoid conflict with existing CSI driver
+      metricsAddr = "8899"
     })
   ]
 
