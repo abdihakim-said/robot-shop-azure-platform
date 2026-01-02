@@ -253,3 +253,8 @@ variable "private_cluster_enabled" {
   type        = bool
   default     = true # Same as production
 }
+variable "image_tag" {
+  description = "Docker image tag for deployment"
+  type        = string
+  default     = null
+}

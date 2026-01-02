@@ -42,6 +42,9 @@ resource "azurerm_storage_account" "main" {
   location                 = var.location
   account_tier             = var.storage_account_tier
   account_replication_type = var.storage_replication_type
+  
+  # Security: Use latest TLS version
+  min_tls_version = "TLS1_2"
 
   blob_properties {
     delete_retention_policy {

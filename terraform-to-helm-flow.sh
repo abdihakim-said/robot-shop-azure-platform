@@ -1,0 +1,57 @@
+#!/bin/bash
+# Terraform to Helm Values Integration Example
+# This shows how Terraform outputs become Helm values
+
+echo "🔄 TERRAFORM TO HELM VALUES FLOW"
+echo "================================="
+
+echo ""
+echo "1️⃣ TERRAFORM OUTPUTS (from terraform apply):"
+echo "terraform/environments/staging/outputs.tf produces:"
+echo "  - acr_login_server = 'robotshopstagingacr.azurecr.io'"
+echo "  - key_vault_name = 'robot-shop-staging-kv'"
+echo "  - tenant_id = 'acaf4a87-8fea-48da-b3b1-34d5d8c2451c'"
+echo "  - managed_identity_client_id = 'abc123-def456-ghi789'"
+echo "  - image_tag = 'v20260102-bd7e5e3'"
+
+echo ""
+echo "2️⃣ HELM VALUES TEMPLATE (values-staging.yaml):"
+echo "global:"
+echo "  imageRegistry: {{ .Values.terraform.acr_login_server }}"
+echo "  imageTag: {{ .Values.terraform.image_tag }}"
+echo "  azure:"
+echo "    keyVaultName: {{ .Values.terraform.key_vault_name }}"
+echo "    managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id }}"
+echo "    tenantId: {{ .Values.terraform.tenant_id }}"
+
+echo ""
+echo "3️⃣ DEPLOYMENT COMMAND (CI/CD Pipeline):"
+echo "helm upgrade robot-shop ./helm-charts/robot-shop \\"
+echo "  --namespace robot-shop \\"
+echo "  --values values-staging.yaml \\"
+echo "  --set terraform.acr_login_server=\$(terraform output -raw acr_login_server) \\"
+echo "  --set terraform.key_vault_name=\$(terraform output -raw key_vault_name) \\"
+echo "  --set terraform.tenant_id=\$(terraform output -raw tenant_id) \\"
+echo "  --set terraform.managed_identity_client_id=\$(terraform output -raw managed_identity_client_id) \\"
+echo "  --set terraform.image_tag=\$(terraform output -raw image_tag)"
+
+echo ""
+echo "4️⃣ RENDERED HELM VALUES (what Kubernetes sees):"
+echo "global:"
+echo "  imageRegistry: robotshopstagingacr.azurecr.io"
+echo "  imageTag: v20260102-bd7e5e3"
+echo "  azure:"
+echo "    keyVaultName: robot-shop-staging-kv"
+echo "    managedIdentityClientId: abc123-def456-ghi789"
+echo "    tenantId: acaf4a87-8fea-48da-b3b1-34d5d8c2451c"
+
+echo ""
+echo "5️⃣ SECRETPROVIDERCLASS TEMPLATE RENDERING:"
+echo "# Before (template):"
+echo "keyvaultName: {{ .Values.global.azure.keyVaultName }}"
+echo ""
+echo "# After (rendered):"
+echo "keyvaultName: robot-shop-staging-kv"
+
+echo ""
+echo "✅ RESULT: Environment-specific values automatically injected!"

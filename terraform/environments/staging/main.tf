@@ -75,9 +75,10 @@ module "aks" {
   local_account_disabled          = true        # Disable local admin
   sku_tier                        = "Standard"  # Paid SLA
   automatic_channel_upgrade       = "stable"    # Stable updates
-  api_server_authorized_ip_ranges = []          # Configure as needed
+  api_server_authorized_ip_ranges = []          # Private cluster doesn't need IP restrictions
   max_pods_per_node               = 50          # Production-ready
   os_disk_type                    = "Ephemeral" # Better performance
+  only_critical_addons_enabled    = true        # Security: System node taints
 
   tags = local.common_tags
 

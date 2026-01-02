@@ -36,7 +36,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   api_server_access_profile {
-    authorized_ip_ranges = var.api_server_authorized_ip_ranges
+    authorized_ip_ranges = length(var.api_server_authorized_ip_ranges) > 0 ? var.api_server_authorized_ip_ranges : null
   }
 
   default_node_pool {
@@ -49,6 +49,9 @@ resource "azurerm_kubernetes_cluster" "main" {
     max_count           = var.enable_autoscaling ? var.max_node_count : null
     max_pods            = var.max_pods_per_node
     os_disk_type        = var.os_disk_type
+    
+    # Security: Only critical system pods on system nodes
+    only_critical_addons_enabled = var.only_critical_addons_enabled
 
     upgrade_settings {
       max_surge = "10%"

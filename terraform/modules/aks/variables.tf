@@ -126,6 +126,12 @@ variable "os_disk_type" {
   default     = "Managed"
 }
 
+variable "only_critical_addons_enabled" {
+  description = "Enable only critical addons on system nodes"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
