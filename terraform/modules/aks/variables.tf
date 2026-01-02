@@ -126,6 +126,12 @@ variable "os_disk_type" {
   default     = "Managed"
 }
 
+variable "disk_encryption_set_id" {
+  description = "Disk encryption set ID for AKS cluster"
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

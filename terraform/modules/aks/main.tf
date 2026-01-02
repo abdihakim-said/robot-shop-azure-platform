@@ -18,6 +18,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   local_account_disabled    = var.local_account_disabled
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
+  
+  # Production-grade disk encryption (CKV_AZURE_117, CKV_AZURE_227)
+  disk_encryption_set_id = var.disk_encryption_set_id
 
   # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
   lifecycle {
@@ -36,7 +39,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   api_server_access_profile {
-    authorized_ip_ranges = var.api_server_authorized_ip_ranges
+    authorized_ip_ranges = var.private_cluster_enabled ? null : var.api_server_authorized_ip_ranges
   }
 
   default_node_pool {
@@ -47,8 +50,11 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = var.enable_autoscaling
     min_count           = var.enable_autoscaling ? var.min_node_count : null
     max_count           = var.enable_autoscaling ? var.max_node_count : null
-    max_pods            = var.max_pods_per_node
-    os_disk_type        = var.os_disk_type
+    max_pods            = 50  # Production-grade: minimum 50 pods per node (CKV_AZURE_168)
+    os_disk_type        = "Ephemeral"
+    
+    # Security: Only critical system pods on system nodes (CKV_AZURE_232)
+    only_critical_addons_enabled = var.only_critical_addons_enabled
 
     upgrade_settings {
       max_surge = "10%"
