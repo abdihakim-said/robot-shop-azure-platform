@@ -21,3 +21,8 @@ spec:
     ports:
     - protocol: UDP
       port: 53
+  # Allow external HTTPS calls (for Stripe API)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
