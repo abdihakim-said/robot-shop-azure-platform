@@ -144,7 +144,7 @@ variable "secrets" {
       name   = "prometheus-password"
       length = 16
     }
-    
+
     # Database secrets (align with SecretProviderClass expectations)
     mysql_root = {
       name   = "mysql-root-password"
