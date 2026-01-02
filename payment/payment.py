@@ -181,96 +181,34 @@ def pay(id):
         # Generate order id first
         orderid = str(uuid.uuid4())
 
-        # PRODUCTION-STYLE Stripe integration (test keys - safe for demo)
+        # Stripe integration with Azure Key Vault secrets (test keys - safe for demo)
         if STRIPE_ENABLED:
             try:
                 app.logger.info('🔄 Processing payment with Stripe API (TEST MODE)')
+                app.logger.info('🔐 Using Stripe keys from Azure Key Vault')
                 
-                # STEP 1: Create or retrieve customer (production pattern)
-                customer_email = f"{id}@robotshop.demo"
-                try:
-                    customers = stripe.Customer.list(email=customer_email, limit=1)
-                    if customers.data:
-                        customer = customers.data[0]
-                        app.logger.info('📋 Existing customer found: {}'.format(customer.id))
-                    else:
-                        customer = stripe.Customer.create(
-                            email=customer_email,
-                            name=f"Robot Shop User {id}",
-                            metadata={'user_id': id, 'source': 'robot_shop'}
-                        )
-                        app.logger.info('👤 New customer created: {}'.format(customer.id))
-                except Exception as e:
-                    app.logger.warn('Customer creation failed, proceeding without: {}'.format(str(e)))
-                    customer = None
-
-                # STEP 2: Create PaymentIntent with production settings
-                payment_intent_data = {
-                    'amount': int(cart.get('total', 0) * 100),  # Convert to pence
-                    'currency': 'gbp',
-                    'payment_method_types': ['card'],
-                    'metadata': {
+                # Create simple PaymentIntent (no confirmation to avoid hanging)
+                payment_intent = stripe.PaymentIntent.create(
+                    amount=int(cart.get('total', 0) * 100),  # Convert to pence
+                    currency='gbp',
+                    metadata={
                         'orderid': orderid,
                         'user_id': id,
-                        'items_count': str(len(cart.get('items', []))),
-                        'robot_shop': 'true',
-                        'environment': 'demo'
-                    },
-                    # Production reliability patterns
-                    'idempotency_key': f"order_{orderid}",
-                    'description': f'Robot Shop Order {orderid}'
-                }
-                
-                if customer:
-                    payment_intent_data['customer'] = customer.id
-
-                payment_intent = stripe.PaymentIntent.create(**payment_intent_data)
-                
-                # STEP 3: Simulate payment confirmation (production would use frontend)
-                app.logger.info('💳 Simulating payment confirmation with test card...')
-                
-                # Use Stripe test payment method for demo
-                confirmed_intent = stripe.PaymentIntent.confirm(
-                    payment_intent.id,
-                    payment_method='pm_card_visa',  # Stripe test card
-                    return_url='https://robotshop.demo/payment/return'
+                        'robot_shop': 'true'
+                    }
                 )
                 
-                # STEP 4: Handle payment result (production pattern)
-                if confirmed_intent.status == 'succeeded':
-                    app.logger.info('✅ STRIPE PAYMENT SUCCESSFUL!')
-                    app.logger.info('   💳 Payment ID: {}'.format(confirmed_intent.id))
-                    app.logger.info('   💰 Amount: £{:.2f} GBP'.format(confirmed_intent.amount / 100))
-                    app.logger.info('   👤 Customer: {}'.format(confirmed_intent.customer or 'Guest'))
-                    app.logger.info('   📊 Status: {}'.format(confirmed_intent.status))
-                    app.logger.info('   🔗 Stripe Dashboard: https://dashboard.stripe.com/test/payments/{}'.format(confirmed_intent.id))
-                    
-                    # Production would also:
-                    # - Send confirmation email
-                    # - Update inventory
-                    # - Trigger fulfillment
-                    
-                elif confirmed_intent.status == 'requires_action':
-                    app.logger.warn('⚠️  Payment requires additional authentication')
-                    # Production would handle 3D Secure here
-                    
-                else:
-                    app.logger.error('❌ Payment failed with status: {}'.format(confirmed_intent.status))
-                    PromMetrics['PAYMENT_FAILURES'].labels(error_type='payment_failed').inc()
-                    return 'Payment failed', 400
-                
-            except stripe.error.CardError as e:
-                app.logger.error('❌ Card declined: {} (Code: {})'.format(str(e), e.code))
-                PromMetrics['PAYMENT_FAILURES'].labels(error_type='card_declined').inc()
-                PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
-                return 'Card declined: {}'.format(str(e)), 400
+                app.logger.info('✅ Stripe PaymentIntent Created!')
+                app.logger.info('   💳 Payment ID: {}'.format(payment_intent.id))
+                app.logger.info('   💰 Amount: £{:.2f} GBP'.format(payment_intent.amount / 100))
+                app.logger.info('   📊 Status: {}'.format(payment_intent.status))
+                app.logger.info('   🔗 Stripe Dashboard: https://dashboard.stripe.com/test/payments/{}'.format(payment_intent.id))
                 
             except stripe.error.StripeError as e:
-                app.logger.error('❌ Stripe API error: {} (Code: {})'.format(str(e), e.code if hasattr(e, 'code') else 'N/A'))
+                app.logger.error('❌ Stripe payment failed: {}'.format(str(e)))
                 PromMetrics['PAYMENT_FAILURES'].labels(error_type='stripe_error').inc()
                 PromMetrics['PAYMENT_REQUESTS'].labels(status='error').inc()
                 return 'Payment processing failed: {}'.format(str(e)), 400
-                
         else:
             app.logger.info('⚠️  Stripe keys not found - using demo mode')
 
