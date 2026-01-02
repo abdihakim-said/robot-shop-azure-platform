@@ -7,6 +7,20 @@ service:
   type: LoadBalancer
   port: 8080
 
+# Default autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Default ingress configuration  
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+
 resources:
   requests:
     cpu: 30m
