@@ -166,7 +166,7 @@ user:
     tag: "v20251230-61ae855"
 payment:
   image:
-    tag: "v20260102-5e7259d"
+    tag: "v20260102-54e01e3"
 shipping:
   image:
     tag: "v20251225-66ff23c"
