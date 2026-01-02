@@ -11,6 +11,16 @@ global:
     managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id | quote }}
     tenantId: {{ .Values.terraform.tenant_id | quote }}
 
+  # Production-grade security contexts
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+
 # Production-grade resource allocation for staging
 web:
   enabled: true
@@ -22,6 +32,95 @@ web:
     limits:
       cpu: 500m
       memory: 256Mi
+  # Inherit global security context
+  securityContext: {}
+
+cart:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  securityContext: {}
+
+catalogue:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  securityContext: {}
+
+user:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  securityContext: {}
+
+payment:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  securityContext: {}
+  keyVault:
+    enabled: true
+    secretProviderClass: stripe-secrets
+
+shipping:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext: {}
+
+ratings:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  securityContext: {}
+
+dispatch:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  securityContext: {}
 
 mysql:
   enabled: true

@@ -38,12 +38,22 @@ keyVault:
 # Individual services inherit from global
 cart:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
 catalogue:
   enabled: true
 user:
   enabled: true
 payment:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 60
 shipping:
   enabled: true
 ratings:
@@ -59,6 +69,11 @@ redis:
 
 web:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
   replicas: 1
   service:
     type: ClusterIP
