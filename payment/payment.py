@@ -189,8 +189,7 @@ def pay(id):
                 app.logger.info('🔐 Using Stripe keys from Azure Key Vault')
                 
                 # Create simple PaymentIntent with timeout protection
-                # Set Stripe timeout to prevent hanging
-                stripe.api_requestor.APIRequestor._default_timeout = 5
+                # Modern Stripe SDK handles timeouts automatically
                 
                 payment_intent = stripe.PaymentIntent.create(
                     amount=int(cart.get('total', 0) * 100),  # Convert to pence
