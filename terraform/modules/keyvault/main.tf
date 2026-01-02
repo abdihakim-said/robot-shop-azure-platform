@@ -73,4 +73,6 @@ resource "azurerm_key_vault_secret" "secrets" {
   name         = each.value.name
   value        = random_password.secrets[each.key].result
   key_vault_id = azurerm_key_vault.secrets.id
+
+  depends_on = [azurerm_key_vault.secrets]
 }

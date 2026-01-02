@@ -37,11 +37,30 @@ runs:
             ;;
         esac
     
-    - name: Update ArgoCD Application
+    - name: Update Helm Values
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        echo "🚀 Updating ArgoCD application for ${{ inputs.service-name }}"
-        echo "This would update the GitOps repository with new image tag"
-        echo "Image: robotshopacr.azurecr.io/${{ inputs.service-name }}:${{ inputs.image-tag }}"
+        echo "🚀 Updating Helm values for ${{ inputs.service-name }}"
+        
+        VALUES_FILE="helm-charts/robot-shop/values-${{ inputs.environment }}.yaml"
+        
+        if [ -f "$VALUES_FILE" ]; then
+          # Update the specific service image tag
+          sed -i "/^${{ inputs.service-name }}:/,/^[a-zA-Z]/ s/tag: .*/tag: \"${{ inputs.image-tag }}\"/" "$VALUES_FILE"
+          echo "✅ Updated ${{ inputs.service-name }} tag to ${{ inputs.image-tag }} in $VALUES_FILE"
+        else
+          echo "❌ Values file not found: $VALUES_FILE"
+          exit 1
+        fi
+    
+    - name: Validate Helm Values
+      shell: bash
+      run: |
+        echo "🔍 Validating Helm values syntax..."
+        if command -v helm &> /dev/null; then
+          helm lint helm-charts/robot-shop/ --values helm-charts/robot-shop/values-${{ inputs.environment }}.yaml
+        else
+          echo "⚠️ Helm not available, skipping validation"
+        fi

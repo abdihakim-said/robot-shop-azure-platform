@@ -13,6 +13,21 @@ output "aks_cluster_id" {
   value       = module.aks.cluster_id
 }
 
+output "key_vault_name" {
+  description = "Key Vault name"
+  value       = module.keyvault.key_vault_name
+}
+
+output "managed_identity_client_id" {
+  description = "AKS managed identity client ID"
+  value       = module.aks.kubelet_identity.client_id
+}
+
+output "tenant_id" {
+  description = "Azure tenant ID"
+  value       = module.keyvault.tenant_id
+}
+
 output "acr_login_server" {
   description = "ACR login server"
   value       = module.storage.acr_login_server

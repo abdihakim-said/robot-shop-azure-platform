@@ -155,11 +155,20 @@ module "keyvault" {
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
   random_suffix       = local.random_suffix
-  # Remove github_actions_object_id dependency
 
   secrets = var.secrets
 
+  # CRITICAL: Grant AKS managed identity access to Key Vault
+  access_policies = [
+    {
+      object_id          = module.aks.kubelet_identity.object_id
+      secret_permissions = ["Get"]
+    }
+  ]
+
   tags = local.common_tags
+
+  depends_on = [module.aks]
 }
 
 # Monitoring Module

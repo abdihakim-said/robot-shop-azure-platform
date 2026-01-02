@@ -1,94 +1,90 @@
-# Staging Environment Configuration - Production-like Security
+# Staging values - parameterized from Terraform outputs
 global:
-  imageRegistry: robotshopstagingacrx85x6u.azurecr.io
-  imageTag: latest  # Overridden by GitOps
-  imagePullPolicy: IfNotPresent
+  imageRegistry: {{ .Values.terraform.acr_login_server }}
+  imageTag: {{ .Values.terraform.image_tag }}
+  imagePullPolicy: Always
   environment: staging
   
-  # Global ingress configuration
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    hosts:
-      - host: robot-shop.robot-shop-staging.com
-        paths:
-          - path: /
-            pathType: Prefix
-            service: web
-            port: 8080
-  
-  monitoring:
-    enabled: true
-    scrapeInterval: 30s  # Production-like monitoring
+  # Azure integration from Terraform outputs
+  azure:
+    keyVaultName: {{ .Values.terraform.key_vault_name | quote }}
+    managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id | quote }}
+    tenantId: {{ .Values.terraform.tenant_id | quote }}
 
-# Staging security configuration
+# Production-grade resource allocation for staging
 web:
-  service:
-    type: ClusterIP  # Private cluster - no direct external access
-  ingress:
+  enabled: true
+  replicas: 2  # HA for staging
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+mysql:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  keyVault:
     enabled: true
-    className: nginx
-    annotations:
-      # TLS Configuration
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      # Security Headers
-      nginx.ingress.kubernetes.io/configuration-snippet: |
-        add_header X-Frame-Options "SAMEORIGIN" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-      # Rate Limiting
-      nginx.ingress.kubernetes.io/rate-limit-connections: "10"
-      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
-    hosts:
-      - host: staging.robot-shop.com  # Custom domain
-        paths:
-          - path: /
-            pathType: Prefix
-            service: web
-            port: 8080
-    tls:
-      - secretName: robot-shop-staging-tls
-        hosts:
-          - staging.robot-shop.com
+    secretProviderClass: mysql-secrets
+
+mongodb:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  keyVault:
+    enabled: true
+    secretProviderClass: mongodb-secrets
+
+redis:
+  enabled: true
   resources:
     requests:
       cpu: 50m
-      memory: 96Mi
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  keyVault:
+    enabled: true
+    secretProviderClass: redis-secrets
+
+rabbitmq:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
     limits:
       cpu: 300m
-      memory: 192Mi
-  monitoring:
+      memory: 512Mi
+  keyVault:
     enabled: true
+    secretProviderClass: rabbitmq-secrets
 
-# Production-like resources for staging
-redis:
+payment:
+  enabled: true
   resources:
     requests:
-      cpu: 30m
-      memory: 64Mi
-    limits:
-      cpu: 100m
+      cpu: 50m
       memory: 128Mi
-
-mysql:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
-
-mongodb:
-  resources:
-    requests:
-      cpu: 100m
+      cpu: 300m
       memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+  keyVault:
+    enabled: true
+    secretProviderClass: stripe-secrets

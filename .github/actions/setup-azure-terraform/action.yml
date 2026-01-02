@@ -1,0 +1,63 @@
+name: Setup Azure & Terraform
+description: Setup Azure CLI and Terraform with backend configuration
+
+inputs:
+  azure-credentials:
+    description: 'Azure service principal credentials'
+    required: true
+  terraform-version:
+    description: 'Terraform version to install'
+    required: false
+    default: '1.6.0'
+  working-directory:
+    description: 'Working directory for Terraform'
+    required: false
+    default: '.'
+  backend-config:
+    description: 'Enable backend configuration'
+    required: false
+    default: 'false'
+  backend-resource-group:
+    description: 'Backend resource group name'
+    required: false
+  backend-storage-account:
+    description: 'Backend storage account name'
+    required: false
+  backend-container:
+    description: 'Backend container name'
+    required: false
+    default: 'tfstate'
+  backend-key:
+    description: 'Backend state file key'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ inputs.azure-credentials }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      if: inputs.backend-config == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        terraform init \
+          -backend-config="resource_group_name=${{ inputs.backend-resource-group }}" \
+          -backend-config="storage_account_name=${{ inputs.backend-storage-account }}" \
+          -backend-config="container_name=${{ inputs.backend-container }}" \
+          -backend-config="key=${{ inputs.backend-key }}"
+
+    - name: Terraform Init (No Backend)
+      if: inputs.backend-config == 'false'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init

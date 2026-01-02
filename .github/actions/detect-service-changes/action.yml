@@ -1,0 +1,72 @@
+name: Detect Service Changes
+description: Detect which services have changed in a commit or PR
+
+inputs:
+  base-sha:
+    description: 'Base SHA for comparison (optional for push events)'
+    required: false
+  head-sha:
+    description: 'Head SHA for comparison (optional for push events)'
+    required: false
+  services:
+    description: 'Space-separated list of services to check'
+    required: false
+    default: 'web cart catalogue user payment shipping ratings dispatch mysql mongo'
+
+outputs:
+  services:
+    description: 'JSON array of changed services'
+    value: ${{ steps.detect.outputs.services }}
+  services-list:
+    description: 'Comma-separated list of changed services'
+    value: ${{ steps.detect.outputs.services-list }}
+  has-changes:
+    description: 'Whether any services changed'
+    value: ${{ steps.detect.outputs.has-changes }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect Changed Services
+      id: detect
+      shell: bash
+      run: |
+        # Determine comparison SHAs
+        if [ -n "${{ inputs.base-sha }}" ] && [ -n "${{ inputs.head-sha }}" ]; then
+          # PR mode
+          BASE_SHA="${{ inputs.base-sha }}"
+          HEAD_SHA="${{ inputs.head-sha }}"
+        else
+          # Push mode
+          BASE_SHA="${{ github.event.before }}"
+          HEAD_SHA="${{ github.sha }}"
+        fi
+        
+        echo "Comparing $BASE_SHA..$HEAD_SHA"
+        
+        CHANGED_SERVICES=""
+        SERVICES="${{ inputs.services }}"
+        
+        for service in $SERVICES; do
+          if git diff --name-only $BASE_SHA $HEAD_SHA | grep -q "^${service}/"; then
+            CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
+            echo "✅ Changed: $service"
+          fi
+        done
+        
+        # Remove trailing comma
+        CHANGED_SERVICES=${CHANGED_SERVICES%,}
+        
+        # Output as JSON array
+        if [ -n "$CHANGED_SERVICES" ]; then
+          JSON_ARRAY="[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]"
+          echo "services=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          echo "services-list=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+          echo "Changed services: $CHANGED_SERVICES"
+        else
+          echo "services=[]" >> $GITHUB_OUTPUT
+          echo "services-list=" >> $GITHUB_OUTPUT
+          echo "has-changes=false" >> $GITHUB_OUTPUT
+          echo "No service changes detected"
+        fi

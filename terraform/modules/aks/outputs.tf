@@ -8,6 +8,11 @@ output "cluster_name" {
   value       = azurerm_kubernetes_cluster.main.name
 }
 
+output "resource_group_name" {
+  description = "Resource group name"
+  value       = var.resource_group_name
+}
+
 output "kube_config" {
   description = "Kubernetes configuration"
   value       = azurerm_kubernetes_cluster.main.kube_config[0]

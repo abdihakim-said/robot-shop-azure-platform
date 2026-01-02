@@ -1,0 +1,111 @@
+name: Security Scan (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      services:
+        description: 'JSON array of services to scan'
+        required: true
+        type: string
+      scan-type:
+        description: 'Type of scan: pr, build, or infrastructure'
+        required: true
+        type: string
+      working-directory:
+        description: 'Working directory for scans'
+        required: false
+        type: string
+        default: '.'
+      fail-on-critical:
+        description: 'Fail pipeline on critical vulnerabilities'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: inputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(inputs.services) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Secret Detection
+      - name: Secret Detection (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ${{ inputs.working-directory }}
+          extra_args: --only-verified
+        continue-on-error: ${{ !inputs.fail-on-critical }}
+      
+      # 2. Dependency Vulnerability Scanning
+      - name: Dependency Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '${{ inputs.working-directory }}/${{ matrix.service }}'
+          format: 'sarif'
+          output: 'trivy-deps-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        continue-on-error: ${{ !inputs.fail-on-critical }}
+      
+      - name: Upload Dependency Scan Results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-deps-${{ matrix.service }}.sarif'
+          category: '${{ inputs.scan-type }}-dependencies-${{ matrix.service }}'
+      
+      # 3. SAST - Code Security Scanning
+      - name: Code Security Scan (Semgrep)
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan \
+            --config auto --sarif \
+            --output=/src/semgrep-${{ matrix.service }}.sarif \
+            /src/${{ inputs.working-directory }}/${{ matrix.service }}
+        continue-on-error: ${{ !inputs.fail-on-critical }}
+      
+      - name: Upload SAST Results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: semgrep-${{ matrix.service }}.sarif
+          category: '${{ inputs.scan-type }}-sast-${{ matrix.service }}'
+
+  infrastructure-security:
+    name: Infrastructure Security
+    runs-on: ubuntu-latest
+    if: inputs.scan-type == 'infrastructure'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tfsec (Infrastructure Security)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ${{ inputs.working-directory }}
+          soft_fail: ${{ !inputs.fail-on-critical }}
+
+      - name: Run Checkov (Policy Compliance)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ inputs.working-directory }}
+          framework: terraform
+          soft_fail: ${{ !inputs.fail-on-critical }}
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: Upload Security Results
+        if: always() && hashFiles('checkov-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov-results.sarif
+          category: infrastructure-security

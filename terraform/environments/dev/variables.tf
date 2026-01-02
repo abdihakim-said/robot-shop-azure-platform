@@ -135,6 +135,7 @@ variable "secrets" {
     length = optional(number, 16)
   }))
   default = {
+    # Monitoring secrets
     grafana = {
       name   = "grafana-admin-password"
       length = 20
@@ -143,13 +144,39 @@ variable "secrets" {
       name   = "prometheus-password"
       length = 16
     }
-    mysql = {
-      name   = "mysql-admin-password"
+    
+    # Database secrets (align with SecretProviderClass expectations)
+    mysql_root = {
+      name   = "mysql-root-password"
+      length = 20
+    }
+    mysql_user = {
+      name   = "mysql-user-password"
+      length = 20
+    }
+    mongodb_root = {
+      name   = "mongodb-root-password"
+      length = 20
+    }
+    mongodb_catalogue = {
+      name   = "mongodb-catalogue-password"
+      length = 20
+    }
+    mongodb_users = {
+      name   = "mongodb-users-password"
       length = 20
     }
     redis = {
       name   = "redis-password"
       length = 16
+    }
+    rabbitmq = {
+      name   = "rabbitmq-password"
+      length = 16
+    }
+    rabbitmq_cookie = {
+      name   = "rabbitmq-erlang-cookie"
+      length = 32
     }
   }
 }
