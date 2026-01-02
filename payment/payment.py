@@ -189,7 +189,6 @@ def pay(id):
                 app.logger.info('🔐 Using Stripe keys from Azure Key Vault')
                 
                 # Create simple PaymentIntent with timeout protection
-                import requests
                 # Set Stripe timeout to prevent hanging
                 stripe.api_requestor.APIRequestor._default_timeout = 5
                 
