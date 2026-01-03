@@ -126,6 +126,12 @@ variable "os_disk_type" {
   default     = "Managed"
 }
 
+variable "disk_encryption_set_id" {
+  description = "Disk encryption set ID for AKS cluster"
+  type        = string
+  default     = null
+}
+
 variable "only_critical_addons_enabled" {
   description = "Enable only critical addons on system nodes"
   type        = bool

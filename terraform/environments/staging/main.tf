@@ -79,6 +79,8 @@ module "aks" {
   max_pods_per_node               = 50          # Production-ready (CKV_AZURE_168)
   os_disk_type                    = "Ephemeral" # Better performance
   only_critical_addons_enabled    = true        # Security: System node taints (CKV_AZURE_232)
+  disk_encryption_set_id          = null        # Production would use customer-managed keys
+  only_critical_addons_enabled    = true        # Security: System node taints (CKV_AZURE_232)
 
   tags = local.common_tags
 

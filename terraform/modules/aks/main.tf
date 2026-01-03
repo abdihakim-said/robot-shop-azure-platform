@@ -18,6 +18,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   local_account_disabled    = var.local_account_disabled
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
+  
+  # Production-grade disk encryption (CKV_AZURE_117, CKV_AZURE_227)
+  disk_encryption_set_id = var.disk_encryption_set_id
 
   # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
   lifecycle {
