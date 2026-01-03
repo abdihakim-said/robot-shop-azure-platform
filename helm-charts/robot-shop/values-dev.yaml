@@ -86,6 +86,8 @@ web:
       memory: 128Mi
   monitoring:
     enabled: true
+  image:
+    tag: "v20251230-c3aa90e"
 
 # Minimal resources for dev infrastructure
 redis:
@@ -188,6 +190,3 @@ ratings:
 dispatch:
   image:
     tag: "v20251227-bc54ffa"
-web:
-  image:
-    tag: "v20251230-c3aa90e"
