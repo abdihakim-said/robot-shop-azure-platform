@@ -43,6 +43,8 @@ cart:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
+  image:
+    tag: "v20251230-2dd5359"
 catalogue:
   enabled: true
 user:
@@ -54,6 +56,8 @@ payment:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 60
+  image:
+    tag: "v20260102-54e01e3"
 shipping:
   enabled: true
 ratings:
@@ -169,18 +173,12 @@ rabbitmq:
       memory: 128Mi
 
 # All services get updated tags via GitOps
-cart:
-  image:
-    tag: "v20251230-2dd5359"
 catalogue:
   image:
     tag: "v20251227-59987d7"
 user:
   image:
     tag: "v20251230-61ae855"
-payment:
-  image:
-    tag: "v20260102-54e01e3"
 shipping:
   image:
     tag: "v20251225-66ff23c"
