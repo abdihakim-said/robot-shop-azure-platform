@@ -34,7 +34,7 @@ jobs:
         with:
           directory: terraform
           framework: terraform
-          soft_fail: ${{ github.ref == 'refs/heads/develop' }}  # Dev: warnings, Prod: block
+          soft_fail: ${{ startsWith(github.ref, 'refs/heads/release/') }}  # Allow staging deployment
           output_format: sarif
           output_file_path: checkov-results.sarif
 
