@@ -60,9 +60,6 @@ ratings:
   enabled: true
 dispatch:
   enabled: true
-web:
-  enabled: true
-
 # Infrastructure services
 redis:
   enabled: true

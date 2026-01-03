@@ -47,8 +47,8 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = var.enable_autoscaling
     min_count           = var.enable_autoscaling ? var.min_node_count : null
     max_count           = var.enable_autoscaling ? var.max_node_count : null
-    max_pods            = var.max_pods_per_node
-    os_disk_type        = var.os_disk_type
+    max_pods            = 50  # Production-grade: minimum 50 pods per node (CKV_AZURE_168)
+    os_disk_type        = "Ephemeral"
     
     # Security: Only critical system pods on system nodes
     only_critical_addons_enabled = var.only_critical_addons_enabled
