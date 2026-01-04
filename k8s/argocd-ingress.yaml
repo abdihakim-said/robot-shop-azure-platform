@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: argocd.robot-shop-dev.com
+  - host: argocd.hakimdevops.art
     http:
       paths:
       - path: /

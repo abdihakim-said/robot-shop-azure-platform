@@ -13,7 +13,7 @@ global:
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
     hosts:
-      - host: robot-shop.robot-shop-dev.com
+      - host: hakimdevops.art
         paths:
           - path: /
             pathType: Prefix
