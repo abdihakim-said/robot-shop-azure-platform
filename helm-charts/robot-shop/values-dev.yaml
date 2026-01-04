@@ -96,7 +96,7 @@ web:
   monitoring:
     enabled: true
   image:
-    tag: "v20251230-c3aa90e"
+    tag: "v20260104-d80b940"
 
 # Minimal resources for dev infrastructure
 redis:
