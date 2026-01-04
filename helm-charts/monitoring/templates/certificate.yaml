@@ -1,0 +1,39 @@
+{{- $kubePrometheusStack := index .Values "kube-prometheus-stack" }}
+{{- if $kubePrometheusStack.prometheus.ingress.tls }}
+{{- range $kubePrometheusStack.prometheus.ingress.tls }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .secretName }}
+  namespace: {{ $.Values.global.monitoring.namespace }}
+spec:
+  secretName: {{ .secretName }}
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    {{- range .hosts }}
+    - {{ . }}
+    {{- end }}
+---
+{{- end }}
+{{- end }}
+{{- if $kubePrometheusStack.grafana.ingress.tls }}
+{{- range $kubePrometheusStack.grafana.ingress.tls }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .secretName }}
+  namespace: {{ $.Values.global.monitoring.namespace }}
+spec:
+  secretName: {{ .secretName }}
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    {{- range .hosts }}
+    - {{ . }}
+    {{- end }}
+---
+{{- end }}
+{{- end }}

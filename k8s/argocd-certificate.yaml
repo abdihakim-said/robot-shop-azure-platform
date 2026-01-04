@@ -1,12 +1,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: hakimdevops-art-tls
-  namespace: robot-shop
+  name: argocd-hakimdevops-tls
+  namespace: argocd
 spec:
-  secretName: hakimdevops-art-tls
+  secretName: argocd-hakimdevops-tls
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
-  - hakimdevops.art
+  - argocd.hakimdevops.art
