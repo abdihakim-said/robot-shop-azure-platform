@@ -21,7 +21,7 @@ global:
             service: web
             port: 8080
     tls:
-      - secretName: hakimdevops-tls
+      - secretName: hakimdevops-art-tls
         hosts:
           - hakimdevops.art
   
