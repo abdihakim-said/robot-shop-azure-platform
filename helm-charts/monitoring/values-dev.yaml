@@ -13,15 +13,27 @@ kube-prometheus-stack:
     ingress:
       enabled: true
       ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "selfsigned-issuer"
       hosts:
         - prometheus.hakimdevops.art
+      tls:
+        - secretName: prometheus-hakimdevops-tls
+          hosts:
+            - prometheus.hakimdevops.art
   
   grafana:
     ingress:
       enabled: true
       ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "selfsigned-issuer"
       hosts:
         - grafana.hakimdevops.art
+      tls:
+        - secretName: grafana-hakimdevops-tls
+          hosts:
+            - grafana.hakimdevops.art
 
 alerts:
   enabled: true

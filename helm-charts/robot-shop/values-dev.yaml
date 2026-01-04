@@ -11,7 +11,8 @@ global:
     className: nginx
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "selfsigned-issuer"
     hosts:
       - host: hakimdevops.art
         paths:
@@ -19,6 +20,10 @@ global:
             pathType: Prefix
             service: web
             port: 8080
+    tls:
+      - secretName: hakimdevops-tls
+        hosts:
+          - hakimdevops.art
   
   # Azure Key Vault integration
   azure:
