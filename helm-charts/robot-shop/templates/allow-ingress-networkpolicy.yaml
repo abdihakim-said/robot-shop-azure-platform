@@ -8,8 +8,13 @@ metadata:
     component: ingress
 spec:
   podSelector:
-    matchLabels:
-      service: web
+    matchExpressions:
+    - key: service
+      operator: In
+      values: ["web"]
+    - key: acme.cert-manager.io/http01-solver
+      operator: In
+      values: ["true"]
   policyTypes:
   - Ingress
   ingress:
@@ -20,3 +25,10 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8089
