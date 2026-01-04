@@ -12,7 +12,12 @@ resource "azurerm_storage_account" "tfstate" {
   resource_group_name      = azurerm_resource_group.tfstate.name
   location                 = azurerm_resource_group.tfstate.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_replication_type = "GRS"  # CKV_AZURE_206: Use GRS replication
+  min_tls_version          = "TLS1_2"  # CKV_AZURE_44: TLS 1.2 minimum
+  
+  # CKV_AZURE_190: Restrict public access
+  public_network_access_enabled   = false
+  allow_nested_items_to_be_public = false
 
   blob_properties {
     versioning_enabled = true
