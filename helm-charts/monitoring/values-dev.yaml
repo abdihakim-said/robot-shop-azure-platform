@@ -14,14 +14,14 @@ kube-prometheus-stack:
       enabled: true
       ingressClassName: nginx
       hosts:
-        - prometheus.robot-shop-dev.com
+        - prometheus.hakimdevops.art
   
   grafana:
     ingress:
       enabled: true
       ingressClassName: nginx
       hosts:
-        - grafana.robot-shop-dev.com
+        - grafana.hakimdevops.art
 
 alerts:
   enabled: true
