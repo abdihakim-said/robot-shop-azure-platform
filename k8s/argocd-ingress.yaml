@@ -6,8 +6,13 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - argocd.hakimdevops.art
+    secretName: argocd-hakimdevops-tls
   rules:
   - host: argocd.hakimdevops.art
     http:
