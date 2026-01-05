@@ -3,6 +3,10 @@ image:
   tag: "7.2.4-alpine"  # Secure version with Alpine base
   pullPolicy: IfNotPresent
 
+service:
+  type: ClusterIP
+  port: 6379
+
 # Enable authentication
 auth:
   enabled: true

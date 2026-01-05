@@ -10,7 +10,7 @@ spec:
     kind: Deployment
     name: {{ .Chart.Name }}
   updatePolicy:
-    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" | quote }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ .Chart.Name }}

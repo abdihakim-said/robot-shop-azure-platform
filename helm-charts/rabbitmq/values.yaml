@@ -3,6 +3,10 @@ image:
   tag: "3.12.10-management-alpine"  # Secure version with management UI
   pullPolicy: IfNotPresent
 
+service:
+  type: ClusterIP
+  port: 5672
+
 # Enable authentication
 auth:
   enabled: true

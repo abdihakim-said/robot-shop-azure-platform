@@ -256,10 +256,10 @@ rabbitmq:
   resources:
     requests:
       cpu: 30m
-      memory: 64Mi
-    limits:
-      cpu: 150m
       memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
 
 # All services get updated tags via GitOps
 catalogue:

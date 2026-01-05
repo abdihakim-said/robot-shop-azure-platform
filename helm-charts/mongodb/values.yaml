@@ -3,6 +3,10 @@ image:
   tag: "v20251227-a94e952"  # Fixed MongoDB user creation script
   pullPolicy: Always
 
+service:
+  type: ClusterIP
+  port: 27017
+
 # Enable authentication
 auth:
   enabled: true
