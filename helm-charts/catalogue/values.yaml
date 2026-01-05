@@ -14,3 +14,12 @@ resources:
   limits:
     cpu: 200m
     memory: 128Mi
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minCpu: "5m"
+  maxCpu: "200m"
+  minMemory: "32Mi"
+  maxMemory: "128Mi"

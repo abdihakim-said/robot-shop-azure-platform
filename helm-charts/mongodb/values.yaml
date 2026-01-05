@@ -43,3 +43,12 @@ resources:
 keyVault:
   enabled: true
   secretProviderClass: mongodb-secrets
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Off"  # Recommendations only for databases
+  minCpu: "10m"
+  maxCpu: "500m"
+  minMemory: "64Mi"
+  maxMemory: "1Gi"

@@ -59,8 +59,22 @@ cart:
     tag: "v20251230-2dd5359"
 catalogue:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
 user:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
 payment:
   enabled: true
   autoscaling:
@@ -79,13 +93,41 @@ payment:
     tag: "v20260102-54e01e3"
 shipping:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "200m"
+    minMemory: "64Mi"
+    maxMemory: "512Mi"
 ratings:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
 dispatch:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "50m"
+    minMemory: "16Mi"
+    maxMemory: "64Mi"
 # Infrastructure services
 redis:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Off"  # Recommendations only
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "16Mi"
+    maxMemory: "128Mi"
 
 web:
   enabled: true
@@ -138,6 +180,13 @@ redis:
 # Infrastructure services configuration
 mysql:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Off"  # Recommendations only
+    minCpu: "10m"
+    maxCpu: "300m"
+    minMemory: "256Mi"
+    maxMemory: "1Gi"
   image:
     tag: "v20251225-b261c8b"
   replicas: 1
@@ -156,6 +205,13 @@ mysql:
 
 mongodb:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Off"  # Recommendations only
+    minCpu: "10m"
+    maxCpu: "300m"
+    minMemory: "128Mi"
+    maxMemory: "512Mi"
   service:
     type: ClusterIP
     port: 27017
@@ -184,6 +240,13 @@ mongodb:
 
 rabbitmq:
   enabled: true
+  vpa:
+    enabled: true
+    updateMode: "Off"  # Recommendations only
+    minCpu: "10m"
+    maxCpu: "200m"
+    minMemory: "64Mi"
+    maxMemory: "256Mi"
   service:
     type: ClusterIP
     port: 5672
