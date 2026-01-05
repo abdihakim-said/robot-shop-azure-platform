@@ -46,16 +46,6 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: users-password
-        - name: MONGO_CATALOGUE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: catalogue-password
-        - name: MONGO_USERS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: users-password
         volumeMounts:
         - name: secrets-store
           mountPath: "/mnt/secrets-store"

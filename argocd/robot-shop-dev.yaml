@@ -49,11 +49,11 @@ spec:
       - Replace=true  # Force replace for VPA resources
       - ServerSideApply=true  # Better handling of large resources
     retry:
-      limit: 5
+      limit: 10  # More attempts before giving up
       backoff:
-        duration: 5s
+        duration: 10s
         factor: 2
-        maxDuration: 3m
+        maxDuration: 5m
   
   # Health checks and ignore differences
   ignoreDifferences:
@@ -69,14 +69,3 @@ spec:
   
   # Resource management
   revisionHistoryLimit: 10
-  
-  # Operation settings
-  operation:
-    initiatedBy:
-      automated: true
-    sync:
-      syncOptions:
-        - CreateNamespace=true
-        - PrunePropagationPolicy=foreground
-        - Replace=true
-        - ServerSideApply=true
