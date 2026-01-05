@@ -51,7 +51,6 @@ cart:
   vpa:
     enabled: true
     updateMode: "Auto"
-    minReplicas: 1
     minCpu: "5m"
     maxCpu: "100m"
     minMemory: "32Mi"
@@ -72,7 +71,6 @@ payment:
   vpa:
     enabled: true
     updateMode: "Auto"
-    minReplicas: 1
     minCpu: "5m"
     maxCpu: "100m"
     minMemory: "32Mi"
@@ -99,7 +97,6 @@ web:
   vpa:
     enabled: true
     updateMode: "Auto"
-    minReplicas: 1
     minCpu: "5m"
     maxCpu: "200m"
     minMemory: "32Mi"
