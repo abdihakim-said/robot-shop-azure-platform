@@ -14,6 +14,15 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
 
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Auto"  # Auto, Off, Initial
+  minCpu: "5m"
+  maxCpu: "500m"
+  minMemory: "16Mi"
+  maxMemory: "512Mi"
+
 # Default ingress configuration  
 ingress:
   enabled: false

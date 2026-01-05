@@ -48,6 +48,13 @@ cart:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
   image:
     tag: "v20251230-2dd5359"
 catalogue:
@@ -61,6 +68,13 @@ payment:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 60
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
   image:
     tag: "v20260102-54e01e3"
 shipping:
@@ -80,6 +94,13 @@ web:
     minReplicas: 1
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "200m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
   replicas: 1
   service:
     type: ClusterIP

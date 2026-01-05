@@ -14,6 +14,15 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 60
 
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minCpu: "5m"
+  maxCpu: "200m"
+  minMemory: "32Mi"
+  maxMemory: "128Mi"
+
 resources:
   requests:
     cpu: 30m
