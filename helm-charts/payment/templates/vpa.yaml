@@ -11,6 +11,7 @@ spec:
     name: {{ .Chart.Name }}
   updatePolicy:
     updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+    minReplicas: {{ .Values.vpa.minReplicas | default 1 }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ .Chart.Name }}
