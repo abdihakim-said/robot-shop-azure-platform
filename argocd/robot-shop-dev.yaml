@@ -11,6 +11,8 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: robot-shop-dev
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   
@@ -26,8 +28,8 @@ spec:
           value: dev
         - name: global.securityContext.runAsNonRoot
           value: "true"
-        # Individual service image tags removed - handled by GitOps pipeline
-        # GitOps updates values-dev.yaml directly with new image tags
+      # Skip CRDs to avoid conflicts
+      skipCrds: false
   
   destination:
     server: https://kubernetes.default.svc
@@ -44,6 +46,8 @@ spec:
       - PruneLast=true
       - ApplyOutOfSyncOnly=true
       - RespectIgnoreDifferences=true
+      - Replace=true  # Force replace for VPA resources
+      - ServerSideApply=true  # Better handling of large resources
     retry:
       limit: 5
       backoff:
@@ -51,11 +55,28 @@ spec:
         factor: 2
         maxDuration: 3m
   
-  # Health checks for all resources
+  # Health checks and ignore differences
   ignoreDifferences:
     - group: apps
       kind: Deployment
       jsonPointers:
         - /spec/replicas
+    - group: autoscaling.k8s.io
+      kind: VerticalPodAutoscaler
+      jsonPointers:
+        - /status
+        - /spec/updatePolicy/updateMode
   
+  # Resource management
   revisionHistoryLimit: 10
+  
+  # Operation settings
+  operation:
+    initiatedBy:
+      automated: true
+    sync:
+      syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - Replace=true
+        - ServerSideApply=true
