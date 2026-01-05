@@ -46,9 +46,4 @@ spec:
           mountPath: "/mnt/secrets-store"
           readOnly: true
         resources:
-          requests:
-            cpu: 30m
-            memory: 64Mi
-          limits:
-            cpu: 200m
-            memory: 128Mi
+{{ toYaml .Values.resources | indent 10 }}
