@@ -1,5 +1,10 @@
 # Environment-specific overrides for dev
 cluster-autoscaler:
+  # AKS-specific configuration
+  cloudProvider: azure
+  azureResourceGroup: robot-shop-dev-rg
+  azureClusterName: robot-shop-dev-aks
+  
   # Dev environment scaling
   autoscalingGroups:
     - name: agentpool
@@ -23,13 +28,14 @@ cluster-autoscaler:
   # Dev logging (more verbose)
   verbosity: 6
   
-  # Dev-specific extra args
+  # Fix: Proper extraArgs structure
   extraArgs:
-    - --balance-similar-node-groups=true
-    - --skip-nodes-with-local-storage=false
-    - --skip-nodes-with-system-pods=false
-    - --scale-down-enabled=true
-    - --scale-down-delay-after-add=5m
-    - --scale-down-unneeded-time=5m
-    - --max-node-provision-time=10m
-    - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/robot-shop-dev-aks
+    balance-similar-node-groups: true
+    skip-nodes-with-local-storage: false
+    skip-nodes-with-system-pods: false
+    scale-down-enabled: true
+    scale-down-delay-after-add: 5m
+    scale-down-unneeded-time: 5m
+    max-node-provision-time: 10m
+    expander: "least-waste"  # Fix: Add required expander field
+    node-group-auto-discovery: "asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/robot-shop-dev-aks"
