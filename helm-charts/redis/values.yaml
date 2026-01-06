@@ -7,6 +7,13 @@ service:
   type: ClusterIP
   port: 6379
 
+# Default autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
 # Enable authentication
 auth:
   enabled: true
