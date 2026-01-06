@@ -1,6 +1,6 @@
 apiVersion: v2
-name: catalogue
-description: Robot Shop Catalogue Service
-type: application
-version: 1.0.1
 appVersion: "1.0"
+description: Robot Shop Catalogue Service
+name: catalogue
+type: application
+version: 1.0.0

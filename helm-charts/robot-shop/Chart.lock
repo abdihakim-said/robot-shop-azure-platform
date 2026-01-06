@@ -1,7 +1,7 @@
 dependencies:
 - name: redis
   repository: file://../redis
-  version: 1.0.0
+  version: 1.0.1
 - name: rabbitmq
   repository: file://../rabbitmq
   version: 1.0.0
@@ -13,10 +13,10 @@ dependencies:
   version: 1.0.3
 - name: catalogue
   repository: file://../catalogue
-  version: 1.0.0
+  version: 1.0.1
 - name: user
   repository: file://../user
-  version: 1.0.0
+  version: 1.0.1
 - name: cart
   repository: file://../cart
   version: 1.0.1
@@ -25,15 +25,15 @@ dependencies:
   version: 1.0.0
 - name: shipping
   repository: file://../shipping
-  version: 1.0.0
+  version: 1.0.1
 - name: ratings
   repository: file://../ratings
-  version: 1.0.0
+  version: 1.0.1
 - name: dispatch
   repository: file://../dispatch
-  version: 1.0.0
+  version: 1.0.1
 - name: web
   repository: file://../web
   version: 1.0.0
-digest: sha256:2bb4ae850957b3d7e0a4453ae21c81b4de463c59e06672687f72988f77708570
-generated: "2025-12-27T02:52:09.959744Z"
+digest: sha256:9a2434ca13b453d9e47bcbdc22fcaf1698d30da53f67c8fe30ad66fc0bd14a71
+generated: "2026-01-06T08:55:05.06236+03:00"
