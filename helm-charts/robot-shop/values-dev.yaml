@@ -71,6 +71,8 @@ catalogue:
     maxCpu: "100m"
     minMemory: "32Mi"
     maxMemory: "128Mi"
+  image:
+    tag: "v20251227-59987d7"
 user:
   enabled: true
   autoscaling:
@@ -85,8 +87,8 @@ user:
     maxCpu: "100m"
     minMemory: "32Mi"
     maxMemory: "128Mi"
-    minMemory: "32Mi"
-    maxMemory: "128Mi"
+  image:
+    tag: "v20251230-61ae855"
 payment:
   enabled: true
   autoscaling:
@@ -117,6 +119,8 @@ shipping:
     maxCpu: "200m"
     minMemory: "64Mi"
     maxMemory: "512Mi"
+  image:
+    tag: "v20251225-66ff23c"
 ratings:
   enabled: true
   autoscaling:
@@ -131,6 +135,8 @@ ratings:
     maxCpu: "100m"
     minMemory: "32Mi"
     maxMemory: "128Mi"
+  image:
+    tag: "v20251223-f9c148e"
 dispatch:
   enabled: true
   autoscaling:
@@ -145,6 +151,8 @@ dispatch:
     maxCpu: "50m"
     minMemory: "16Mi"
     maxMemory: "64Mi"
+  image:
+    tag: "v20251227-bc54ffa"
 # Infrastructure services
 redis:
   enabled: true
@@ -271,14 +279,6 @@ mongodb:
     limits:
       cpu: 500m
       memory: 512Mi
-      memory: 512Mi
-  resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
 
 rabbitmq:
   enabled: true
@@ -308,19 +308,4 @@ rabbitmq:
       cpu: 200m
       memory: 512Mi
 
-# All services get updated tags via GitOps
-catalogue:
-  image:
-    tag: "v20251227-59987d7"
-user:
-  image:
-    tag: "v20251230-61ae855"
-shipping:
-  image:
-    tag: "v20251225-66ff23c"
-ratings:
-  image:
-    tag: "v20251223-f9c148e"
-dispatch:
-  image:
-    tag: "v20251227-bc54ffa"
+
