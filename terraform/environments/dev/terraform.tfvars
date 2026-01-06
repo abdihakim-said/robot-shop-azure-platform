@@ -13,7 +13,7 @@ node_count         = 1
 vm_size            = "Standard_D2s_v3"
 enable_autoscaling = true
 min_node_count     = 1
-max_node_count     = 2
+max_node_count     = 5
 
 # Storage Configuration
 acr_sku                  = "Basic"
