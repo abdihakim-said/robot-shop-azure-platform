@@ -180,6 +180,11 @@ redis:
 # Infrastructure services configuration
 mysql:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
     updateMode: "Auto"  # Enable auto-optimization for cost savings
@@ -205,6 +210,11 @@ mysql:
 
 mongodb:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
     updateMode: "Auto"  # Enable auto-optimization for cost savings
@@ -240,6 +250,11 @@ mongodb:
 
 rabbitmq:
   enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
     updateMode: "Auto"  # Enable auto-optimization for cost savings
