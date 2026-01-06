@@ -123,7 +123,7 @@ redis:
   enabled: true
   vpa:
     enabled: true
-    updateMode: "Off"  # Recommendations only
+    updateMode: "Auto"  # Enable auto-optimization for cost savings
     minCpu: "5m"
     maxCpu: "100m"
     minMemory: "16Mi"
@@ -182,7 +182,7 @@ mysql:
   enabled: true
   vpa:
     enabled: true
-    updateMode: "Off"  # Recommendations only
+    updateMode: "Auto"  # Enable auto-optimization for cost savings
     minCpu: "10m"
     maxCpu: "300m"
     minMemory: "256Mi"
@@ -207,7 +207,7 @@ mongodb:
   enabled: true
   vpa:
     enabled: true
-    updateMode: "Off"  # Recommendations only
+    updateMode: "Auto"  # Enable auto-optimization for cost savings
     minCpu: "10m"
     maxCpu: "300m"
     minMemory: "128Mi"
@@ -242,7 +242,7 @@ rabbitmq:
   enabled: true
   vpa:
     enabled: true
-    updateMode: "Off"  # Recommendations only
+    updateMode: "Auto"  # Enable auto-optimization for cost savings
     minCpu: "10m"
     maxCpu: "200m"
     minMemory: "64Mi"
