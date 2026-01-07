@@ -147,7 +147,7 @@ module "storage" {
   source = "../../modules/storage"
 
   acr_name             = "${replace(local.name_prefix, "-", "")}acr"
-  storage_account_name = "${replace(local.name_prefix, "-", "")}storage${local.random_suffix}"
+  storage_account_name = "robotshopdevst${local.random_suffix}"
   location             = var.location
   resource_group_name  = azurerm_resource_group.main.name
 
