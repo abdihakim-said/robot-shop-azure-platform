@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
   backend "azurerm" {
     # Dynamic configuration via CI/CD pipeline
@@ -29,9 +33,16 @@ resource "azurerm_resource_group" "shared" {
   tags     = local.common_tags
 }
 
+# Random suffix for globally unique ACR name
+resource "random_string" "acr_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
 # Container Registry for all environments
 resource "azurerm_container_registry" "shared" {
-  name                = "${replace(var.project_name, "-", "")}acr"
+  name                = "${replace(var.project_name, "-", "")}acr${random_string.acr_suffix.result}"
   resource_group_name = azurerm_resource_group.shared.name
   location            = azurerm_resource_group.shared.location
   sku                 = "Basic"
