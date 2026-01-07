@@ -154,26 +154,39 @@ dispatch:
   image:
     tag: "v20251227-bc54ffa"
 # Infrastructure services
+# Infrastructure services
 redis:
   enabled: true
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 3
+    enabled: false  # Disable HPA for cache (needs Redis Cluster for HA)
+    minReplicas: 1
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
-    updateMode: "Auto"  # Enable auto-optimization for cost savings
+    updateMode: "Auto"
     minCpu: "5m"
     maxCpu: "100m"
     minMemory: "16Mi"
     maxMemory: "128Mi"
+  service:
+    type: ClusterIP
+    port: 6379
+  auth:
+    enabled: true
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
 
 web:
   enabled: true
   autoscaling:
     enabled: true
-    minReplicas: 2  # Changed from 1 to enable VPA Auto mode
+    minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
   vpa:
@@ -186,7 +199,6 @@ web:
   replicas: 1
   service:
     type: ClusterIP
-  # Disable individual chart ingress to avoid conflicts
   ingress:
     enabled: false
   resources:
@@ -201,33 +213,17 @@ web:
   image:
     tag: "v20260104-d80b940"
 
-# Minimal resources for dev infrastructure
-redis:
-  enabled: true
-  service:
-    type: ClusterIP
-    port: 6379
-  auth:
-    enabled: true  # Enable auth to match Azure Key Vault integration
-  resources:
-    requests:
-      cpu: 20m
-      memory: 32Mi
-    limits:
-      cpu: 100m
-      memory: 64Mi
-
 # Infrastructure services configuration
 mysql:
   enabled: true
   autoscaling:
-    enabled: true
-    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
-    maxReplicas: 3
+    enabled: false  # Disable HPA for stateful database
+    minReplicas: 1
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
-    updateMode: "Auto"  # Enable auto-optimization for cost savings
+    updateMode: "Auto"
     minCpu: "10m"
     maxCpu: "300m"
     minMemory: "256Mi"
@@ -251,13 +247,13 @@ mysql:
 mongodb:
   enabled: true
   autoscaling:
-    enabled: true
-    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
-    maxReplicas: 3
+    enabled: false  # Disable HPA for stateful database
+    minReplicas: 1
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
-    updateMode: "Auto"  # Enable auto-optimization for cost savings
+    updateMode: "Auto"
     minCpu: "10m"
     maxCpu: "300m"
     minMemory: "128Mi"
@@ -283,13 +279,13 @@ mongodb:
 rabbitmq:
   enabled: true
   autoscaling:
-    enabled: true
-    minReplicas: 2  # Enable 2 replicas for VPA Auto mode
-    maxReplicas: 3
+    enabled: false  # Disable HPA for message queue (needs cluster configuration)
+    minReplicas: 1
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 70
   vpa:
     enabled: true
-    updateMode: "Auto"  # Enable auto-optimization for cost savings
+    updateMode: "Auto"
     minCpu: "10m"
     maxCpu: "200m"
     minMemory: "64Mi"
