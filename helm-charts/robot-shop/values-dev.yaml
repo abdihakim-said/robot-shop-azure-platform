@@ -157,6 +157,7 @@ dispatch:
 # Infrastructure services
 redis:
   enabled: true
+  replicas: 1  # Force single replica for cache
   autoscaling:
     enabled: false  # Disable HPA for cache (needs Redis Cluster for HA)
     minReplicas: 1

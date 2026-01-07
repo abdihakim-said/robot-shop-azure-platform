@@ -5,7 +5,7 @@ metadata:
   labels:
     service: {{ .Chart.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   selector:
     matchLabels:
       service: {{ .Chart.Name }}

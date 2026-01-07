@@ -1,16 +1,16 @@
 dependencies:
 - name: redis
   repository: file://../redis
-  version: 1.0.1
+  version: 1.0.2
 - name: rabbitmq
   repository: file://../rabbitmq
-  version: 1.0.0
+  version: 1.0.1
 - name: mongodb
   repository: file://../mongodb
-  version: 1.0.0
+  version: 1.0.1
 - name: mysql
   repository: file://../mysql
-  version: 1.0.3
+  version: 1.0.4
 - name: catalogue
   repository: file://../catalogue
   version: 1.0.1
@@ -35,5 +35,5 @@ dependencies:
 - name: web
   repository: file://../web
   version: 1.0.0
-digest: sha256:9a2434ca13b453d9e47bcbdc22fcaf1698d30da53f67c8fe30ad66fc0bd14a71
-generated: "2026-01-06T08:55:05.06236+03:00"
+digest: sha256:4eb54380f83e5b6a694e96b0ba292442cb7a7dc0f120ffdc22e6a21b730549ff
+generated: "2026-01-07T12:14:53.385605+03:00"
