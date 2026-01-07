@@ -100,14 +100,14 @@ module "aks" {
   max_node_count     = var.max_node_count
 
   # Security settings (enhanced for dev)
-  private_cluster_enabled         = false       # Match current cluster to prevent replacement
-  local_account_disabled          = false       # Requires AAD integration
-  sku_tier                        = "Standard"  # SECURITY FIX: Paid SLA
-  automatic_channel_upgrade       = "stable"    # SECURITY FIX: Stable updates
-  api_server_authorized_ip_ranges = []          # SECURITY FIX: Restrict access
-  max_pods_per_node               = 50          # SECURITY FIX: Production density
-  os_disk_type                    = "Managed"   # COMPATIBILITY FIX: Standard_D2s_v3 doesn't support Ephemeral
-  only_critical_addons_enabled    = true        # SECURITY FIX: System node pool isolation
+  private_cluster_enabled         = false      # Match current cluster to prevent replacement
+  local_account_disabled          = false      # Requires AAD integration
+  sku_tier                        = "Standard" # SECURITY FIX: Paid SLA
+  automatic_channel_upgrade       = "stable"   # SECURITY FIX: Stable updates
+  api_server_authorized_ip_ranges = []         # SECURITY FIX: Restrict access
+  max_pods_per_node               = 50         # SECURITY FIX: Production density
+  os_disk_type                    = "Managed"  # COMPATIBILITY FIX: Standard_D2s_v3 doesn't support Ephemeral
+  only_critical_addons_enabled    = true       # SECURITY FIX: System node pool isolation
 
   tags = local.common_tags
 
