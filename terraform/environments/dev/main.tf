@@ -1,4 +1,5 @@
-# Robot Shop Development Environment - Updated 2025-12-20
+# Robot Shop Development Environment - Updated 2026-01-07
+# Trigger pipeline with complete Azure permissions
 terraform {
   required_version = ">= 1.0"
 
