@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
     helm = {
       source  = "hashicorp/helm"
       version = "~> 2.0"
@@ -47,12 +51,19 @@ data "terraform_remote_state" "shared" {
   }
 }
 
+# Random suffix for unique resource naming
+resource "random_string" "suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 locals {
   environment = "dev"
   name_prefix = "${var.project_name}-${local.environment}"
 
   # Generate random suffix locally for dev environment
-  random_suffix = "dev123"
+  random_suffix = random_string.suffix.result
 
   common_tags = {
     Environment = local.environment
@@ -136,7 +147,7 @@ module "storage" {
   source = "../../modules/storage"
 
   acr_name             = "${replace(local.name_prefix, "-", "")}acr"
-  storage_account_name = "${replace(local.name_prefix, "-", "")}storage"
+  storage_account_name = "${replace(local.name_prefix, "-", "")}storage${local.random_suffix}"
   location             = var.location
   resource_group_name  = azurerm_resource_group.main.name
 
