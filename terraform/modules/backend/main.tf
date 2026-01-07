@@ -16,7 +16,7 @@ resource "azurerm_storage_account" "tfstate" {
   min_tls_version          = "TLS1_2" # CKV_AZURE_44: TLS 1.2 minimum
 
   # CKV_AZURE_190: Restrict public access (but allow for GitHub Actions)
-  public_network_access_enabled   = true  # Required for GitHub Actions access
+  public_network_access_enabled   = true # Required for GitHub Actions access
   allow_nested_items_to_be_public = false
 
   blob_properties {
