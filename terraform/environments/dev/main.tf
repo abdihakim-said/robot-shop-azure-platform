@@ -1,5 +1,6 @@
 # Robot Shop Development Environment - Updated 2026-01-07
 # Trigger pipeline with complete Azure permissions
+# Storage account public access enabled for GitHub Actions
 terraform {
   required_version = ">= 1.0"
 
