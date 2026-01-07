@@ -18,9 +18,9 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
       # Production-grade CSI configuration with autorotation (CKV_AZURE_172)
       secrets-store-csi-driver = {
         enableSecretRotation = true
-        rotationPollInterval = "2m"  # Production-grade autorotation
+        rotationPollInterval = "2m" # Production-grade autorotation
       }
-      
+
       # Align with your existing Azure Key Vault setup
       linux = {
         image = {

@@ -144,7 +144,7 @@ variable "secrets" {
       name   = "prometheus-password"
       length = 16
     }
-    
+
     # Database secrets (align with SecretProviderClass expectations)
     mysql_root = {
       name   = "mysql-root-password"
@@ -178,7 +178,7 @@ variable "secrets" {
       name   = "rabbitmq-erlang-cookie"
       length = 32
     }
-    
+
     # Payment service secrets
     stripe_secret = {
       name   = "stripe-secret-key"

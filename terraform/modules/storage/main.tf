@@ -41,8 +41,8 @@ resource "azurerm_storage_account" "main" {
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = var.storage_account_tier
-  account_replication_type = "GRS"  # Production-grade geo-redundant storage (CKV_AZURE_206)
-  
+  account_replication_type = "GRS" # Production-grade geo-redundant storage (CKV_AZURE_206)
+
   # Security: Use latest TLS version (CKV_AZURE_44)
   min_tls_version = "TLS1_2"
 

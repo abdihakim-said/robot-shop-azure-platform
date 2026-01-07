@@ -18,7 +18,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   local_account_disabled    = var.local_account_disabled
   sku_tier                  = var.sku_tier
   automatic_channel_upgrade = var.automatic_channel_upgrade
-  
+
   # Production-grade disk encryption (CKV_AZURE_117, CKV_AZURE_227)
   disk_encryption_set_id = var.disk_encryption_set_id
 
@@ -50,9 +50,9 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = var.enable_autoscaling
     min_count           = var.enable_autoscaling ? var.min_node_count : null
     max_count           = var.enable_autoscaling ? var.max_node_count : null
-    max_pods            = 50  # Production-grade: minimum 50 pods per node (CKV_AZURE_168)
+    max_pods            = 50 # Production-grade: minimum 50 pods per node (CKV_AZURE_168)
     os_disk_type        = "Ephemeral"
-    
+
     # Security: Only critical system pods on system nodes (CKV_AZURE_232)
     only_critical_addons_enabled = var.only_critical_addons_enabled
 
