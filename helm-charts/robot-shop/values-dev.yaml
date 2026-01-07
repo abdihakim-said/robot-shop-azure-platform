@@ -246,6 +246,7 @@ mysql:
 
 mongodb:
   enabled: true
+  replicas: 1  # Force single replica for stateful database
   autoscaling:
     enabled: false  # Disable HPA for stateful database
     minReplicas: 1
@@ -278,6 +279,7 @@ mongodb:
 
 rabbitmq:
   enabled: true
+  replicas: 1  # Force single replica for message queue
   autoscaling:
     enabled: false  # Disable HPA for message queue (needs cluster configuration)
     minReplicas: 1
