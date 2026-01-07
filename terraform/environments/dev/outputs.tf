@@ -42,3 +42,8 @@ output "get_credentials_command" {
   description = "Command to get AKS credentials"
   value       = "az aks get-credentials --resource-group ${azurerm_resource_group.main.name} --name ${module.aks.cluster_name}"
 }
+
+output "acr_name" {
+  description = "ACR name"
+  value       = module.storage.acr_name
+}
