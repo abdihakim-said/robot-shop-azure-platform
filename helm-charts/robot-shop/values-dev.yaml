@@ -1,7 +1,7 @@
-# Global values override individual chart values
+# Global values override individual chart values - Templated from Terraform outputs
 global:
-  imageRegistry: robotshopacr.azurecr.io
-  imageTag: tested-v20251223-d5d1466
+  imageRegistry: {{ .Values.terraform.acr_login_server | default "robotshopacr.azurecr.io" }}
+  imageTag: {{ .Values.terraform.image_tag | default "tested-v20251223-d5d1466" }}
   imagePullPolicy: Always
   environment: dev
   
@@ -25,9 +25,11 @@ global:
         hosts:
           - hakimdevops.art
   
-  # Azure Key Vault integration
+  # Azure Key Vault integration - Dynamic from Terraform
   azure:
-    keyVaultName: "robot-shop-dev-kv"
+    keyVaultName: {{ .Values.terraform.key_vault_name | default "robot-shop-dev-kv" | quote }}
+    managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id | default "" | quote }}
+    tenantId: {{ .Values.terraform.tenant_id | default "" | quote }}
     managedIdentityClientId: "{{ .Values.azure.managedIdentityClientId }}"
   
   # Database security (retrieved from Key Vault)
@@ -264,7 +266,7 @@ mongodb:
     type: ClusterIP
     port: 27017
   image:
-    repository: robotshopacr.azurecr.io/mongo
+    repository: {{ .Values.global.imageRegistry | default "robotshopacr.azurecr.io" }}/mongo
     tag: "v20251227-a94e952"
   keyVault:
     enabled: true

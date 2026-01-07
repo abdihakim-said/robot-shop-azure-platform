@@ -11,13 +11,13 @@ dependencies:
     version: "1.0.2"
     repository: "file://../redis"
   - name: rabbitmq
-    version: "1.0.1"
+    version: "1.0.2"
     repository: "file://../rabbitmq"
   - name: mongodb
     version: "1.0.1"
     repository: "file://../mongodb"
   - name: mysql
-    version: "1.0.4"
+    version: "1.0.5"
     repository: "file://../mysql"
   
   # Application Services (Deploy After Infrastructure)

@@ -178,5 +178,15 @@ variable "secrets" {
       name   = "rabbitmq-erlang-cookie"
       length = 32
     }
+    
+    # Payment service secrets
+    stripe_secret = {
+      name   = "stripe-secret-key"
+      length = 32
+    }
+    stripe_publishable = {
+      name   = "stripe-publishable-key"
+      length = 32
+    }
   }
 }

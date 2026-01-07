@@ -172,6 +172,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Deploy Dev Environment
+        id: deploy-dev
         run: |
           cd terraform/environments/dev
           terraform init \
@@ -182,6 +183,18 @@ jobs:
           
           terraform apply -auto-approve \
             -var="backend_storage_account_name=${{ needs.deploy-bootstrap.outputs.backend_storage }}"
+          
+          # Output infrastructure details for application pipeline
+          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
+          echo "resource_group_name=$(terraform output -raw resource_group_name)" >> $GITHUB_OUTPUT
+          echo "key_vault_name=$(terraform output -raw key_vault_name)" >> $GITHUB_OUTPUT
+
+      - name: Set Infrastructure Outputs
+        run: |
+          # Set GitHub environment variables for application pipeline to use
+          echo "ACR_LOGIN_SERVER=${{ steps.deploy-dev.outputs.acr_login_server }}" >> $GITHUB_ENV
+          echo "ACR_NAME=${{ steps.deploy-dev.outputs.acr_name }}" >> $GITHUB_ENV
 
   # STAGING ENVIRONMENT - auto-deploy on release branches
   deploy-staging:

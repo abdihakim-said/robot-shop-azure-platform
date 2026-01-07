@@ -4,6 +4,8 @@ metadata:
   name: {{ .Chart.Name }}
   labels:
     service: {{ .Chart.Name }}
+  annotations:
+    deployment.kubernetes.io/revision: "2"  # Force update
 spec:
   replicas: {{ .Values.replicas | default 1 }}
   selector:
