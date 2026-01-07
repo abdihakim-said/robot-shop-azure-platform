@@ -3,35 +3,6 @@ global:
   monitoring:
     enabled: true
     namespace: monitoring
-  autoscaling:
-    enabled: true
-    namespace: kube-system
-
-# Cluster Autoscaler Configuration (deployed with monitoring stack)
-cluster-autoscaler:
-  enabled: true
-  cloudProvider: azure
-  azureResourceGroup: robot-shop-dev-rg
-  azureClusterName: robot-shop-dev-aks
-  
-  # Dev environment scaling
-  autoscalingGroups:
-    - name: agentpool
-      minSize: 2
-      maxSize: 6
-  
-  # Faster scaling for dev
-  scaleDownDelayAfterAdd: "5m"
-  scaleDownUnneededTime: "5m"
-  scaleDownUtilizationThreshold: 0.3
-  
-  resources:
-    requests:
-      cpu: 50m
-      memory: 200Mi
-    limits:
-      cpu: 100m
-      memory: 300Mi
 
 # Prometheus Stack Configuration
 kube-prometheus-stack:

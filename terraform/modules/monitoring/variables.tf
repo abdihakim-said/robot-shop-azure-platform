@@ -42,8 +42,7 @@ variable "enabled_log_categories" {
     "kube-apiserver",
     "kube-controller-manager",
     "kube-scheduler",
-    "kube-audit",
-    "cluster-autoscaler"
+    "kube-audit"
   ]
 }
 
