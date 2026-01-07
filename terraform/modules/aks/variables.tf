@@ -142,3 +142,9 @@ variable "acr_name" {
   type        = string
   default     = null
 }
+
+variable "only_critical_addons_enabled" {
+  description = "Enable only critical addons on system node pool"
+  type        = bool
+  default     = true
+}

@@ -107,6 +107,7 @@ module "aks" {
   api_server_authorized_ip_ranges = []          # SECURITY FIX: Restrict access
   max_pods_per_node               = 50          # SECURITY FIX: Production density
   os_disk_type                    = "Ephemeral" # SECURITY FIX: Better performance
+  only_critical_addons_enabled    = true        # SECURITY FIX: System node pool isolation
 
   tags = local.common_tags
 
