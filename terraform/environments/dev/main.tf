@@ -106,7 +106,7 @@ module "aks" {
   automatic_channel_upgrade       = "stable"    # SECURITY FIX: Stable updates
   api_server_authorized_ip_ranges = []          # SECURITY FIX: Restrict access
   max_pods_per_node               = 50          # SECURITY FIX: Production density
-  os_disk_type                    = "Ephemeral" # SECURITY FIX: Better performance
+  os_disk_type                    = "Managed"   # COMPATIBILITY FIX: Standard_D2s_v3 doesn't support Ephemeral
   only_critical_addons_enabled    = true        # SECURITY FIX: System node pool isolation
 
   tags = local.common_tags
