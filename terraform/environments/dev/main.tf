@@ -169,6 +169,13 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   depends_on = [module.aks]
 }
 
+# Wait for AKS cluster to be fully ready before using providers
+resource "time_sleep" "wait_for_aks" {
+  depends_on = [module.aks]
+  
+  create_duration = "60s"  # Give AKS time to be fully ready
+}
+
 # Helm/Kubernetes Providers for infrastructure components
 provider "helm" {
   kubernetes {

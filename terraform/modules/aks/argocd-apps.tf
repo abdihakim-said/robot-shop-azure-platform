@@ -15,7 +15,8 @@ resource "kubectl_manifest" "robot_shop" {
     helm_release.cert_manager,
     helm_release.nginx_ingress,
     helm_release.prometheus_operator,
-    time_sleep.wait_for_argocd
+    time_sleep.wait_for_argocd,
+    time_sleep.wait_for_cert_manager
   ]
 }
 
@@ -29,7 +30,7 @@ resource "kubectl_manifest" "monitoring" {
   
   depends_on = [
     helm_release.argocd,
-    helm_release.prometheus_operator,  # Monitoring needs Prometheus operator
+    helm_release.prometheus_operator,
     time_sleep.wait_for_argocd
   ]
 }

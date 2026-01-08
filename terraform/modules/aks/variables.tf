@@ -154,7 +154,8 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "random_suffix" {
-  description = "Random suffix for resources (to match KeyVault naming)"
-  type        = string
+variable "deploy_operators" {
+  description = "Deploy Kubernetes operators (set to false for initial cluster creation)"
+  type        = bool
+  default     = true
 }
