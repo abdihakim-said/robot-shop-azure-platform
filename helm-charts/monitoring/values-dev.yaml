@@ -4,10 +4,14 @@ global:
     enabled: true
     namespace: monitoring
 
-# Prometheus Stack Configuration
+# Prometheus Stack Configuration (Operator installed via Terraform)
 kube-prometheus-stack:
   fullnameOverride: "monitoring-dev"
   namespaceOverride: monitoring
+  
+  # CRITICAL: Disable operator to avoid conflict with Terraform
+  prometheusOperator:
+    enabled: false
   
   prometheus:
     ingress:

@@ -1,17 +1,25 @@
-global:
-  environment: dev
-  monitoring:
+# Monitoring chart values
+prometheus:
+  enabled: true  # Enable the full stack since operator is in Terraform
+
+# Configure the monitoring stack (operator already installed via Terraform)
+kube-prometheus-stack:
+  prometheus:
     enabled: true
-    namespace: monitoring
-
-alerts:
-  enabled: true
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
   
-dashboards:
-  enabled: true
-
-ingress:
-  enabled: false
-  # Enable for external access to Grafana
-  # className: nginx
-  # host: grafana-dev.yourdomain.com
+  alertmanager:
+    enabled: true
+  
+  grafana:
+    enabled: true
+    # Password will be retrieved from Key Vault via SecretProviderClass
+    admin:
+      existingSecret: "grafana-admin-secret"
+      userKey: "admin-user"
+      passwordKey: "admin-password"
+  
+  prometheusOperator:
+    enabled: false  # Already installed via Terraform - CRITICAL: Avoid conflict

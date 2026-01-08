@@ -148,3 +148,8 @@ variable "only_critical_addons_enabled" {
   type        = bool
   default     = true
 }
+
+variable "key_vault_id" {
+  description = "Azure Key Vault ID for storing secrets"
+  type        = string
+}

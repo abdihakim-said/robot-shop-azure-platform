@@ -18,6 +18,14 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.0"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.7.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
@@ -121,9 +129,12 @@ module "aks" {
   only_critical_addons_enabled    = true       # BEST PRACTICE: System node pool for critical addons only
   # Testing auto-fix terraform formatting pipeline - trigger 2
 
+  # Pass Key Vault ID for secrets management
+  key_vault_id = module.keyvault.key_vault_id
+
   tags = local.common_tags
 
-  depends_on = [module.networking]
+  depends_on = [module.networking, module.keyvault]
 }
 
 # User Node Pool for Applications (Best Practice: Separate from System Pool)
@@ -172,6 +183,14 @@ provider "kubernetes" {
   client_certificate     = base64decode(module.aks.kube_config.client_certificate)
   client_key             = base64decode(module.aks.kube_config.client_key)
   cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
+}
+
+provider "kubectl" {
+  host                   = module.aks.kube_config.host
+  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
+  client_key             = base64decode(module.aks.kube_config.client_key)
+  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
+  load_config_file       = false
 }
 
 # Storage Module

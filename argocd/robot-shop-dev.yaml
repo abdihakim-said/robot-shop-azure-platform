@@ -9,7 +9,7 @@ metadata:
     tier: development
     security-level: standard
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "1"  # Back to original
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: robot-shop-dev
   finalizers:
     - resources-finalizer.argocd.argoproj.io

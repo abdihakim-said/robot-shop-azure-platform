@@ -9,3 +9,7 @@ dependencies:
   - name: kube-prometheus-stack
     version: "80.6.0"
     repository: "https://prometheus-community.github.io/helm-charts"
+    condition: prometheus.enabled
+
+# Note: Prometheus Operator CRDs installed via Terraform
+# This chart installs the monitoring stack components

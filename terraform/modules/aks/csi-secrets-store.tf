@@ -11,7 +11,10 @@ resource "helm_release" "csi_secrets_store_provider_azure" {
   create_namespace = false
 
   # Use different release name to avoid conflicts
-  depends_on = [azurerm_kubernetes_cluster.main]
+  depends_on = [
+    azurerm_kubernetes_cluster.main,
+    helm_release.secrets_store_csi_driver
+  ]
 
   values = [
     yamlencode({
