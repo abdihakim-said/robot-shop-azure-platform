@@ -1,7 +1,7 @@
 # Global values override individual chart values - Templated from Terraform outputs
 global:
-  imageRegistry: {{ .Values.terraform.acr_login_server | default "robotshopacr.azurecr.io" }}
-  imageTag: {{ .Values.terraform.image_tag | default "tested-v20251223-d5d1466" }}
+  imageRegistry: robotshopdevacrcq4b5l.azurecr.io
+  imageTag: latest
   imagePullPolicy: Always
   environment: dev
   
@@ -27,9 +27,9 @@ global:
   
   # Azure Key Vault integration - Dynamic from Terraform
   azure:
-    keyVaultName: {{ .Values.terraform.key_vault_name | default "robot-shop-dev-kv" | quote }}
-    managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id | default "" | quote }}
-    tenantId: {{ .Values.terraform.tenant_id | default "" | quote }}
+    keyVaultName: "robotshopdevkv8hfqto"
+    managedIdentityClientId: "c31c60c4-9ea1-4723-a61e-c203019f357a"
+    tenantId: "3ca4cb73-ea37-4f83-b1db-4aa21a825743"
     managedIdentityClientId: "{{ .Values.azure.managedIdentityClientId }}"
   
   # Database security (retrieved from Key Vault)
