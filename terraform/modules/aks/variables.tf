@@ -153,14 +153,3 @@ variable "name_prefix" {
   description = "Name prefix for resources (to match KeyVault naming)"
   type        = string
 }
-
-variable "deploy_operators" {
-  description = "Deploy Kubernetes operators (set to false for initial cluster creation)"
-  type        = bool
-  default     = true
-}
-
-variable "key_vault_name" {
-  description = "Name of the Key Vault to read secrets from"
-  type        = string
-}

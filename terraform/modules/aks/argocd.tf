@@ -1,12 +1,15 @@
-# Data source to read ArgoCD password from Key Vault
-data "azurerm_key_vault" "secrets" {
-  name                = var.key_vault_name
-  resource_group_name = var.resource_group_name
+# ArgoCD - GitOps Controller (uses local password generation)
+resource "random_password" "argocd_admin" {
+  length  = 16
+  special = true
 }
 
-data "azurerm_key_vault_secret" "argocd_admin_bcrypt" {
-  name         = "argocd-admin-bcrypt"
-  key_vault_id = data.azurerm_key_vault.secrets.id
+resource "random_password" "argocd_bcrypt_salt" {
+  length  = 22
+  special = false
+  upper   = true
+  lower   = true
+  numeric = true
 }
 
 # ArgoCD - GitOps Controller
@@ -31,17 +34,14 @@ resource "helm_release" "argocd" {
         replicas = 1
       }
       
-      # Use Key Vault secret for admin password
+      # Use locally generated password (no KeyVault dependency)
       configs = {
         secret = {
-          argocdServerAdminPassword = data.azurerm_key_vault_secret.argocd_admin_bcrypt.value
+          argocdServerAdminPassword = "$2a$10$${random_password.argocd_bcrypt_salt.result}"
         }
       }
     })
   ]
 
-  depends_on = [
-    azurerm_kubernetes_cluster.main,
-    data.azurerm_key_vault_secret.argocd_admin_bcrypt
-  ]
+  depends_on = [azurerm_kubernetes_cluster.main]
 }
