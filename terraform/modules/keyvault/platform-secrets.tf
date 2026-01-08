@@ -54,4 +54,8 @@ resource "azurerm_key_vault_secret" "grafana_admin_password" {
   key_vault_id = azurerm_key_vault.secrets.id
 
   depends_on = [azurerm_key_vault.secrets]
+  
+  lifecycle {
+    ignore_changes = [value]  # Ignore if secret already exists
+  }
 }
