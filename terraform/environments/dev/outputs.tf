@@ -47,3 +47,8 @@ output "acr_name" {
   description = "ACR name"
   value       = module.storage.acr_name
 }
+
+output "image_tag" {
+  description = "Default image tag for applications"
+  value       = "latest"
+}
