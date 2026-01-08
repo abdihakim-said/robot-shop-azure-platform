@@ -159,3 +159,8 @@ variable "deploy_operators" {
   type        = bool
   default     = true
 }
+
+variable "key_vault_name" {
+  description = "Name of the Key Vault to read secrets from"
+  type        = string
+}

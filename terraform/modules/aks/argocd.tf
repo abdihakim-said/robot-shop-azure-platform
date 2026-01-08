@@ -1,6 +1,6 @@
 # Data source to read ArgoCD password from Key Vault
 data "azurerm_key_vault" "secrets" {
-  name                = "${replace(var.name_prefix, "-", "")}kv${substr(md5(var.resource_group_name), 0, 8)}"
+  name                = var.key_vault_name
   resource_group_name = var.resource_group_name
 }
 

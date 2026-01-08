@@ -130,11 +130,12 @@ module "aks" {
   # Testing auto-fix terraform formatting pipeline - trigger 2
 
   # Pass naming variables for KeyVault access
-  name_prefix    = local.name_prefix
+  name_prefix      = local.name_prefix
+  key_vault_name   = module.keyvault.key_vault_name
 
   tags = local.common_tags
 
-  depends_on = [module.networking]
+  depends_on = [module.networking, module.keyvault]
 }
 
 # User Node Pool for Applications (Best Practice: Separate from System Pool)
