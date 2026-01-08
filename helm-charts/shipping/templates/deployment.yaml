@@ -14,6 +14,7 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: {{ .Chart.Name }}-sa
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -35,3 +36,14 @@ spec:
           limits:
             cpu: 300m      # SRE: Allow JVM optimization
             memory: 512Mi   # SRE FIX: Java/Spring Boot needs 512Mi minimum
+        volumeMounts:
+        - name: mysql-secrets-volume
+          mountPath: "/mnt/secrets/mysql"
+          readOnly: true
+      volumes:
+      - name: mysql-secrets-volume
+        csi:
+          driver: secrets-store.csi.x-k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "mysql-secrets"
