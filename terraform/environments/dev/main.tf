@@ -137,8 +137,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   enable_auto_scaling   = true
 
   # Application node pool configuration
-  os_disk_type      = "Managed"
-  max_pods_per_node = var.max_pods_per_node
+  os_disk_type = "Managed"
 
   # Network configuration
   vnet_subnet_id = module.networking.aks_subnet_id
