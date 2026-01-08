@@ -57,6 +57,33 @@ jobs:
         with:
           terraform_version: '1.6.0'
 
+      - name: Terraform Format Fix
+        run: |
+          echo "🔧 Auto-fixing Terraform formatting..."
+          terraform fmt -recursive
+          
+          # Check if any files were changed
+          if ! git diff --quiet; then
+            echo "📝 Files were reformatted:"
+            git diff --name-only
+            
+            # Configure git for the action
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            
+            # Commit the formatting changes
+            git add .
+            git commit -m "style: auto-fix terraform formatting
+
+[skip ci] Automated formatting fix by pipeline"
+            
+            # Push the changes back
+            git push
+            echo "✅ Formatting fixes committed and pushed"
+          else
+            echo "✅ No formatting changes needed"
+          fi
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: terraform
