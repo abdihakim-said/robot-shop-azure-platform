@@ -119,7 +119,7 @@ module "aks" {
   max_pods_per_node               = 50         # SECURITY FIX: Production density
   os_disk_type                    = "Managed"  # COMPATIBILITY FIX: Standard_D2s_v3 doesn't support Ephemeral
   only_critical_addons_enabled    = true       # BEST PRACTICE: System node pool for critical addons only
-  # Testing auto-fix terraform formatting pipeline
+  # Testing auto-fix terraform formatting pipeline - trigger 2
 
   tags = local.common_tags
 
