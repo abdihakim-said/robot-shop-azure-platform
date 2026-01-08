@@ -146,7 +146,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   # Labels to identify user nodes
   node_labels = {
     "nodepool-type" = "user"
-    "environment"   = var.environment
+    "environment"   = "dev"
     "workload"      = "applications"
   }
 
