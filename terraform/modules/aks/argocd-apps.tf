@@ -6,7 +6,7 @@ locals {
 }
 
 resource "kubectl_manifest" "robot_shop" {
-  yaml_body = file("${path.module}/../../argocd/robot-shop-${local.environment}.yaml")
+  yaml_body = file("${path.module}/../../../argocd/robot-shop-${local.environment}.yaml")
   
   depends_on = [
     helm_release.argocd,
@@ -21,7 +21,7 @@ resource "kubectl_manifest" "robot_shop" {
 
 # Create monitoring ArgoCD application
 resource "kubectl_manifest" "monitoring" {
-  yaml_body = templatefile("${path.module}/../../argocd/monitoring.yaml.tpl", {
+  yaml_body = templatefile("${path.module}/../../../argocd/monitoring.yaml.tpl", {
     environment = local.environment
     namespace   = "monitoring"
     branch      = local.environment == "prod" ? "main" : (local.environment == "staging" ? "release/*" : "develop")

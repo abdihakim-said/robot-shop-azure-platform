@@ -50,3 +50,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "aks_kubelet_identity_object_id" {
+  description = "AKS kubelet managed identity object ID for KeyVault access"
+  type        = string
+  default     = ""
+}
