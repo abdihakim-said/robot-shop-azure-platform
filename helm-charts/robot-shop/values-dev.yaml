@@ -57,7 +57,7 @@ cart:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20251230-2dd5359"
+    tag: "v20260108-2686ac4"
 catalogue:
   enabled: true
   autoscaling:
@@ -73,7 +73,7 @@ catalogue:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20251227-59987d7"
+    tag: "v20260108-2686ac4"
 user:
   enabled: true
   autoscaling:
@@ -89,7 +89,7 @@ user:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20251230-61ae855"
+    tag: "v20260108-2686ac4"
 payment:
   enabled: true
   autoscaling:
@@ -105,7 +105,7 @@ payment:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20260102-54e01e3"
+    tag: "v20260108-2686ac4"
 shipping:
   enabled: true
   autoscaling:
@@ -121,7 +121,7 @@ shipping:
     minMemory: "64Mi"
     maxMemory: "512Mi"
   image:
-    tag: "v20251225-66ff23c"
+    tag: "v20260108-2686ac4"
 ratings:
   enabled: true
   autoscaling:
