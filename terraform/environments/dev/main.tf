@@ -119,6 +119,7 @@ module "aks" {
   max_pods_per_node               = 50         # SECURITY FIX: Production density
   os_disk_type                    = "Managed"  # COMPATIBILITY FIX: Standard_D2s_v3 doesn't support Ephemeral
   only_critical_addons_enabled    = true       # BEST PRACTICE: System node pool for critical addons only
+  # Testing auto-fix terraform formatting pipeline
 
   tags = local.common_tags
 
@@ -129,31 +130,31 @@ module "aks" {
 resource "azurerm_kubernetes_cluster_node_pool" "user" {
   name                  = "user"
   kubernetes_cluster_id = module.aks.cluster_id
-  vm_size              = var.vm_size
-  node_count           = var.min_node_count
-  min_count            = var.min_node_count
-  max_count            = var.max_node_count
-  enable_auto_scaling  = true
-  
+  vm_size               = var.vm_size
+  node_count            = var.min_node_count
+  min_count             = var.min_node_count
+  max_count             = var.max_node_count
+  enable_auto_scaling   = true
+
   # Application node pool configuration
-  os_disk_type         = "Managed"
-  max_pods_per_node    = var.max_pods_per_node
-  
+  os_disk_type      = "Managed"
+  max_pods_per_node = var.max_pods_per_node
+
   # Network configuration
-  vnet_subnet_id       = module.networking.aks_subnet_id
-  
+  vnet_subnet_id = module.networking.aks_subnet_id
+
   # Labels to identify user nodes
   node_labels = {
     "nodepool-type" = "user"
     "environment"   = var.environment
     "workload"      = "applications"
   }
-  
+
   # No CriticalAddonsOnly taint - applications can run here
   node_taints = []
-  
+
   tags = local.common_tags
-  
+
   depends_on = [module.aks]
 }
 
