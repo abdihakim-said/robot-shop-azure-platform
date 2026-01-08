@@ -1,7 +1,7 @@
 {
   "name": "robot-shop-web-metrics",
   "version": "1.0.0",
-  "description": "Web service metrics exporter for Robot Shop",
+  "description": "Web service metrics exporter for Robot Shop - Updated for deployment",
   "main": "metrics-server.js",
   "scripts": {
     "start": "node metrics-server.js",
