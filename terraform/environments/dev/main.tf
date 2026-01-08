@@ -129,12 +129,13 @@ module "aks" {
   only_critical_addons_enabled    = true       # BEST PRACTICE: System node pool for critical addons only
   # Testing auto-fix terraform formatting pipeline - trigger 2
 
-  # Pass Key Vault ID for secrets management
-  key_vault_id = module.keyvault.key_vault_id
+  # Pass naming variables for KeyVault access
+  name_prefix    = local.name_prefix
+  random_suffix  = local.random_suffix
 
   tags = local.common_tags
 
-  depends_on = [module.networking, module.keyvault]
+  depends_on = [module.networking]
 }
 
 # User Node Pool for Applications (Best Practice: Separate from System Pool)

@@ -149,7 +149,12 @@ variable "only_critical_addons_enabled" {
   default     = true
 }
 
-variable "key_vault_id" {
-  description = "Azure Key Vault ID for storing secrets"
+variable "name_prefix" {
+  description = "Name prefix for resources (to match KeyVault naming)"
+  type        = string
+}
+
+variable "random_suffix" {
+  description = "Random suffix for resources (to match KeyVault naming)"
   type        = string
 }
