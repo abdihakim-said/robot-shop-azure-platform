@@ -1,5 +1,5 @@
 image:
-  repository: robotshopacr.azurecr.io/dispatch
+  repository: robotshopdevacrcq4b5l.azurecr.io/dispatch
   tag: latest
   pullPolicy: Always
 service:

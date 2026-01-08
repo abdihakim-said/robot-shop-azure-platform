@@ -1,5 +1,5 @@
 image:
-  repository: robotshopacr.azurecr.io/ratings
+  repository: robotshopdevacrcq4b5l.azurecr.io/ratings
   tag: latest
   pullPolicy: Always
 service:

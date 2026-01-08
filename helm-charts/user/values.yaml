@@ -1,5 +1,5 @@
 image:
-  repository: robotshopacr.azurecr.io/user
+  repository: robotshopdevacrcq4b5l.azurecr.io/user
   tag: latest
   pullPolicy: Always
 service:

@@ -1,5 +1,5 @@
 image:
-  repository: robotshopacr.azurecr.io/shipping
+  repository: robotshopdevacrcq4b5l.azurecr.io/shipping
   tag: latest  # Will be overridden by umbrella chart values
   pullPolicy: Always
 

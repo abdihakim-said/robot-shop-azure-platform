@@ -1,5 +1,5 @@
 image:
-  repository: robotshopacr.azurecr.io/payment
+  repository: robotshopdevacrcq4b5l.azurecr.io/payment
   tag: latest
   pullPolicy: Always
 
