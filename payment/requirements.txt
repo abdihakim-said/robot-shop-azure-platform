@@ -1,3 +1,4 @@
+# Payment service dependencies - updated for deployment
 uwsgi
 Flask
 requests

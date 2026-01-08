@@ -22,8 +22,8 @@ permissions:
   actions: write
 
 env:
-  ACR_NAME: robotshopacr
-  ACR_LOGIN_SERVER: robotshopacr.azurecr.io
+  ACR_NAME: robotshopdevacrcq4b5l
+  ACR_LOGIN_SERVER: robotshopdevacrcq4b5l.azurecr.io
 
 jobs:
   detect-changes:
@@ -140,7 +140,7 @@ jobs:
 
       - name: Login to ACR
         run: |
-          az acr login --name robotshopacr
+          az acr login --name robotshopdevacrcq4b5l
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

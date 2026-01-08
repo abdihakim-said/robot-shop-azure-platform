@@ -21,8 +21,8 @@ permissions:
   actions: write
 
 env:
-  ACR_NAME: robotshopacr
-  ACR_LOGIN_SERVER: robotshopacr.azurecr.io
+  ACR_NAME: robotshopdevacrcq4b5l
+  ACR_LOGIN_SERVER: robotshopdevacrcq4b5l.azurecr.io
 
 jobs:
   detect-changes:
