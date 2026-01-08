@@ -27,7 +27,7 @@ resource "azurerm_key_vault_secret" "argocd_admin_password" {
   value        = random_password.argocd_admin.result
   key_vault_id = azurerm_key_vault.secrets.id
 
-  depends_on = [azurerm_key_vault_access_policy.terraform]
+  depends_on = [azurerm_key_vault.secrets]
 }
 
 # Store ArgoCD admin password (bcrypt hash for ArgoCD)
@@ -36,7 +36,7 @@ resource "azurerm_key_vault_secret" "argocd_admin_bcrypt" {
   value        = "$2a$10$${random_password.argocd_bcrypt_salt.result}"
   key_vault_id = azurerm_key_vault.secrets.id
 
-  depends_on = [azurerm_key_vault_access_policy.terraform]
+  depends_on = [azurerm_key_vault.secrets]
 }
 
 # Store Grafana admin credentials
@@ -45,7 +45,7 @@ resource "azurerm_key_vault_secret" "grafana_admin_user" {
   value        = "admin"
   key_vault_id = azurerm_key_vault.secrets.id
 
-  depends_on = [azurerm_key_vault_access_policy.terraform]
+  depends_on = [azurerm_key_vault.secrets]
 }
 
 resource "azurerm_key_vault_secret" "grafana_admin_password" {
@@ -53,5 +53,5 @@ resource "azurerm_key_vault_secret" "grafana_admin_password" {
   value        = random_password.grafana_admin.result
   key_vault_id = azurerm_key_vault.secrets.id
 
-  depends_on = [azurerm_key_vault_access_policy.terraform]
+  depends_on = [azurerm_key_vault.secrets]
 }
