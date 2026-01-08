@@ -88,7 +88,7 @@ variable "min_node_count" {
 variable "max_node_count" {
   description = "Maximum node count"
   type        = number
-  default     = 3 # Dev: limited scale
+  default     = 4 # Dev: limited scale
 }
 
 # Storage
