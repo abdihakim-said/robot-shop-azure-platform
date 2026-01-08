@@ -75,7 +75,7 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
     spec = {
       acme = {
         server = "https://acme-v02.api.letsencrypt.org/directory"
-        email  = "admin@hakimdevops.art"  # Change this
+        email  = "abdihakimsaid1@gmail.com"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
         }
@@ -90,7 +90,19 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
     }
   })
 
-  depends_on = [helm_release.cert_manager, helm_release.nginx_ingress]
+  depends_on = [
+    helm_release.cert_manager,
+    helm_release.nginx_ingress,
+    # Add delay to ensure cert-manager is fully ready
+    time_sleep.wait_for_cert_manager
+  ]
+}
+
+# Wait for cert-manager to be fully ready
+resource "time_sleep" "wait_for_cert_manager" {
+  depends_on = [helm_release.cert_manager]
+  
+  create_duration = "60s"  # Wait for cert-manager to install CRDs and be ready
 }
 
 # Prometheus Operator - EXACT same version as monitoring chart
