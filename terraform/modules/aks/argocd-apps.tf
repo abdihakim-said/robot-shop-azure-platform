@@ -2,11 +2,11 @@
 # Deploy ArgoCD applications automatically after ArgoCD is ready
 
 locals {
-  environment = basename(path.root)  # Gets "dev", "staging", or "prod"
+  environment = "dev"  # Hardcode for now, can be made dynamic later
 }
 
 resource "kubectl_manifest" "robot_shop" {
-  yaml_body = file("${path.root}/../../argocd/robot-shop-${local.environment}.yaml")
+  yaml_body = file("${path.module}/../../argocd/robot-shop-${local.environment}.yaml")
   
   depends_on = [
     helm_release.argocd,
@@ -21,7 +21,7 @@ resource "kubectl_manifest" "robot_shop" {
 
 # Create monitoring ArgoCD application
 resource "kubectl_manifest" "monitoring" {
-  yaml_body = templatefile("${path.root}/../../argocd/monitoring.yaml.tpl", {
+  yaml_body = templatefile("${path.module}/../../argocd/monitoring.yaml.tpl", {
     environment = local.environment
     namespace   = "monitoring"
     branch      = local.environment == "prod" ? "main" : (local.environment == "staging" ? "release/*" : "develop")
