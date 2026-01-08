@@ -66,23 +66,11 @@ jobs:
           if ! git diff --quiet; then
             echo "📝 Files were reformatted:"
             git diff --name-only
-            
-            # Configure git for the action
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            
-            # Commit the formatting changes
-            git add .
-            git commit -m "style: auto-fix terraform formatting
-
-[skip ci] Automated formatting fix by pipeline"
-            
-            # Push the changes back
-            git push
-            echo "✅ Formatting fixes committed and pushed"
+            echo "✅ Formatting fixes applied"
           else
             echo "✅ No formatting changes needed"
           fi
+        working-directory: terraform
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
