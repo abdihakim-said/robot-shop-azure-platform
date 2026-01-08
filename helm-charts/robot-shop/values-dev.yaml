@@ -213,7 +213,7 @@ web:
   monitoring:
     enabled: true
   image:
-    tag: "v20260104-d80b940"
+    tag: "v20260108-a7dd890"
 
 # Infrastructure services configuration
 mysql:
