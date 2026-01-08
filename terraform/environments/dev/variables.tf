@@ -10,6 +10,12 @@ variable "project_name" {
   default     = "robot-shop"
 }
 
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "dev"
+}
+
 # Backend configuration variables
 variable "backend_resource_group_name" {
   description = "Backend resource group name"
