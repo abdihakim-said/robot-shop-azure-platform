@@ -1,3 +1,4 @@
+# Updated for deployment 2026-01-08
 FROM mysql:8.0
 
 VOLUME /data

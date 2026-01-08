@@ -1,4 +1,4 @@
-# Use latest secure version instead of 7.0.5 - testing pipeline
+# Use latest secure version - updated for deployment 2026-01-08
 FROM mongo:8.0
 
 # Copy initialization scripts

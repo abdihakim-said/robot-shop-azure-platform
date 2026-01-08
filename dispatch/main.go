@@ -1,6 +1,6 @@
 package main
 
-// Test comment to trigger rebuild - fix RabbitMQ connection
+// Test comment to trigger rebuild - updated for deployment 2026-01-08
 
 import (
 	"encoding/json"
