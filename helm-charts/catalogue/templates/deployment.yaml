@@ -14,6 +14,7 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: {{ .Chart.Name }}-sa
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -35,3 +36,14 @@ spec:
           limits:
             cpu: 200m
             memory: 128Mi
+        volumeMounts:
+        - name: mongodb-secrets-volume
+          mountPath: "/mnt/secrets/mongodb"
+          readOnly: true
+      volumes:
+      - name: mongodb-secrets-volume
+        csi:
+          driver: secrets-store.csi.x-k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "mongodb-secrets"
