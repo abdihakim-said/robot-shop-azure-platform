@@ -51,13 +51,13 @@ spec:
       volumes:
       - name: mongodb-secrets-volume
         csi:
-          driver: secrets-store.csi.x-k8s.io
+          driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
             secretProviderClass: "mongodb-secrets"
       - name: redis-secrets-volume
         csi:
-          driver: secrets-store.csi.x-k8s.io
+          driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
             secretProviderClass: "redis-secrets"
