@@ -28,7 +28,7 @@ global:
   # Azure Key Vault integration - Dynamic from Terraform
   azure:
     keyVaultName: "robotshopdevkv8hfqto"
-    managedIdentityClientId: "c31c60c4-9ea1-4723-a61e-c203019f357a"
+    managedIdentityClientId: "4646deba-311f-4139-b108-41f780fda1f7"
     tenantId: "3ca4cb73-ea37-4f83-b1db-4aa21a825743"
   
   # Database security (retrieved from Key Vault)
