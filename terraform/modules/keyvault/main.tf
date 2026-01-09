@@ -75,4 +75,49 @@ resource "azurerm_key_vault_secret" "secrets" {
   key_vault_id = azurerm_key_vault.secrets.id
 
   depends_on = [azurerm_key_vault.secrets]
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+# Missing secrets
+resource "random_password" "missing_secrets" {
+  for_each = {
+    mysql_root = 20
+    mysql_user = 20
+    mongodb_root = 20
+    mongodb_catalogue = 20
+    mongodb_users = 20
+    rabbitmq = 16
+    rabbitmq_cookie = 32
+    stripe_secret = 32
+    stripe_publishable = 32
+  }
+
+  length  = each.value
+  special = true
+  upper   = true
+  lower   = true
+  numeric = true
+}
+
+resource "azurerm_key_vault_secret" "missing_secrets" {
+  for_each = {
+    mysql_root = "mysql-root-password"
+    mysql_user = "mysql-user-password"
+    mongodb_root = "mongodb-root-password"
+    mongodb_catalogue = "mongodb-catalogue-password"
+    mongodb_users = "mongodb-users-password"
+    rabbitmq = "rabbitmq-password"
+    rabbitmq_cookie = "rabbitmq-erlang-cookie"
+    stripe_secret = "stripe-secret-key"
+    stripe_publishable = "stripe-publishable-key"
+  }
+
+  name         = each.value
+  value        = random_password.missing_secrets[each.key].result
+  key_vault_id = azurerm_key_vault.secrets.id
+
+  depends_on = [azurerm_key_vault.secrets]
 }
