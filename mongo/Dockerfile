@@ -1,4 +1,4 @@
-# Use latest secure version - updated for deployment 2026-01-08
+# Use latest secure version - updated for deployment 2026-01-09
 FROM mongo:8.0
 
 # Copy initialization scripts
