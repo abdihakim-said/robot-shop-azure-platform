@@ -211,7 +211,7 @@ rabbitmq:
       cpu: 300m
       memory: 256Mi
 
-mongodb:
+mongo:
   enabled: true
   auth:
     enabled: true

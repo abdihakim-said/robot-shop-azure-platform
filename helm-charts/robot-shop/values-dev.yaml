@@ -246,7 +246,7 @@ mysql:
       cpu: 200m
       memory: 256Mi
 
-mongodb:
+mongo:
   enabled: true
   replicas: 1  # Force single replica for stateful database
   autoscaling:

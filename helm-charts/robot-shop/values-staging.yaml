@@ -37,7 +37,7 @@ mysql:
     enabled: true
     secretProviderClass: mysql-secrets
 
-mongodb:
+mongo:
   enabled: true
   resources:
     requests:

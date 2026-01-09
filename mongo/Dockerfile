@@ -1,4 +1,5 @@
 # Use latest secure version - updated for deployment 2026-01-09
+# Fixed pipeline service name mapping: mongo directory -> mongo service
 FROM mongo:8.0
 
 # Copy initialization scripts

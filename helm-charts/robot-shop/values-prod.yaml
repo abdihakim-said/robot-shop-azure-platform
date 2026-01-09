@@ -37,7 +37,7 @@ global:
         port: 6380
         password: "{{ .Values.azure.redis.password }}"
         ssl: true
-    mongodb:
+    mongo:
       enabled: false  # Use Azure Cosmos DB instead
       external:
         connectionString: "{{ .Values.azure.cosmosdb.connectionString }}"
@@ -123,7 +123,7 @@ mysql:
       cpu: 1000m
       memory: 1Gi
 
-mongodb:
+mongo:
   replicas: 1
   resources:
     requests:
