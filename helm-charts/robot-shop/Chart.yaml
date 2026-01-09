@@ -13,7 +13,7 @@ dependencies:
   - name: rabbitmq
     version: "1.0.2"
     repository: "file://../rabbitmq"
-  - name: mongodb
+  - name: mongo
     version: "1.0.1"
     repository: "file://../mongodb"
   - name: mysql

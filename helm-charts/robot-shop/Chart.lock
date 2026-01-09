@@ -5,7 +5,7 @@ dependencies:
 - name: rabbitmq
   repository: file://../rabbitmq
   version: 1.0.2
-- name: mongodb
+- name: mongo
   repository: file://../mongodb
   version: 1.0.1
 - name: mysql
@@ -35,5 +35,5 @@ dependencies:
 - name: web
   repository: file://../web
   version: 1.0.0
-digest: sha256:24ec536514bbe4e657872d9dd3755d9ef328f4bf69d39e84b489a1204be0cc60
-generated: "2026-01-08T07:07:20.669697+03:00"
+digest: sha256:7d288cd82db1b6d7735bcfec2130f8b40b9393d24c9306e2872c94715525fd18
+generated: "2026-01-09T09:41:15.449671+03:00"
