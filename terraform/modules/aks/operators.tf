@@ -6,6 +6,11 @@ resource "helm_release" "secrets_store_csi_driver" {
   version    = "1.4.0"
   namespace  = "kube-system"
 
+  set {
+    name  = "syncSecret.enabled"
+    value = "true"
+  }
+
   depends_on = [azurerm_kubernetes_cluster.main]
 }
 
