@@ -281,7 +281,7 @@ function mongoConnect() {
             const encodedPassword = encodeURIComponent(mongoPassword);
             mongoURL = `mongodb://${mongoUser}:${encodedPassword}@${mongoHost}:27017/users`;
         } else {
-            mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
+            mongoURL = process.env.MONGO_URL || 'mongodb://mongo:27017/users';
         }
         
         mongoClient.connect(mongoURL, (error, client) => {
