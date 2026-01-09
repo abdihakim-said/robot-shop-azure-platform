@@ -1,6 +1,6 @@
 image:
-  repository: robotshopdevacrcq4b5l.azurecr.io/mongodb  # Move to ACR for security scanning
-  tag: "v20251227-a94e952"  # Fixed MongoDB user creation script
+  repository: robotshopdevacrcq4b5l.azurecr.io/mongo  # Correct repository name
+  tag: "v20260108-c10790d"  # Latest available tag
   pullPolicy: Always
 
 service:
