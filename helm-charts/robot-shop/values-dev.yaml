@@ -89,7 +89,7 @@ user:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20260108-2686ac4"
+    tag: "v20260109-3670e1f"
 payment:
   enabled: true
   autoscaling:
