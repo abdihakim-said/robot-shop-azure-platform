@@ -266,7 +266,7 @@ mongo:
     port: 27017
   image:
     repository: robotshopdevacrcq4b5l.azurecr.io/mongo
-    tag: "v20251227-a94e952"
+    tag: "v20260109-397dfe8"
   keyVault:
     enabled: true
   auth:
