@@ -46,6 +46,43 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: users-password
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                # Wait for MongoDB to be ready
+                until mongosh --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+                  sleep 2
+                done
+                
+                # Run user creation script
+                mongosh --eval "
+                const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD;
+                const usersPassword = process.env.MONGO_USERS_PASSWORD;
+                
+                // Create catalogue user
+                db = db.getSiblingDB('catalogue');
+                try {
+                  db.createUser({
+                    user: 'catalogue',
+                    pwd: cataloguePassword,
+                    roles: [{ role: 'readWrite', db: 'catalogue' }]
+                  });
+                } catch(e) { /* User exists */ }
+                
+                // Create users user
+                db = db.getSiblingDB('users');
+                try {
+                  db.createUser({
+                    user: 'users',
+                    pwd: usersPassword,
+                    roles: [{ role: 'readWrite', db: 'users' }]
+                  });
+                } catch(e) { /* User exists */ }
+                " || true
         volumeMounts:
         - name: secrets-store
           mountPath: "/mnt/secrets-store"

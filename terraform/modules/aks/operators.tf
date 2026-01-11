@@ -61,9 +61,9 @@ resource "helm_release" "nginx_ingress" {
         service = {
           type = "LoadBalancer"
           annotations = {
+            # Internal Load Balancer (production pattern) - commented for demo access
+            # "service.beta.kubernetes.io/azure-load-balancer-internal" = "true"
             "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
-            "service.beta.kubernetes.io/azure-load-balancer-health-probe-interval" = "5"
-            "service.beta.kubernetes.io/azure-load-balancer-health-probe-num-of-probe" = "2"
           }
         }
         metrics = {
