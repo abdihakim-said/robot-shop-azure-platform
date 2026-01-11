@@ -11,8 +11,18 @@ global:
     className: nginx
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      # Allow HTTP for ACME challenges, HTTPS for everything else
+      nginx.ingress.kubernetes.io/server-snippet: |
+        location /.well-known/acme-challenge {
+          return 200;
+        }
+        location / {
+          if ($scheme != "https") {
+            return 301 https://$host$request_uri;
+          }
+        }
     hosts:
       - host: hakimdevops.art
         paths:
