@@ -13,7 +13,6 @@ global:
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      # Allow HTTP for ACME challenges, HTTPS for everything else
       nginx.ingress.kubernetes.io/server-snippet: |
         location /.well-known/acme-challenge {
           return 200;
