@@ -46,14 +46,13 @@ spec:
       - PruneLast=true
       - ApplyOutOfSyncOnly=true
       - RespectIgnoreDifferences=true
-      - Replace=true  # Force replace for VPA resources
-      - ServerSideApply=true  # Better handling of large resources
+      - ServerSideApply=true
     retry:
-      limit: 10  # More attempts before giving up
+      limit: 5
       backoff:
-        duration: 10s
+        duration: 5s
         factor: 2
-        maxDuration: 5m
+        maxDuration: 3m
   
   # Health checks and ignore differences
   ignoreDifferences:
