@@ -58,6 +58,11 @@ resource "helm_release" "nginx_ingress" {
       controller = {
         service = {
           type = "LoadBalancer"
+          annotations = {
+            "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
+            "service.beta.kubernetes.io/azure-load-balancer-health-probe-interval" = "5"
+            "service.beta.kubernetes.io/azure-load-balancer-health-probe-num-of-probe" = "2"
+          }
         }
         metrics = {
           enabled = true
