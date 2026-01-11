@@ -52,6 +52,8 @@ resource "helm_release" "nginx_ingress" {
   namespace  = "ingress-nginx"
   
   create_namespace = true
+  force_update     = true
+  recreate_pods    = true
 
   values = [
     yamlencode({
