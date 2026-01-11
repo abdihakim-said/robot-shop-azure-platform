@@ -62,6 +62,9 @@ resource "helm_release" "nginx_ingress" {
         metrics = {
           enabled = true
         }
+        config = {
+          "allow-snippet-annotations" = "true"
+        }
       }
     })
   ]
