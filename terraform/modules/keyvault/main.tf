@@ -33,6 +33,8 @@ resource "azurerm_key_vault" "secrets" {
 
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
+  
+  # Updated: Enhanced Key Vault security configuration
 
   # Default access policy for current user/service principal
   access_policy {

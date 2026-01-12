@@ -3,6 +3,11 @@ global:
   monitoring:
     enabled: true
     namespace: monitoring
+  keyVault:
+    name: "robotshopdevkv8hfqto"  # This should match your actual Key Vault name
+    tenantId: "3ca4cb73-ea37-4f83-b1db-4aa21a825743"
+  managedIdentity:
+    clientId: "YOUR_MANAGED_IDENTITY_CLIENT_ID"  # This needs to be set from Terraform output
 
 # Prometheus Stack Configuration (Operator installed via Terraform)
 kube-prometheus-stack:
