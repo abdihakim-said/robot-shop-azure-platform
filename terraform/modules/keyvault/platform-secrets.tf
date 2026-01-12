@@ -48,11 +48,11 @@ resource "azurerm_key_vault_secret" "grafana_admin_user" {
   depends_on = [azurerm_key_vault.secrets]
 }
 
-# Skip Grafana password for now - will be handled by monitoring stack
-# resource "azurerm_key_vault_secret" "grafana_admin_password" {
-#   name         = "grafana-admin-password"
-#   value        = random_password.grafana_admin.result
-#   key_vault_id = azurerm_key_vault.secrets.id
-#
-#   depends_on = [azurerm_key_vault.secrets]
-# }
+# Store Grafana admin password
+resource "azurerm_key_vault_secret" "grafana_admin_password" {
+  name         = "grafana-admin-password"
+  value        = random_password.grafana_admin.result
+  key_vault_id = azurerm_key_vault.secrets.id
+
+  depends_on = [azurerm_key_vault.secrets]
+}
