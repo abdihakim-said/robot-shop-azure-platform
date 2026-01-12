@@ -38,6 +38,10 @@ resource "azurerm_kubernetes_cluster" "main" {
     ]
   }
 
+  # Enable Workload Identity for secure pod-to-Azure service authentication
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
+
   api_server_access_profile {
     authorized_ip_ranges = var.private_cluster_enabled ? null : var.api_server_authorized_ip_ranges
   }

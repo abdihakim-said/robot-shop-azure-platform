@@ -33,3 +33,13 @@ output "effective_outbound_ips" {
   description = "AKS cluster effective outbound IPs"
   value       = azurerm_kubernetes_cluster.main.network_profile[0].load_balancer_profile[0].effective_outbound_ips
 }
+
+output "oidc_issuer_url" {
+  description = "OIDC issuer URL for workload identity"
+  value       = azurerm_kubernetes_cluster.main.oidc_issuer_url
+}
+
+output "grafana_workload_identity_client_id" {
+  description = "Grafana workload identity client ID"
+  value       = azurerm_user_assigned_identity.grafana.client_id
+}
