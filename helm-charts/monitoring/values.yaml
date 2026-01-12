@@ -15,6 +15,13 @@ kube-prometheus-stack:
   
   grafana:
     enabled: true
+    serviceAccount:
+      create: true
+      name: grafana-workload-identity
+      annotations:
+        azure.workload.identity/client-id: {{ .Values.global.grafanaWorkloadIdentity.clientId | quote }}
+    podLabels:
+      azure.workload.identity/use: "true"
     extraVolumes:
       - name: grafana-secrets-store
         csi:
