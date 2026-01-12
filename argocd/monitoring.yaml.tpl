@@ -20,7 +20,7 @@ spec:
         - values-${environment}.yaml  # Environment-specific values
       parameters:
         - name: prometheus.enabled
-          value: "false"  # Operator installed via Terraform
+          value: "true"  # Enable the full monitoring stack
         - name: global.environment
           value: ${environment}
         - name: global.keyVault.name
