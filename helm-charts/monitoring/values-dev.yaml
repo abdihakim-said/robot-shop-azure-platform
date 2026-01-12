@@ -15,6 +15,9 @@ kube-prometheus-stack:
     enabled: false
   
   prometheus:
+    prometheusSpec:
+      nodeSelector:
+        kubernetes.azure.com/mode: user
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -29,6 +32,8 @@ kube-prometheus-stack:
   
   grafana:
     enabled: true
+    nodeSelector:
+      kubernetes.azure.com/mode: user
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -40,6 +45,11 @@ kube-prometheus-stack:
         - secretName: grafana-hakimdevops-tls
           hosts:
             - grafana.hakimdevops.art
+
+  alertmanager:
+    alertmanagerSpec:
+      nodeSelector:
+        kubernetes.azure.com/mode: user
 
 alerts:
   enabled: true
