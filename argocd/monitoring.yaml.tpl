@@ -20,7 +20,7 @@ spec:
         - values-${environment}.yaml  # Environment-specific values
       parameters:
         - name: prometheus.enabled
-          value: "false"  # Operator installed via Terraform
+          value: "true"
         - name: global.environment
           value: ${environment}
   
