@@ -43,3 +43,8 @@ output "grafana_workload_identity_client_id" {
   description = "Grafana workload identity client ID"
   value       = azurerm_user_assigned_identity.grafana.client_id
 }
+
+output "grafana_workload_identity_principal_id" {
+  description = "Grafana workload identity principal ID"
+  value       = azurerm_user_assigned_identity.grafana.principal_id
+}
