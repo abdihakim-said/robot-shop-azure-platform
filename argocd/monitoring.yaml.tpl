@@ -35,6 +35,7 @@ spec:
           value: ${grafana_workload_identity_client_id}
         - name: kube-prometheus-stack.grafana.podLabels.azure\.workload\.identity/use
           value: "true"
+        # Ensure workload identity is properly configured
   
   destination:
     server: https://kubernetes.default.svc
