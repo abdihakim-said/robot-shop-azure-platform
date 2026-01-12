@@ -15,6 +15,21 @@ kube-prometheus-stack:
   
   grafana:
     enabled: true
+    admin:
+      existingSecret: "grafana-admin-secret"
+      userKey: "admin-user"
+      passwordKey: "admin-password"
+    extraSecretMounts:
+      - name: grafana-secrets-store
+        secretName: grafana-admin-secret
+        defaultMode: 0400
+        mountPath: /mnt/secrets-store
+        readOnly: true
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: grafana-secrets
     # Password will be retrieved from Key Vault via SecretProviderClass
     admin:
       existingSecret: "grafana-admin-secret"
