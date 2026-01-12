@@ -26,7 +26,7 @@ resource "kubectl_manifest" "monitoring" {
     environment = local.environment
     namespace   = "monitoring"
     branch      = local.environment == "prod" ? "main" : (local.environment == "staging" ? "release/*" : "develop")
-    key_vault_name = var.key_vault_name
+    key_vault_name = var.keyvault_name
     tenant_id = data.azurerm_client_config.current.tenant_id
     managed_identity_client_id = azurerm_kubernetes_cluster.main.kubelet_identity[0].client_id
   })

@@ -131,6 +131,7 @@ module "aks" {
 
   # Pass naming variables for KeyVault access
   name_prefix      = local.name_prefix
+  keyvault_name    = module.keyvault.key_vault_name
 
   tags = local.common_tags
 
