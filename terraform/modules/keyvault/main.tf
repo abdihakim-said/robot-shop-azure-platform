@@ -1,3 +1,4 @@
+# Trigger Terraform pipeline - workload identity update
 terraform {
   required_providers {
     azurerm = {
