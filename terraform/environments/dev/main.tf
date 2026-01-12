@@ -249,7 +249,6 @@ resource "azurerm_key_vault_access_policy" "aks_access" {
 
   depends_on = [module.aks, module.keyvault]
 }
-}
 
 # Monitoring Module
 module "monitoring" {
