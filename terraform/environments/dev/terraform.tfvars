@@ -25,10 +25,6 @@ alert_emails = ["admin@example.com"]
 
 # Secrets Configuration
 secrets = {
-  grafana = {
-    name   = "grafana-admin-password"
-    length = 16
-  }
   prometheus = {
     name   = "prometheus-password"
     length = 16
@@ -41,4 +37,5 @@ secrets = {
     name   = "redis-password"
     length = 16
   }
+  # grafana secret now managed in platform-secrets.tf
 }
