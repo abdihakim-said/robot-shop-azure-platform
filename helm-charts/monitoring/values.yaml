@@ -15,13 +15,7 @@ kube-prometheus-stack:
   
   grafana:
     enabled: true
-    serviceAccount:
-      create: true
-      name: grafana-workload-identity
-      annotations:
-        azure.workload.identity/client-id: "PLACEHOLDER_WORKLOAD_IDENTITY_CLIENT_ID"
-    podLabels:
-      azure.workload.identity/use: "true"
+    # ServiceAccount configuration will be handled by ArgoCD parameters
     extraVolumes:
       - name: grafana-secrets-store
         csi:
