@@ -23,6 +23,14 @@ spec:
           value: "true"
         - name: global.environment
           value: ${environment}
+        - name: global.keyVault.name
+          value: ${key_vault_name}
+        - name: global.keyVault.tenantId
+          value: ${tenant_id}
+        - name: global.managedIdentity.clientId
+          value: ${managed_identity_client_id}
+        - name: global.grafanaWorkloadIdentity.clientId
+          value: ${grafana_workload_identity_client_id}
   
   destination:
     server: https://kubernetes.default.svc
