@@ -135,7 +135,7 @@ module "aks" {
 
   tags = local.common_tags
 
-  depends_on = [module.networking, module.keyvault]
+  depends_on = [module.networking]
 }
 
 # User Node Pool for Applications (Best Practice: Separate from System Pool)
@@ -233,22 +233,16 @@ module "keyvault" {
   secrets = var.secrets
 
   # CRITICAL: Grant AKS managed identity access to Key Vault
-  # This will be added separately to avoid circular dependency
-  access_policies = []
+  access_policies = [
+    {
+      object_id          = module.aks.kubelet_identity.object_id
+      secret_permissions = ["Get"]
+    }
+  ]
 
   tags = local.common_tags
-}
 
-# Grant AKS managed identity access to Key Vault (after both are created)
-resource "azurerm_key_vault_access_policy" "aks_access" {
-  key_vault_id = module.keyvault.key_vault_id
-  tenant_id    = module.keyvault.tenant_id
-  object_id    = module.aks.kubelet_identity.object_id
-
-  secret_permissions = ["Get", "List"]
-
-  depends_on = [module.aks, module.keyvault]
-}
+  depends_on = [module.aks]
 }
 
 # Monitoring Module
