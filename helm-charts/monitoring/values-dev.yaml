@@ -41,8 +41,9 @@ kube-prometheus-stack:
           hosts:
             - grafana.hakimdevops.art
     
-    # ServiceAccount will be configured via ArgoCD parameters from Terraform
-    # No hardcoded values here to avoid conflicts
+    # Workload identity configuration
+    podLabels:
+      azure.workload.identity/use: "true"
 
 alerts:
   enabled: true
