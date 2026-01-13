@@ -43,7 +43,7 @@ kube-prometheus-stack:
     
     # Workload identity configuration
     podLabels:
-      azure.workload.identity/use: "true"
+      "azure.workload.identity/use": "true"
 
 alerts:
   enabled: true
