@@ -14,7 +14,7 @@ resource "azurerm_federated_identity_credential" "grafana" {
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.main.oidc_issuer_url
   parent_id           = azurerm_user_assigned_identity.grafana.id
-  subject             = "system:serviceaccount:monitoring:grafana-workload-identity"
+  subject             = "system:serviceaccount:monitoring:monitoring-dev-grafana"
 
   depends_on = [azurerm_kubernetes_cluster.main, azurerm_user_assigned_identity.grafana]
 }
