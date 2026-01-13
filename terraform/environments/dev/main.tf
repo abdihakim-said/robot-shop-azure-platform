@@ -149,6 +149,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
 
   # Application node pool configuration
   os_disk_type = "Managed"
+  max_pods     = 50  # Match system node pool capacity (CKV_AZURE_168)
 
   # Network configuration
   vnet_subnet_id = module.networking.aks_subnet_id
