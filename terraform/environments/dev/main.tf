@@ -128,6 +128,7 @@ module "aks" {
   enable_autoscaling = var.enable_autoscaling
   min_node_count     = var.min_node_count
   max_node_count     = var.max_node_count
+  keyvault_name      = module.keyvault.name
 
   # Security settings (enhanced for dev)
   private_cluster_enabled         = false      # Match current cluster to prevent replacement
