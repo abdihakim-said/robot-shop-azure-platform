@@ -68,8 +68,16 @@ kube-prometheus-stack:
   
   # Node exporter configuration - fix for Azure AKS system nodes
   prometheus-node-exporter:
-    # Remove AWS-specific affinity rules
-    affinity: {}
+    # Override AWS-specific affinity with simple Linux requirement
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/os
+              operator: In
+              values:
+              - linux
     # Add toleration for system nodes with CriticalAddonsOnly taint
     tolerations:
       - key: CriticalAddonsOnly
