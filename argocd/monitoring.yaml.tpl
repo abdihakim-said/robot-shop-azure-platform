@@ -31,10 +31,13 @@ spec:
           value: ${managed_identity_client_id}
         - name: global.grafanaWorkloadIdentity.clientId
           value: ${grafana_workload_identity_client_id}
-        - name: kube-prometheus-stack.grafana.serviceAccount.annotations.azure\.workload\.identity/client-id
-          value: ${grafana_workload_identity_client_id}
+        # Grafana ServiceAccount configuration for workload identity
+        - name: kube-prometheus-stack.grafana.serviceAccount.create
+          value: "true"
         - name: kube-prometheus-stack.grafana.serviceAccount.name
           value: monitoring-${environment}-grafana
+        - name: kube-prometheus-stack.grafana.serviceAccount.annotations.azure\.workload\.identity/client-id
+          value: ${grafana_workload_identity_client_id}
         - name: kube-prometheus-stack.grafana.podLabels.azure\.workload\.identity/use
           value: "true"
         # Ensure workload identity is properly configured
