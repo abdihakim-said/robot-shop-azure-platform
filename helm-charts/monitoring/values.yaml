@@ -15,6 +15,11 @@ kube-prometheus-stack:
   
   grafana:
     enabled: true
+    
+    # Pod labels for workload identity
+    podLabels:
+      azure.workload.identity/use: "true"
+    
     # ServiceAccount configuration will be handled by ArgoCD parameters
     extraVolumes:
       - name: grafana-secrets-store
