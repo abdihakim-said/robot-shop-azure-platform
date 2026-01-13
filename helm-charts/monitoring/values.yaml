@@ -16,20 +16,19 @@ kube-prometheus-stack:
   grafana:
     enabled: true
     
-    # Deploy to system nodes for infrastructure services
-    nodeSelector:
-      kubernetes.azure.com/mode: system
-    
-    # Tolerate system node taints
-    tolerations:
-      - key: CriticalAddonsOnly
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
-    
-    # Pod labels for workload identity
-    podLabels:
-      azure.workload.identity/use: "true"
+    # ServiceAccount configuration will be handled by ArgoCD parameters
+    extraVolumes:
+      - name: grafana-secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: grafana-secrets
+    extraVolumeMounts:
+      - name: grafana-secrets-store
+        mountPath: /mnt/secrets-store
+        readOnly: true
+    # Use environment variables to read from mounted secrets
     
     # ServiceAccount configuration will be handled by ArgoCD parameters
     extraVolumes:

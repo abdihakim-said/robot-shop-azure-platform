@@ -29,15 +29,7 @@ spec:
           value: ${tenant_id}
         - name: global.managedIdentity.clientId
           value: ${managed_identity_client_id}
-        - name: global.grafanaWorkloadIdentity.clientId
-          value: ${grafana_workload_identity_client_id}
-        # Grafana ServiceAccount configuration for workload identity
-        - name: kube-prometheus-stack.grafana.serviceAccount.create
-          value: "true"
-        - name: kube-prometheus-stack.grafana.serviceAccount.name
-          value: monitoring-${environment}-grafana
-        - name: kube-prometheus-stack.grafana.serviceAccount.annotations.azure\.workload\.identity/client-id
-          value: ${grafana_workload_identity_client_id}
+        # Remove workload identity configuration - using VM managed identity instead
         # NOTE: podLabels configured in values-dev.yaml to avoid type conflicts
         # Ensure workload identity is properly configured
   
