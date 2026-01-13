@@ -39,12 +39,4 @@ output "oidc_issuer_url" {
   value       = azurerm_kubernetes_cluster.main.oidc_issuer_url
 }
 
-output "grafana_workload_identity_client_id" {
-  description = "Grafana workload identity client ID"
-  value       = azurerm_user_assigned_identity.grafana.client_id
-}
-
-output "grafana_workload_identity_principal_id" {
-  description = "Grafana workload identity principal ID"
-  value       = azurerm_user_assigned_identity.grafana.principal_id
-}
+# Workload identity outputs removed - using VM managed identity instead

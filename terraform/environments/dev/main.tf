@@ -102,17 +102,6 @@ module "networking" {
   tags = local.common_tags
 }
 
-# Grant Grafana workload identity access to Key Vault (after both modules exist)
-resource "azurerm_key_vault_access_policy" "grafana_workload_identity" {
-  key_vault_id = module.keyvault.key_vault_id
-  tenant_id    = module.keyvault.tenant_id
-  object_id    = module.aks.grafana_workload_identity_principal_id
-
-  secret_permissions = ["Get", "List"]
-
-  depends_on = [module.aks, module.keyvault]
-}
-
 # AKS Module
 module "aks" {
   source = "../../modules/aks"
