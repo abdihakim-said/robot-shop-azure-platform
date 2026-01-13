@@ -48,6 +48,8 @@ kube-prometheus-stack:
     serviceAccount:
       create: true
       name: "monitoring-dev-grafana"
+      annotations:
+        azure.workload.identity/client-id: "91c3b621-6426-4201-a7b7-a6d12a814fa1"
 
 alerts:
   enabled: true
