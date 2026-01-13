@@ -65,3 +65,7 @@ kube-prometheus-stack:
   
   prometheusOperator:
     enabled: false  # Already installed via Terraform - CRITICAL: Avoid conflict
+  
+  # Node exporter configuration - fix AWS-specific affinity for Azure AKS
+  prometheus-node-exporter:
+    affinity: {}  # Remove AWS-specific nodeAffinity rules

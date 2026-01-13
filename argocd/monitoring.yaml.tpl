@@ -30,9 +30,6 @@ spec:
         - name: global.managedIdentity.clientId
           value: ${managed_identity_client_id}
         # Remove workload identity configuration - using VM managed identity instead
-        # Fix node exporter AWS-specific affinity for Azure AKS
-        - name: kube-prometheus-stack.prometheus-node-exporter.affinity
-          value: "{}"
         # NOTE: podLabels configured in values-dev.yaml to avoid type conflicts
         # Ensure workload identity is properly configured
   
