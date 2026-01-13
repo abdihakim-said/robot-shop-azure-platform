@@ -113,6 +113,17 @@ resource "azurerm_key_vault_access_policy" "grafana_workload_identity" {
   depends_on = [module.aks, module.keyvault]
 }
 
+# Additional access policy for AKS kubelet identity (backup access)
+resource "azurerm_key_vault_access_policy" "aks_kubelet_identity" {
+  key_vault_id = module.keyvault.key_vault_id
+  tenant_id    = module.keyvault.tenant_id
+  object_id    = module.aks.kubelet_identity.object_id
+
+  secret_permissions = ["Get", "List"]
+
+  depends_on = [module.aks, module.keyvault]
+}
+
 # AKS Module
 module "aks" {
   source = "../../modules/aks"
