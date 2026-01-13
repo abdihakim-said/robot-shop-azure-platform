@@ -20,6 +20,13 @@ kube-prometheus-stack:
     nodeSelector:
       kubernetes.azure.com/mode: system
     
+    # Tolerate system node taints
+    tolerations:
+      - key: CriticalAddonsOnly
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+    
     # Pod labels for workload identity
     podLabels:
       azure.workload.identity/use: "true"
