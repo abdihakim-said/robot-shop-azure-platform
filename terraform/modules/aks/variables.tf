@@ -153,7 +153,4 @@ variable "name_prefix" {
   description = "Name prefix for resources (to match KeyVault naming)"
   type        = string
 }
-variable "keyvault_name" {
-  description = "Name of the Key Vault for secrets"
-  type        = string
-}
+
