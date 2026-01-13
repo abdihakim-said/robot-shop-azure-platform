@@ -45,11 +45,9 @@ kube-prometheus-stack:
             - grafana.hakimdevops.art
     
     # ServiceAccount configuration for workload identity
+    # Values will be provided by ArgoCD parameters from Terraform
     serviceAccount:
       create: true
-      name: "monitoring-dev-grafana"
-      annotations:
-        azure.workload.identity/client-id: "91c3b621-6426-4201-a7b7-a6d12a814fa1"
 
 alerts:
   enabled: true
