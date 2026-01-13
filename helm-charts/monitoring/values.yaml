@@ -32,6 +32,9 @@ kube-prometheus-stack:
       - name: grafana-secrets-store
         mountPath: /mnt/secrets-store
         readOnly: true
+      - name: azure-identity-token
+        mountPath: /var/run/secrets/azure/tokens
+        readOnly: true
     # Use environment variables to read from mounted secrets
     extraEnvVars:
       - name: GF_SECURITY_ADMIN_USER
