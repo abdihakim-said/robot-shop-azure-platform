@@ -43,6 +43,11 @@ kube-prometheus-stack:
         - secretName: grafana-hakimdevops-tls
           hosts:
             - grafana.hakimdevops.art
+    
+    # ServiceAccount configuration for workload identity
+    serviceAccount:
+      create: true
+      name: "monitoring-dev-grafana"
 
 alerts:
   enabled: true
