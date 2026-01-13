@@ -15,9 +15,7 @@ kube-prometheus-stack:
   prometheusOperator:
     enabled: false
   
-  # Fix AWS-specific nodeAffinity for Azure AKS
-  prometheus-node-exporter:
-    affinity: {}  # Remove AWS EKS-specific rules
+  # Node exporter affinity fix moved to values.yaml for consistency
   
   prometheus:
     ingress:
