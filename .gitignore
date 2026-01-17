@@ -68,3 +68,6 @@ scripts/generate-runbooks.sh
 # Terraform cache
 .terraform/
 terraform.tfstate*
+# Documentation (keep only README)
+*.md
+!README.md
