@@ -57,7 +57,7 @@ cart:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20260108-2686ac4"
+    tag: "v20260117-a732426"
 catalogue:
   enabled: true
   autoscaling:
@@ -105,7 +105,7 @@ payment:
     minMemory: "32Mi"
     maxMemory: "128Mi"
   image:
-    tag: "v20260108-2686ac4"
+    tag: "v20260117-a732426"
 shipping:
   enabled: true
   autoscaling:
@@ -153,7 +153,7 @@ dispatch:
     minMemory: "16Mi"
     maxMemory: "64Mi"
   image:
-    tag: "v20260108-c10790d"
+    tag: "v20260117-a732426"
 # Infrastructure services
 # Infrastructure services
 redis:
