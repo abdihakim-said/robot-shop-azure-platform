@@ -14,6 +14,7 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: {{ .Chart.Name }}-sa
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -21,7 +22,28 @@ spec:
         env:
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:mysql://mysql:3306/cities?useSSL=false&allowPublicKeyRetrieval=true"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
         ports:
         - containerPort: {{ .Values.service.port }}
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 50m       # SRE: Spring Boot needs more CPU
+            memory: 128Mi   # SRE: JVM minimum heap
+          limits:
+            cpu: 300m      # SRE: Allow JVM optimization
+            memory: 512Mi   # SRE FIX: Java/Spring Boot needs 512Mi minimum
+        volumeMounts:
+        - name: mysql-secrets-volume
+          mountPath: "/mnt/secrets/mysql"
+          readOnly: true
+      volumes:
+      - name: mysql-secrets-volume
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "mysql-secrets"

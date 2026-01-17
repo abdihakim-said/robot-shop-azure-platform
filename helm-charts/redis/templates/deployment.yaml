@@ -5,7 +5,7 @@ metadata:
   labels:
     service: {{ .Chart.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   selector:
     matchLabels:
       service: {{ .Chart.Name }}
@@ -14,11 +14,35 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: redis-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.keyVault.secretProviderClass }}
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["redis-server", "--requirepass", "$(REDIS_PASSWORD)"]
         ports:
         - containerPort: {{ .Values.service.port }}
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: password
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 30m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

@@ -1,0 +1,231 @@
+{
+  "id": null,
+  "title": "SRE - Web Service Dashboard",
+  "tags": [
+    "sre",
+    "web",
+    "frontend",
+    "user-experience"
+  ],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Web Service Availability",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "avg_over_time(up{job=\"web\"}[5m]) * 100",
+          "legendFormat": "Availability %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Page Response Time (95th percentile)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(web_page_response_time_seconds_bucket[5m]))",
+          "legendFormat": "95th Percentile (s)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "rate(web_http_errors_total[5m]) / rate(web_http_requests_total[5m]) * 100",
+          "legendFormat": "Error Rate %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 4,
+      "title": "Active User Sessions",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "web_active_sessions",
+          "legendFormat": "Active Sessions"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      }
+    },
+    {
+      "id": 5,
+      "title": "Page Views Rate",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(web_page_views_total[5m])",
+          "legendFormat": "{{page}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": 6,
+      "title": "HTTP Request Rate by Status",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(web_http_requests_total[5m])",
+          "legendFormat": "{{method}} {{status_code}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      }
+    },
+    {
+      "id": 7,
+      "title": "Backend Service Calls",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(web_backend_calls_total[5m])",
+          "legendFormat": "{{service}} ({{status}})"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      }
+    },
+    {
+      "id": 8,
+      "title": "User Actions",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(web_user_actions_total[5m])",
+          "legendFormat": "{{action}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      }
+    },
+    {
+      "id": 9,
+      "title": "Response Time Heatmap",
+      "type": "heatmap",
+      "targets": [
+        {
+          "expr": "rate(web_page_response_time_seconds_bucket[5m])",
+          "legendFormat": "{{le}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s"
+}

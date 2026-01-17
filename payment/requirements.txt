@@ -1,3 +1,4 @@
+# Payment service dependencies - updated for deployment
 uwsgi
 Flask
 requests
@@ -5,3 +6,4 @@ pika
 prometheus_client
 opentracing
 instana
+stripe

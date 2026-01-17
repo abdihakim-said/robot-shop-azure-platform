@@ -14,11 +14,46 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: payment-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: stripe-secrets
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.port }}
+        env:
+        - name: AMQP_USER
+          value: "admin"
+        - name: AMQP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-secret
+              key: password
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-secret
+              key: stripe-secret-key
+        - name: STRIPE_PUBLISHABLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-secret
+              key: stripe-publishable-key
+        volumeMounts:
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+          readOnly: true
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 30m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

@@ -1,0 +1,140 @@
+name: Test Environments (Auto-Destroy)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+          - both
+      duration_minutes:
+        description: 'Duration before auto-destroy (minutes)'
+        required: true
+        default: '10'
+        type: string
+      skip_destroy:
+        description: 'Skip auto-destroy (manual cleanup required)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test-staging:
+    if: ${{ github.event.inputs.environment == 'staging' || github.event.inputs.environment == 'both' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Staging
+        working-directory: terraform/environments/staging
+        run: |
+          terraform init
+          terraform apply -auto-approve
+          echo "✅ Staging deployed at $(date)"
+
+      - name: Get Staging Endpoints
+        working-directory: terraform/environments/staging
+        run: |
+          echo "### 🚀 Staging Environment Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Endpoints:**" >> $GITHUB_STEP_SUMMARY
+          terraform output -json | jq -r 'to_entries[] | "- **\(.key)**: \(.value.value)"' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏰ **Auto-destroy in:** ${{ github.event.inputs.duration_minutes }} minutes" >> $GITHUB_STEP_SUMMARY
+          echo "🕐 **Deployed at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Wait for Testing Duration
+        run: |
+          echo "⏳ Keeping environment alive for ${{ github.event.inputs.duration_minutes }} minutes"
+          sleep $((${{ github.event.inputs.duration_minutes }} * 60))
+
+      - name: Destroy Staging
+        if: always() && github.event.inputs.skip_destroy != 'true'
+        working-directory: terraform/environments/staging
+        run: |
+          terraform destroy -auto-approve
+          echo "### 🗑️ Staging Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "Destroyed at: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Calculate Cost
+        if: always()
+        run: |
+          MINUTES=${{ github.event.inputs.duration_minutes }}
+          HOURLY_COST=60
+          COST=$(echo "scale=2; $HOURLY_COST * $MINUTES / 60" | bc)
+          echo "### Cost Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Duration: $MINUTES minutes" >> $GITHUB_STEP_SUMMARY
+          echo "- Estimated Cost: \$$COST" >> $GITHUB_STEP_SUMMARY
+
+  test-production:
+    if: ${{ github.event.inputs.environment == 'production' || github.event.inputs.environment == 'both' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Production
+        working-directory: terraform/environments/production
+        run: |
+          terraform init
+          terraform apply -auto-approve
+          echo "✅ Production deployed at $(date)"
+
+      - name: Get Production Endpoints
+        working-directory: terraform/environments/production
+        run: |
+          echo "### 🚀 Production Environment Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Endpoints:**" >> $GITHUB_STEP_SUMMARY
+          terraform output -json | jq -r 'to_entries[] | "- **\(.key)**: \(.value.value)"' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏰ **Auto-destroy in:** ${{ github.event.inputs.duration_minutes }} minutes" >> $GITHUB_STEP_SUMMARY
+          echo "🕐 **Deployed at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Wait for Testing Duration
+        run: |
+          echo "⏳ Keeping environment alive for ${{ github.event.inputs.duration_minutes }} minutes"
+          sleep $((${{ github.event.inputs.duration_minutes }} * 60))
+
+      - name: Destroy Production
+        if: always() && github.event.inputs.skip_destroy != 'true'
+        working-directory: terraform/environments/production
+        run: |
+          terraform destroy -auto-approve
+          echo "### 🗑️ Production Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "Destroyed at: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Calculate Cost
+        if: always()
+        run: |
+          MINUTES=${{ github.event.inputs.duration_minutes }}
+          HOURLY_COST=140
+          COST=$(echo "scale=2; $HOURLY_COST * $MINUTES / 60" | bc)
+          echo "### Cost Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Duration: $MINUTES minutes" >> $GITHUB_STEP_SUMMARY
+          echo "- Estimated Cost: \$$COST" >> $GITHUB_STEP_SUMMARY

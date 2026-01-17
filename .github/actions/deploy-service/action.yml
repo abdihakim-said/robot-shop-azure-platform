@@ -1,0 +1,66 @@
+name: Deploy Service
+description: Enterprise GitOps deployment for a single service
+
+inputs:
+  service-name:
+    description: Name of the service to deploy
+    required: true
+  image-tag:
+    description: Image tag to deploy
+    required: true
+  environment:
+    description: Target environment (dev/staging/production)
+    required: true
+  github-token:
+    description: GitHub token for API access
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate Inputs
+      shell: bash
+      run: |
+        echo "🔍 Validating deployment inputs..."
+        echo "Service: ${{ inputs.service-name }}"
+        echo "Image Tag: ${{ inputs.image-tag }}"
+        echo "Environment: ${{ inputs.environment }}"
+        
+        # Validate environment
+        case "${{ inputs.environment }}" in
+          "dev"|"staging"|"production")
+            echo "✅ Valid environment"
+            ;;
+          *)
+            echo "❌ Invalid environment: ${{ inputs.environment }}"
+            exit 1
+            ;;
+        esac
+    
+    - name: Update Helm Values
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        echo "🚀 Updating Helm values for ${{ inputs.service-name }}"
+        
+        VALUES_FILE="helm-charts/robot-shop/values-${{ inputs.environment }}.yaml"
+        
+        if [ -f "$VALUES_FILE" ]; then
+          # Update the specific service image tag
+          sed -i "/^${{ inputs.service-name }}:/,/^[a-zA-Z]/ s/tag: .*/tag: \"${{ inputs.image-tag }}\"/" "$VALUES_FILE"
+          echo "✅ Updated ${{ inputs.service-name }} tag to ${{ inputs.image-tag }} in $VALUES_FILE"
+        else
+          echo "❌ Values file not found: $VALUES_FILE"
+          exit 1
+        fi
+    
+    - name: Validate Helm Values
+      shell: bash
+      run: |
+        echo "🔍 Validating Helm values syntax..."
+        if command -v helm &> /dev/null; then
+          helm lint helm-charts/robot-shop/ --values helm-charts/robot-shop/values-${{ inputs.environment }}.yaml
+        else
+          echo "⚠️ Helm not available, skipping validation"
+        fi

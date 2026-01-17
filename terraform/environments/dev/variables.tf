@@ -1,13 +1,44 @@
+variable "max_pods_per_node" {
+  description = "Maximum number of pods per node"
+  type        = number
+  default     = 30
+}
+
 variable "project_name" {
   description = "Project name"
   type        = string
   default     = "robot-shop"
 }
 
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "dev"
+}
+
+# Backend configuration variables
+variable "backend_resource_group_name" {
+  description = "Backend resource group name"
+  type        = string
+  default     = "robot-shop-tfstate-rg"
+}
+
+variable "backend_storage_account_name" {
+  description = "Backend storage account name"
+  type        = string
+  # No default - must be provided by pipeline
+}
+
+variable "backend_container_name" {
+  description = "Backend container name"
+  type        = string
+  default     = "tfstate"
+}
+
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
+  default     = "East US"
 }
 
 variable "cost_center" {
@@ -63,7 +94,7 @@ variable "min_node_count" {
 variable "max_node_count" {
   description = "Maximum node count"
   type        = number
-  default     = 3 # Dev: limited scale
+  default     = 4 # Dev: limited scale
 }
 
 # Storage
@@ -92,12 +123,6 @@ variable "alert_emails" {
   default     = []
 }
 
-variable "grafana_admin_password" {
-  description = "Grafana admin password"
-  type        = string
-  sensitive   = true
-}
-
 variable "prometheus_storage_size" {
   description = "Prometheus storage size"
   type        = string
@@ -108,4 +133,66 @@ variable "grafana_storage_size" {
   description = "Grafana storage size"
   type        = string
   default     = "5Gi" # Dev: smaller storage
+}
+variable "secrets" {
+  description = "Key Vault secrets configuration for dev environment"
+  type = map(object({
+    name   = string
+    length = optional(number, 16)
+  }))
+  default = {
+    # Monitoring secrets
+    grafana = {
+      name   = "grafana-admin-password"
+      length = 20
+    }
+    prometheus = {
+      name   = "prometheus-password"
+      length = 16
+    }
+
+    # Database secrets (align with SecretProviderClass expectations)
+    mysql_root = {
+      name   = "mysql-root-password"
+      length = 20
+    }
+    mysql_user = {
+      name   = "mysql-user-password"
+      length = 20
+    }
+    mongodb_root = {
+      name   = "mongodb-root-password"
+      length = 20
+    }
+    mongodb_catalogue = {
+      name   = "mongodb-catalogue-password"
+      length = 20
+    }
+    mongodb_users = {
+      name   = "mongodb-users-password"
+      length = 20
+    }
+    redis = {
+      name   = "redis-password"
+      length = 16
+    }
+    rabbitmq = {
+      name   = "rabbitmq-password"
+      length = 16
+    }
+    rabbitmq_cookie = {
+      name   = "rabbitmq-erlang-cookie"
+      length = 32
+    }
+
+    # Payment service secrets
+    stripe_secret = {
+      name   = "stripe-secret-key"
+      length = 32
+    }
+    stripe_publishable = {
+      name   = "stripe-publishable-key"
+      length = 32
+    }
+  }
 }

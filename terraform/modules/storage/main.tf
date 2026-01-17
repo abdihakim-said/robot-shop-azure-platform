@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+# Trigger pipeline - fixed YAML syntax error
 # Generate random suffix for globally unique ACR name
 resource "random_string" "acr_suffix" {
   length  = 6
@@ -19,7 +20,7 @@ resource "azurerm_container_registry" "main" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.acr_sku
-  admin_enabled       = false
+  admin_enabled       = true # Enable for dev environment
 
   identity {
     type = "SystemAssigned"
@@ -28,11 +29,11 @@ resource "azurerm_container_registry" "main" {
   tags = var.tags
 }
 
-resource "azurerm_role_assignment" "aks_acr" {
-  principal_id                     = var.kubelet_identity_object_id
-  role_definition_name             = "AcrPull"
-  scope                            = azurerm_container_registry.main.id
-  skip_service_principal_aad_check = true
+# Grant AKS pull access to ACR
+resource "azurerm_role_assignment" "acr_pull" {
+  scope                = azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = var.kubelet_identity_object_id
 }
 
 resource "azurerm_storage_account" "main" {
@@ -40,7 +41,10 @@ resource "azurerm_storage_account" "main" {
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = var.storage_account_tier
-  account_replication_type = var.storage_replication_type
+  account_replication_type = "GRS" # Production-grade geo-redundant storage (CKV_AZURE_206)
+
+  # Security: Use latest TLS version (CKV_AZURE_44)
+  min_tls_version = "TLS1_2"
 
   blob_properties {
     delete_retention_policy {

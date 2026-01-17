@@ -1,0 +1,67 @@
+{{- if .Values.dashboards.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-payment-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  sre-payment-dashboard.json: |
+{{ .Files.Get "dashboards/sre-payment-dashboard.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-cart-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  sre-cart-dashboard.json: |
+{{ .Files.Get "dashboards/sre-cart-dashboard.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-web-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  sre-web-dashboard.json: |
+{{ .Files.Get "dashboards/sre-web-dashboard.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: business-metrics-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  business-metrics.json: |
+{{ .Files.Get "dashboards/business-metrics.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-monitoring-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  database-monitoring.json: |
+{{ .Files.Get "dashboards/database-monitoring.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: golden-signals-dashboard
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  golden-signals.json: |
+{{ .Files.Get "dashboards/golden-signals.json" | indent 4 }}
+{{- end }}

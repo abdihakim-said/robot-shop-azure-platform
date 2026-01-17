@@ -1,0 +1,90 @@
+# Staging values - parameterized from Terraform outputs
+global:
+  imageRegistry: {{ .Values.terraform.acr_login_server }}
+  imageTag: {{ .Values.terraform.image_tag }}
+  imagePullPolicy: Always
+  environment: staging
+  
+  # Azure integration from Terraform outputs
+  azure:
+    keyVaultName: {{ .Values.terraform.key_vault_name | quote }}
+    managedIdentityClientId: {{ .Values.terraform.managed_identity_client_id | quote }}
+    tenantId: {{ .Values.terraform.tenant_id | quote }}
+
+# Production-grade resource allocation for staging
+web:
+  enabled: true
+  replicas: 2  # HA for staging
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+mysql:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  keyVault:
+    enabled: true
+    secretProviderClass: mysql-secrets
+
+mongo:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  keyVault:
+    enabled: true
+    secretProviderClass: mongodb-secrets
+
+redis:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  keyVault:
+    enabled: true
+    secretProviderClass: redis-secrets
+
+rabbitmq:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  keyVault:
+    enabled: true
+    secretProviderClass: rabbitmq-secrets
+
+payment:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  keyVault:
+    enabled: true
+    secretProviderClass: stripe-secrets

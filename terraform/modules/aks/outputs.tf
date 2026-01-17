@@ -8,6 +8,11 @@ output "cluster_name" {
   value       = azurerm_kubernetes_cluster.main.name
 }
 
+output "resource_group_name" {
+  description = "Resource group name"
+  value       = var.resource_group_name
+}
+
 output "kube_config" {
   description = "Kubernetes configuration"
   value       = azurerm_kubernetes_cluster.main.kube_config[0]
@@ -23,3 +28,15 @@ output "log_analytics_workspace_id" {
   description = "Log Analytics workspace ID"
   value       = azurerm_log_analytics_workspace.aks.id
 }
+
+output "effective_outbound_ips" {
+  description = "AKS cluster effective outbound IPs"
+  value       = azurerm_kubernetes_cluster.main.network_profile[0].load_balancer_profile[0].effective_outbound_ips
+}
+
+output "oidc_issuer_url" {
+  description = "OIDC issuer URL for workload identity"
+  value       = azurerm_kubernetes_cluster.main.oidc_issuer_url
+}
+
+# Workload identity outputs removed - using VM managed identity instead

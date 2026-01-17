@@ -1,0 +1,49 @@
+apiVersion: v2
+name: robot-shop
+description: Robot Shop Microservices Platform - Enterprise Umbrella Chart
+type: application
+version: 1.0.6
+appVersion: "1.0.0"
+
+dependencies:
+  # Infrastructure Services (Deploy First)
+  - name: redis
+    version: "1.0.2"
+    repository: "file://../redis"
+  - name: rabbitmq
+    version: "1.0.2"
+    repository: "file://../rabbitmq"
+  - name: mongo
+    version: "1.0.1"
+    repository: "file://../mongo"
+  - name: mysql
+    version: "1.0.5"
+    repository: "file://../mysql"
+  
+  # Application Services (Deploy After Infrastructure)
+  - name: catalogue
+    version: "1.0.1"
+    repository: "file://../catalogue"
+  - name: user
+    version: "1.0.1"
+    repository: "file://../user"
+  - name: cart
+    version: "1.0.1"
+    repository: "file://../cart"
+  - name: payment
+    version: "1.0.0"
+    repository: "file://../payment"
+  - name: shipping
+    version: "1.0.1"
+    repository: "file://../shipping"
+  - name: ratings
+    version: "1.0.1"
+    repository: "file://../ratings"
+  - name: dispatch
+    version: "1.0.1"
+    repository: "file://../dispatch"
+  
+  # Frontend (Deploy Last)
+  - name: web
+    version: "1.0.0"
+    repository: "file://../web"

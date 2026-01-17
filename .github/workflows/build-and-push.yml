@@ -1,4 +1,4 @@
-name: Build & Push Images
+name: Secure CI/CD - End-to-End Testing
 
 on:
   push:
@@ -14,15 +14,16 @@ on:
       - 'dispatch/**'
       - 'mysql/**'
       - 'mongo/**'
+      - 'mongo/**'
 
 permissions:
-  contents: read
-  actions: write
+  contents: write
   security-events: write
+  actions: write
 
 env:
-  ACR_NAME: robotshopdevacrmtttm8
-  ACR_LOGIN_SERVER: robotshopdevacrmtttm8.azurecr.io
+  ACR_NAME: robotshopdevacrcq4b5l
+  ACR_LOGIN_SERVER: robotshopdevacrcq4b5l.azurecr.io
 
 jobs:
   detect-changes:
@@ -30,10 +31,30 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       services: ${{ steps.changes.outputs.services }}
+      environment: ${{ steps.env.outputs.environment }}
+      image_tag: ${{ steps.env.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set Environment and Tag
+        id: env
+        run: |
+          # Modern GitOps: Build once with immutable tag
+          IMMUTABLE_TAG="v$(date +%Y%m%d)-${GITHUB_SHA:0:7}"
+          echo "image_tag=$IMMUTABLE_TAG" >> $GITHUB_OUTPUT
+          
+          # Environment determined by branch but same image used everywhere
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
 
       - name: Detect changed services
         id: changes
@@ -48,10 +69,62 @@ jobs:
           echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
           echo "Changed services: $CHANGED_SERVICES"
 
+  # DevSecOps: Pre-Build Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Secret Detection - SECURITY GATE
+      - name: Secret Detection (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified
+      
+      # 2. Dependency Vulnerability Scanning - SECURITY GATE
+      - name: Dependency Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './${{ matrix.service }}'
+          format: 'sarif'
+          output: 'trivy-deps-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL'
+      
+      - name: Upload Dependency Scan Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: 'trivy-deps-${{ matrix.service }}.sarif'
+          category: 'dependencies-${{ matrix.service }}'
+      
+      # 3. SAST - Code Security Scanning
+      - name: Code Security Scan (Semgrep)
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config auto --sarif --output=/src/semgrep-${{ matrix.service }}.sarif
+        continue-on-error: true
+      
+      - name: Upload SAST Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: semgrep-${{ matrix.service }}.sarif
+          category: 'sast-${{ matrix.service }}'
+
   build-and-push:
     name: Build & Push
     runs-on: ubuntu-latest
-    needs: detect-changes
+    needs: [detect-changes, security-scan]
     if: needs.detect-changes.outputs.services != '[]'
     strategy:
       matrix:
@@ -67,7 +140,7 @@ jobs:
 
       - name: Login to ACR
         run: |
-          az acr login --name ${{ env.ACR_NAME }}
+          az acr login --name robotshopdevacrcq4b5l
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -78,62 +151,107 @@ jobs:
           context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.environment }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Scan image with Trivy
+      # DevSecOps: Container Image Security Scanning
+      - name: Scan image with Trivy (Vulnerabilities)
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         with:
-          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
           format: 'sarif'
-          output: 'trivy-${{ matrix.service }}.sarif'
-
-      - name: Upload Trivy results
+          output: 'trivy-image-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+      
+      - name: Upload Image Scan Results
         uses: github/codeql-action/upload-sarif@v4
-        continue-on-error: true
         if: always()
         with:
-          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+          sarif_file: 'trivy-image-${{ matrix.service }}.sarif'
+          category: 'container-${{ matrix.service }}'
+      
+      # Security Gate: Fail on Critical Vulnerabilities
+      - name: Security Gate Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL'
+          ignore-unfixed: true
+      
+      # DevSecOps: Generate SBOM (Software Bill of Materials)
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+          format: 'cyclonedx'
+          output: 'sbom-${{ matrix.service }}.json'
+      
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: sbom-${{ matrix.service }}.json
+          retention-days: 90
 
       - name: Tag image as tested
         run: |
-          docker pull ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
-          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }} \
-            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ github.sha }}
+          docker pull ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }}
+          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ needs.detect-changes.outputs.image_tag }} \
+            ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service }}:tested-${{ needs.detect-changes.outputs.image_tag }}
 
-  trigger-deployments:
-    name: Trigger Deployments
-    runs-on: ubuntu-latest
+  # GitOps Best Practice: Update Git, let ArgoCD sync automatically
+  update-gitops-manifests:
+    name: Update GitOps Manifests
     needs: [detect-changes, build-and-push]
     if: needs.detect-changes.outputs.services != '[]'
-    strategy:
-      matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Determine environment
-        id: env
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
-            echo "environment=staging" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-          else
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          fi
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Trigger deployment workflow
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Update Helm Values with New Image Tags
         run: |
-          gh workflow run service-${{ matrix.service }}.yml \
-            --repo ${{ github.repository }} \
-            --ref ${{ github.ref_name }} \
-            --field service-name=${{ matrix.service }} \
-            --field image-tag=${{ github.sha }} \
-            --field environment=${{ steps.env.outputs.environment }}
+          echo "🔄 Updating Helm values with new image tags (GitOps pattern)..."
+          
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+          IMAGE_TAG='${{ needs.detect-changes.outputs.image_tag }}'
+          
+          echo "Services built: $SERVICES"
+          echo "New image tag: $IMAGE_TAG"
+          
+          # Parse services array and update individual service tags
+          echo "$SERVICES" | jq -r '.[]' | while read service; do
+            echo "Updating $service image tag to $IMAGE_TAG"
+            # Update individual service image tags in values-dev.yaml
+            sed -i "/^$service:/,/^[a-zA-Z]/ s/tag: .*/tag: \"$IMAGE_TAG\"/" helm-charts/robot-shop/values-dev.yaml
+          done
+          
+          echo "✅ Helm values updated with tag: $IMAGE_TAG"
+          
+      - name: Commit and Push GitOps Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git add helm-charts/robot-shop/values-dev.yaml
+          git commit -m "🚀 GitOps: Update image tags to ${{ needs.detect-changes.outputs.image_tag }}"
+          git push origin develop
+          
+          echo "✅ GitOps manifests updated in Git"
+          echo "🎯 ArgoCD will detect changes and sync automatically"
+          echo "🎉 BUILD COMPLETE - GitOps Pattern"
+          echo "✅ Images built: ${{ needs.detect-changes.outputs.services }}"
+          echo "✅ Image tag: ${{ needs.detect-changes.outputs.image_tag }}"

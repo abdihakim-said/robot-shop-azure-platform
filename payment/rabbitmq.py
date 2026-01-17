@@ -11,10 +11,14 @@ class Publisher:
 
     def __init__(self, logger):
         self._logger = logger
+        # Get credentials from environment or use defaults
+        amqp_user = os.getenv('AMQP_USER', 'admin')
+        amqp_password = os.getenv('AMQP_PASSWORD', 'admin')
+        
         self._params = pika.connection.ConnectionParameters(
             host=self.HOST,
             virtual_host=self.VIRTUAL_HOST,
-            credentials=pika.credentials.PlainCredentials('guest', 'guest'))
+            credentials=pika.credentials.PlainCredentials(amqp_user, amqp_password))
         self._conn = None
         self._channel = None
 

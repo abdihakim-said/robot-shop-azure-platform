@@ -17,3 +17,7 @@ output "storage_account_name" {
   description = "Storage account name"
   value       = azurerm_storage_account.main.name
 }
+output "acr_name" {
+  description = "Name of the Azure Container Registry"
+  value       = azurerm_container_registry.main.name
+}

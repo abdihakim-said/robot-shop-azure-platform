@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    service: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      service: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        service: {{ .Chart.Name }}
+    spec:
+      serviceAccountName: mongodb-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.keyVault.secretProviderClass }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: admin
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: root-password
+        - name: MONGO_CATALOGUE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: catalogue-password
+        - name: MONGO_USERS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: users-password
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                # Wait for MongoDB to be ready
+                until mongosh --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+                  sleep 2
+                done
+                
+                # Run user creation script
+                mongosh --eval "
+                const cataloguePassword = process.env.MONGO_CATALOGUE_PASSWORD;
+                const usersPassword = process.env.MONGO_USERS_PASSWORD;
+                
+                // Create catalogue user
+                db = db.getSiblingDB('catalogue');
+                try {
+                  db.createUser({
+                    user: 'catalogue',
+                    pwd: cataloguePassword,
+                    roles: [{ role: 'readWrite', db: 'catalogue' }]
+                  });
+                } catch(e) { /* User exists */ }
+                
+                // Create users user
+                db = db.getSiblingDB('users');
+                try {
+                  db.createUser({
+                    user: 'users',
+                    pwd: usersPassword,
+                    roles: [{ role: 'readWrite', db: 'users' }]
+                  });
+                } catch(e) { /* User exists */ }
+                " || true
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+        resources:
+          requests:
+            cpu: 50m       # SRE: Optimized based on actual usage (6m observed)
+            memory: 256Mi  # SRE: Keep current, matches actual usage (234Mi observed)
+          limits:
+            cpu: 200m      # SRE: Reduced from 500m, sufficient for operations
+            memory: 384Mi  # SRE: Reduced from 512Mi, 1.6x actual usage for safety

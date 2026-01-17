@@ -1,0 +1,180 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [develop, 'release/**', main]
+    paths:
+      - 'web/**'
+      - 'cart/**'
+      - 'catalogue/**'
+      - 'user/**'
+      - 'payment/**'
+      - 'shipping/**'
+      - 'ratings/**'
+      - 'dispatch/**'
+      - 'mysql/**'
+      - 'mongo/**'
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed services
+        id: changes
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          
+          CHANGED_SERVICES=""
+          for service in web cart catalogue user payment shipping ratings dispatch mysql mongo; do
+            if git diff --name-only $BASE_SHA $HEAD_SHA | grep -q "^${service}/"; then
+              CHANGED_SERVICES="${CHANGED_SERVICES}${service},"
+            fi
+          done
+          CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          echo "services=[$(echo $CHANGED_SERVICES | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]" >> $GITHUB_OUTPUT
+          echo "Changed services: $CHANGED_SERVICES"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Secret Detection
+      - name: Secret Detection (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          extra_args: --only-verified
+      
+      # 2. Dependency Vulnerability Scanning
+      - name: Dependency Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          scan-type: 'fs'
+          scan-ref: './${{ matrix.service }}'
+          format: 'sarif'
+          output: 'trivy-deps-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      
+      - name: Upload Dependency Scan Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: 'trivy-deps-${{ matrix.service }}.sarif'
+          category: 'pr-dependencies-${{ matrix.service }}'
+      
+      # 3. SAST - Code Security Scanning
+      - name: Code Security Scan (Semgrep)
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config auto --sarif --output=/src/semgrep-${{ matrix.service }}.sarif
+        continue-on-error: true
+      
+      - name: Upload SAST Results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: semgrep-${{ matrix.service }}.sarif
+          category: 'pr-sast-${{ matrix.service }}'
+
+  build-verification:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          cd ${{ matrix.service }}
+          docker build -t ${{ matrix.service }}:pr-${{ github.event.pull_request.number }} .
+
+      - name: Scan built image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
+          format: 'sarif'
+          output: 'trivy-image-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      
+      - name: Upload Image Scan Results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-image-${{ matrix.service }}.sarif'
+          category: 'pr-container-${{ matrix.service }}'
+      
+      # Security Gate: Fail on Critical Vulnerabilities
+      - name: Security Gate Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL'
+          ignore-unfixed: true
+
+  pr-summary:
+    name: PR Summary
+    needs: [detect-changes, security-scan, build-verification]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const services = ${{ needs.detect-changes.outputs.services }};
+            const securityResult = '${{ needs.security-scan.result }}';
+            const buildResult = '${{ needs.build-verification.result }}';
+            
+            let summary = '## 🔍 PR Validation Results\n\n';
+            
+            if (services.length === 0) {
+              summary += '✅ No service changes detected\n';
+            } else {
+              summary += `**Services Changed:** ${services.join(', ')}\n\n`;
+              summary += `**Security Scan:** ${securityResult === 'success' ? '✅ Passed' : '❌ Failed'}\n`;
+              summary += `**Build Verification:** ${buildResult === 'success' ? '✅ Passed' : '❌ Failed'}\n\n`;
+              
+              if (securityResult === 'success' && buildResult === 'success') {
+                summary += '✅ **All checks passed - Safe to merge**\n';
+              } else {
+                summary += '❌ **Checks failed - Review required before merge**\n';
+              }
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

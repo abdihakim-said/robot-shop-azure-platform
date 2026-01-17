@@ -4,8 +4,10 @@ metadata:
   name: {{ .Chart.Name }}
   labels:
     service: {{ .Chart.Name }}
+  annotations:
+    deployment.kubernetes.io/revision: "2"  # Force update
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   selector:
     matchLabels:
       service: {{ .Chart.Name }}
@@ -14,15 +16,43 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: mysql-sa
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: mysql-secrets
       containers:
       - name: {{ .Chart.Name }}
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        image: {{ .Values.global.imageRegistry | default .Values.image.repository }}/mysql:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.env }}
         env:
-          {{- toYaml .Values.env | nindent 10 }}
-        {{- end }}
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: "cities"
+        - name: MYSQL_USER
+          value: "shipping"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user-password
         ports:
         - containerPort: {{ .Values.service.port }}
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 50m       # SRE: Optimized based on actual usage (6m observed)
+            memory: 512Mi  # SRE: Optimized based on actual usage (459Mi observed)
+          limits:
+            cpu: 200m      # SRE: Reduced from 500m, sufficient for query bursts
+            memory: 1Gi    # SRE: Reduced from 4Gi, 2x actual usage for safety

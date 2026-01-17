@@ -27,5 +27,28 @@ spec:
         {{- end }}
         ports:
         - containerPort: 8080
+        - containerPort: 9090
+        # SRE Best Practice: Health Checks
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 30m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

@@ -1,14 +1,51 @@
 image:
   repository: rabbitmq
-  tag: latest
+  tag: "3.12.10-management-alpine"  # Secure version with management UI
   pullPolicy: IfNotPresent
+
 service:
   type: ClusterIP
   port: 5672
+
+# Enable authentication
+auth:
+  enabled: true
+  username: admin
+  password: ""  # Retrieved from Azure Key Vault
+  erlangCookie: ""  # Retrieved from Azure Key Vault
+
+# Add persistence
+persistence:
+  enabled: true
+  storageClass: "managed-csi"
+  size: 8Gi
+  accessMode: ReadWriteOnce
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  fsGroup: 999
+
+# Resource limits
 resources:
   requests:
-    cpu: 50m
-    memory: 128Mi
+    cpu: 100m
+    memory: 256Mi
   limits:
     cpu: 500m
-    memory: 256Mi
+    memory: 512Mi
+
+# Azure Key Vault integration (following MySQL pattern)
+keyVault:
+  enabled: true
+  secretProviderClass: rabbitmq-secrets
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Off"  # Recommendations only for databases
+  minCpu: "10m"
+  maxCpu: "500m"
+  minMemory: "64Mi"
+  maxMemory: "1Gi"

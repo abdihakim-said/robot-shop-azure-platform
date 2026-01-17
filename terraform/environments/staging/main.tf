@@ -15,14 +15,6 @@ terraform {
       version = "~> 2.24"
     }
   }
-
-  # Optional: Remote state
-  # backend "azurerm" {
-  #   resource_group_name  = "terraform-state-rg"
-  #   storage_account_name = "tfstaterobotshop"
-  #   container_name       = "tfstate"
-  #   key                  = "staging.terraform.tfstate"
-  # }
 }
 
 provider "azurerm" {
@@ -77,6 +69,17 @@ module "aks" {
   enable_autoscaling = var.enable_autoscaling
   min_node_count     = var.min_node_count
   max_node_count     = var.max_node_count
+
+  # Security settings (staging - production-like)
+  private_cluster_enabled         = true        # Private cluster (CKV_AZURE_115)
+  local_account_disabled          = true        # Disable local admin (CKV_AZURE_141)
+  sku_tier                        = "Standard"  # Paid SLA
+  automatic_channel_upgrade       = "stable"    # Stable updates
+  api_server_authorized_ip_ranges = []          # Private cluster doesn't need IP restrictions
+  max_pods_per_node               = 50          # Production-ready (CKV_AZURE_168)
+  os_disk_type                    = "Ephemeral" # Better performance
+  only_critical_addons_enabled    = true        # Security: System node taints (CKV_AZURE_232)
+  disk_encryption_set_id          = null        # Production would use customer-managed keys
 
   tags = local.common_tags
 
@@ -163,4 +166,50 @@ resource "helm_release" "prometheus_stack" {
   ]
 
   depends_on = [module.aks, kubernetes_namespace.monitoring]
+}
+
+# Databases Module (Azure managed services)
+module "databases" {
+  source = "../../modules/databases"
+
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  # MySQL configuration
+  mysql_admin_password = random_password.mysql_admin.result
+  mysql_sku_name       = var.mysql_sku_name
+  mysql_storage_mb     = var.mysql_storage_mb
+
+  # Redis configuration  
+  redis_sku_name = var.redis_sku_name
+  redis_capacity = var.redis_capacity
+
+  # CosmosDB configuration
+  cosmosdb_throughput = var.cosmosdb_throughput
+
+  tags = local.common_tags
+
+  depends_on = [module.networking]
+}
+
+# Generate database passwords
+resource "random_password" "mysql_admin" {
+  length  = 24
+  special = true
+}
+
+# Key Vault Module (Environment-specific)
+module "keyvault" {
+  source = "../../modules/keyvault"
+
+  name_prefix              = local.name_prefix
+  location                 = var.location
+  resource_group_name      = azurerm_resource_group.main.name
+  random_suffix            = var.random_suffix
+  github_actions_object_id = var.github_actions_object_id
+
+  secrets = var.secrets
+
+  tags = local.common_tags
 }

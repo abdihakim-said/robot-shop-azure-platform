@@ -1,0 +1,311 @@
+# Global values override individual chart values - Templated from Terraform outputs
+global:
+  imageRegistry: robotshopdevacrcq4b5l.azurecr.io
+  imageTag: latest
+  imagePullPolicy: Always
+  environment: dev
+  
+  # Global ingress configuration for umbrella chart
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: hakimdevops.art
+        paths:
+          - path: /
+            pathType: Prefix
+            service: web
+            port: 8080
+    tls:
+      - secretName: hakimdevops-art-tls
+        hosts:
+          - hakimdevops.art
+  
+  # Azure Key Vault integration - Dynamic from Terraform
+  azure:
+    keyVaultName: "robotshopdevkv8hfqto"
+    managedIdentityClientId: "c31c60c4-9ea1-4723-a61e-c203019f357a"
+    tenantId: "3ca4cb73-ea37-4f83-b1db-4aa21a825743"
+  
+  # Database security (retrieved from Key Vault)
+  mysql:
+    rootPassword: ""  # Retrieved from Key Vault
+    userPassword: ""  # Retrieved from Key Vault
+
+# Azure Key Vault integration
+keyVault:
+  enabled: true
+  secretProviderClass: mongodb-secrets
+
+# Individual services inherit from global
+cart:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2  # Changed from 1 to enable VPA Auto mode
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  image:
+    tag: "v20260108-2686ac4"
+catalogue:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  image:
+    tag: "v20260108-2686ac4"
+user:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  image:
+    tag: "v20260109-3670e1f"
+payment:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2  # Changed from 1 to enable VPA Auto mode
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 60
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  image:
+    tag: "v20260108-2686ac4"
+shipping:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "200m"
+    minMemory: "64Mi"
+    maxMemory: "512Mi"
+  image:
+    tag: "v20260108-2686ac4"
+ratings:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  image:
+    tag: "v20260108-c10790d"
+dispatch:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "50m"
+    minMemory: "16Mi"
+    maxMemory: "64Mi"
+  image:
+    tag: "v20260108-c10790d"
+# Infrastructure services
+# Infrastructure services
+redis:
+  enabled: true
+  replicas: 1  # Force single replica for cache
+  autoscaling:
+    enabled: false  # Disable HPA for cache (needs Redis Cluster for HA)
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "100m"
+    minMemory: "16Mi"
+    maxMemory: "128Mi"
+  service:
+    type: ClusterIP
+    port: 6379
+  auth:
+    enabled: true
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+web:
+  enabled: true
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "5m"
+    maxCpu: "200m"
+    minMemory: "32Mi"
+    maxMemory: "128Mi"
+  replicas: 1
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  monitoring:
+    enabled: true
+  image:
+    tag: "v20260108-a7dd890"
+
+# Infrastructure services configuration
+mysql:
+  enabled: true
+  autoscaling:
+    enabled: false  # Disable HPA for stateful database
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "10m"
+    maxCpu: "300m"
+    minMemory: "256Mi"
+    maxMemory: "1Gi"
+  image:
+    tag: "v20260108-c10790d"
+  replicas: 1
+  service:
+    type: ClusterIP
+  # Security: Passwords retrieved from Azure Key Vault
+  auth:
+    useKeyVault: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+mongo:
+  enabled: true
+  replicas: 1  # Force single replica for stateful database
+  autoscaling:
+    enabled: false  # Disable HPA for stateful database
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "10m"
+    maxCpu: "300m"
+    minMemory: "128Mi"
+    maxMemory: "512Mi"
+  service:
+    type: ClusterIP
+    port: 27017
+  image:
+    repository: robotshopdevacrcq4b5l.azurecr.io/mongo
+    tag: "v20260109-397dfe8"
+  keyVault:
+    enabled: true
+  auth:
+    enabled: true  # Enable auth to match Azure Key Vault integration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+rabbitmq:
+  enabled: true
+  replicas: 1  # Force single replica for message queue
+  autoscaling:
+    enabled: false  # Disable HPA for message queue (needs cluster configuration)
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 70
+  vpa:
+    enabled: true
+    updateMode: "Auto"
+    minCpu: "10m"
+    maxCpu: "200m"
+    minMemory: "64Mi"
+    maxMemory: "256Mi"
+  service:
+    type: ClusterIP
+    port: 5672
+  auth:
+    username: admin
+    password: ""  # Retrieved from Azure Key Vault
+  resources:
+    requests:
+      cpu: 30m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+

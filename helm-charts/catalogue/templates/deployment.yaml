@@ -14,11 +14,38 @@ spec:
       labels:
         service: {{ .Chart.Name }}
     spec:
+      serviceAccountName: {{ .Chart.Name }}-sa
       containers:
       - name: {{ .Chart.Name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 8080
+        env:
+        - name: MONGO_HOST
+          value: "mongo"
+        - name: MONGO_USER
+          value: "catalogue"
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: catalogue-password
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          requests:
+            cpu: 30m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        volumeMounts:
+        - name: mongodb-secrets-volume
+          mountPath: "/mnt/secrets/mongodb"
+          readOnly: true
+      volumes:
+      - name: mongodb-secrets-volume
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "mongodb-secrets"

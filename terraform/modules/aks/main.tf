@@ -1,3 +1,5 @@
+data "azurerm_client_config" "current" {}
+
 resource "azurerm_log_analytics_workspace" "aks" {
   name                = "${var.cluster_name}-logs"
   location            = var.location
@@ -9,11 +11,42 @@ resource "azurerm_log_analytics_workspace" "aks" {
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
-  name                = var.cluster_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  dns_prefix          = "${var.cluster_name}-dns"
-  kubernetes_version  = var.kubernetes_version
+  name                      = var.cluster_name
+  location                  = var.location
+  resource_group_name       = var.resource_group_name
+  dns_prefix                = "${var.cluster_name}-dns"
+  kubernetes_version        = var.kubernetes_version
+  private_cluster_enabled   = var.private_cluster_enabled
+  local_account_disabled    = var.local_account_disabled
+  sku_tier                  = var.sku_tier
+  automatic_channel_upgrade = var.automatic_channel_upgrade
+
+  # Production-grade disk encryption (CKV_AZURE_117, CKV_AZURE_227)
+  disk_encryption_set_id = var.disk_encryption_set_id
+
+  # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
+  lifecycle {
+    ignore_changes = [
+      default_node_pool[0].node_count, # Ignore autoscaling changes
+      default_node_pool[0].upgrade_settings,
+      default_node_pool[0].max_pods,
+      default_node_pool[0].os_disk_type,
+      network_profile,
+      identity,
+      oms_agent,
+      windows_profile,
+      kubelet_identity,
+      monitor_metrics
+    ]
+  }
+
+  # Enable Workload Identity for secure pod-to-Azure service authentication
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
+
+  api_server_access_profile {
+    authorized_ip_ranges = var.private_cluster_enabled ? null : var.api_server_authorized_ip_ranges
+  }
 
   default_node_pool {
     name                = "agentpool"
@@ -23,6 +56,11 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = var.enable_autoscaling
     min_count           = var.enable_autoscaling ? var.min_node_count : null
     max_count           = var.enable_autoscaling ? var.max_node_count : null
+    max_pods            = 50 # Production-grade: minimum 50 pods per node (CKV_AZURE_168)
+    os_disk_type        = var.os_disk_type
+
+    # Security: Only critical system pods on system nodes (CKV_AZURE_232)
+    only_critical_addons_enabled = var.only_critical_addons_enabled
 
     upgrade_settings {
       max_surge = "10%"

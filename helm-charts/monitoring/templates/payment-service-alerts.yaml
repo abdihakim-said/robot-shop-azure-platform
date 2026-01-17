@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: payment-service-alerts
+  namespace: monitoring
+  labels:
+    app: robot-shop
+    component: payment
+spec:
+  groups:
+  - name: payment.critical
+    rules:
+    - alert: PaymentServiceDown
+      expr: up{job="payment"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: payment
+      annotations:
+        summary: "Payment service is down"
+        description: "Payment service has been down for more than 1 minute"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/payment-service-down.md"
+
+    - alert: PaymentFailureRateHigh
+      expr: rate(payment_failures_total[5m]) / rate(payment_requests_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: critical
+        service: payment
+      annotations:
+        summary: "Payment failure rate is high"
+        description: "Payment failure rate is {{`{{ $value`}} | humanizePercentage }} over the last 5 minutes"
+        runbook_url: "https://github.com/abdihakim-said/robot-shop-azure-platform/blob/main/runbooks/payment-failures.md"
+
+  - name: payment.warning
+    rules:
+    - alert: PaymentResponseTimeSlow
+      expr: histogram_quantile(0.95, rate(payment_duration_seconds_bucket[5m])) > 5
+      for: 3m
+      labels:
+        severity: warning
+        service: payment
+      annotations:
+        summary: "Payment response time is slow"
+        description: "95th percentile payment response time is {{`{{ $value`}} }}s"
+
+    - alert: PaymentGatewayErrors
+      expr: rate(payment_gateway_errors_total[5m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+        service: payment
+      annotations:
+        summary: "Payment gateway errors detected"
+        description: "Payment gateway errors: {{`{{ $value`}} }} per second"

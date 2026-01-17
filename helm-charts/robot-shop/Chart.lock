@@ -1,0 +1,39 @@
+dependencies:
+- name: redis
+  repository: file://../redis
+  version: 1.0.2
+- name: rabbitmq
+  repository: file://../rabbitmq
+  version: 1.0.2
+- name: mongo
+  repository: file://../mongo
+  version: 1.0.1
+- name: mysql
+  repository: file://../mysql
+  version: 1.0.5
+- name: catalogue
+  repository: file://../catalogue
+  version: 1.0.1
+- name: user
+  repository: file://../user
+  version: 1.0.1
+- name: cart
+  repository: file://../cart
+  version: 1.0.1
+- name: payment
+  repository: file://../payment
+  version: 1.0.0
+- name: shipping
+  repository: file://../shipping
+  version: 1.0.1
+- name: ratings
+  repository: file://../ratings
+  version: 1.0.1
+- name: dispatch
+  repository: file://../dispatch
+  version: 1.0.1
+- name: web
+  repository: file://../web
+  version: 1.0.0
+digest: sha256:f58855760855e8e4458c202a9247ae50507aaa216c6d6b13f033530a7736f839
+generated: "2026-01-09T10:23:06.171543+03:00"

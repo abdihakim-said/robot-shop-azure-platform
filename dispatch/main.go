@@ -1,10 +1,13 @@
 package main
 
+// Test comment to trigger rebuild - updated for deployment 2026-01-08
+
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -180,7 +183,18 @@ func main() {
 	if !ok {
 		amqpHost = "rabbitmq"
 	}
-	amqpUri = fmt.Sprintf("amqp://guest:guest@%s:5672/", amqpHost)
+	
+	// get credentials from environment
+	amqpUser, ok := os.LookupEnv("AMQP_USER")
+	if !ok {
+		amqpUser = "admin"
+	}
+	amqpPassword, ok := os.LookupEnv("AMQP_PASSWORD")
+	if !ok {
+		amqpPassword = "guest"
+	}
+	
+	amqpUri = fmt.Sprintf("amqp://%s:%s@%s:5672/", amqpUser, url.QueryEscape(amqpPassword), amqpHost)
 
 	// get error threshold from environment
 	errorPercent = 0

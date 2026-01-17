@@ -30,6 +30,12 @@ variable "node_count" {
   default     = 3
 }
 
+variable "enable_multi_az" {
+  description = "Enable multi-availability zone deployment"
+  type        = bool
+  default     = false
+}
+
 variable "vm_size" {
   description = "VM size for nodes"
   type        = string
@@ -78,8 +84,73 @@ variable "enable_azure_policy" {
   default     = true
 }
 
+variable "private_cluster_enabled" {
+  description = "Enable private cluster"
+  type        = bool
+  default     = false
+}
+
+variable "local_account_disabled" {
+  description = "Disable local admin account"
+  type        = bool
+  default     = false
+}
+
+variable "sku_tier" {
+  description = "AKS SKU tier - Free or Standard"
+  type        = string
+  default     = "Free"
+}
+
+variable "automatic_channel_upgrade" {
+  description = "Cluster upgrade channel"
+  type        = string
+  default     = null
+}
+
+variable "api_server_authorized_ip_ranges" {
+  description = "Authorized IP ranges for API server"
+  type        = list(string)
+  default     = []
+}
+
+variable "max_pods_per_node" {
+  description = "Maximum pods per node"
+  type        = number
+  default     = 30
+}
+
+variable "os_disk_type" {
+  description = "OS disk type - Managed or Ephemeral"
+  type        = string
+  default     = "Managed"
+}
+
+variable "disk_encryption_set_id" {
+  description = "Disk encryption set ID for AKS cluster"
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
   default     = {}
 }
+variable "acr_name" {
+  description = "Name of the Azure Container Registry for integration"
+  type        = string
+  default     = null
+}
+
+variable "only_critical_addons_enabled" {
+  description = "Enable only critical addons on system node pool"
+  type        = bool
+  default     = true
+}
+
+variable "name_prefix" {
+  description = "Name prefix for resources (to match KeyVault naming)"
+  type        = string
+}
+

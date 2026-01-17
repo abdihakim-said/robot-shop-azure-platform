@@ -1,11 +1,18 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/shipping
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: robotshopdevacrcq4b5l.azurecr.io/shipping
+  tag: latest  # Will be overridden by umbrella chart values
+  pullPolicy: Always
 
 service:
   type: ClusterIP
   port: 8080
+
+# Default autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
 
 resources:
   requests:
@@ -14,3 +21,11 @@ resources:
   limits:
     cpu: 500m
     memory: 1Gi
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minCpu: "5m"
+  maxCpu: "200m"
+  minMemory: "32Mi"
+  maxMemory: "128Mi"

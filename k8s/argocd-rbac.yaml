@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  policy.default: role:readonly
+  policy.csv: |
+    # Developer Role - Can view and sync dev environment
+    p, role:developer, applications, get, robot-shop-dev, allow
+    p, role:developer, applications, sync, robot-shop-dev, allow
+    p, role:developer, applications, action/*, robot-shop-dev, allow
+    p, role:developer, logs, get, robot-shop-dev/*, allow
+    p, role:developer, exec, create, robot-shop-dev/*, deny
+    
+    # SRE Role - Full access to dev/staging, limited prod access
+    p, role:sre, applications, *, robot-shop-dev, allow
+    p, role:sre, applications, *, robot-shop-staging, allow
+    p, role:sre, applications, get, robot-shop-prod, allow
+    p, role:sre, applications, sync, robot-shop-prod, deny
+    p, role:sre, logs, get, */*, allow
+    p, role:sre, exec, create, robot-shop-dev/*, allow
+    p, role:sre, exec, create, robot-shop-staging/*, allow
+    
+    # Platform Admin - Full access to everything
+    p, role:admin, applications, *, *, allow
+    p, role:admin, clusters, *, *, allow
+    p, role:admin, repositories, *, *, allow
+    
+    # Bind users to roles (replace with your actual users)
+    g, developer@company.com, role:developer
+    g, sre@company.com, role:sre
+    g, admin@company.com, role:admin

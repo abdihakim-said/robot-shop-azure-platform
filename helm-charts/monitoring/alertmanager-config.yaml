@@ -1,0 +1,63 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'abdihakimsaid1@gmail.com'
+  smtp_auth_username: 'abdihakimsaid1@gmail.com'
+  smtp_auth_password: 'your-app-password'  # Use Gmail App Password
+
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+  routes:
+  - match:
+      severity: critical
+    receiver: 'critical-alerts'
+  - match:
+      severity: warning
+    receiver: 'warning-alerts'
+
+receivers:
+- name: 'web.hook'
+  webhook_configs:
+  - url: 'http://127.0.0.1:5001/'
+
+- name: 'critical-alerts'
+  email_configs:
+  - to: 'abdihakimsaid1@gmail.com'
+    subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }} - Robot Shop'
+    body: |
+      Alert: {{ .GroupLabels.alertname }}
+      Severity: {{ .CommonLabels.severity }}
+      Service: {{ .CommonLabels.service }}
+      
+      {{ range .Alerts }}
+      Description: {{ .Annotations.description }}
+      Runbook: {{ .Annotations.runbook_url }}
+      {{ end }}
+  
+  # SMS via email gateway (UK carriers)
+  - to: '447960305858@sms.o2.co.uk'  # O2 SMS gateway
+    subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+    body: 'Robot Shop CRITICAL alert: {{ .GroupLabels.alertname }}. Check email for details.'
+
+- name: 'warning-alerts'
+  email_configs:
+  - to: 'abdihakimsaid1@gmail.com'
+    subject: '⚠️  WARNING: {{ .GroupLabels.alertname }} - Robot Shop'
+    body: |
+      Alert: {{ .GroupLabels.alertname }}
+      Severity: {{ .CommonLabels.severity }}
+      Service: {{ .CommonLabels.service }}
+      
+      {{ range .Alerts }}
+      Description: {{ .Annotations.description }}
+      {{ end }}
+
+inhibit_rules:
+- source_match:
+    severity: 'critical'
+  target_match:
+    severity: 'warning'
+  equal: ['alertname', 'cluster', 'service']

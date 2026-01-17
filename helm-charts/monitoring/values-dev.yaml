@@ -1,0 +1,61 @@
+global:
+  environment: dev
+  monitoring:
+    enabled: true
+    namespace: monitoring
+  # Key Vault and identity values will be provided by ArgoCD parameters from Terraform
+  # No hardcoded values to avoid conflicts
+
+# Prometheus Stack Configuration (Operator installed via Terraform)
+kube-prometheus-stack:
+  fullnameOverride: "monitoring-dev"
+  namespaceOverride: monitoring
+  
+  # CRITICAL: Disable operator to avoid conflict with Terraform
+  prometheusOperator:
+    enabled: false
+  
+  # Node exporter affinity fix moved to values.yaml for consistency
+  
+  prometheus:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - prometheus.hakimdevops.art
+      tls:
+        - secretName: prometheus-hakimdevops-tls
+          hosts:
+            - prometheus.hakimdevops.art
+  
+  grafana:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - grafana.hakimdevops.art
+      tls:
+        - secretName: grafana-hakimdevops-tls
+          hosts:
+            - grafana.hakimdevops.art
+    
+    # Remove workload identity configuration - using VM managed identity
+    # podLabels:
+    #   "azure.workload.identity/use": "true"
+
+alerts:
+  enabled: true
+  
+dashboards:
+  enabled: true
+
+serviceMonitors:
+  enabled: true
+
+# Disable custom ingress to avoid conflicts
+ingress:
+  enabled: false

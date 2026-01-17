@@ -1,0 +1,70 @@
+{{- if .Values.serviceMonitors.enabled }}
+# Web Service ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: web-metrics
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    app: robot-shop
+    service: web
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      service: web
+  endpoints:
+  - targetPort: 9090
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+---
+# Payment Service ServiceMonitor  
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payment-metrics
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    app: robot-shop
+    service: payment
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      service: payment
+  endpoints:
+  - targetPort: 8080
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+---
+# Cart Service ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cart-metrics
+  namespace: {{ .Values.global.monitoring.namespace }}
+  labels:
+    app: robot-shop
+    service: cart
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      service: cart
+  endpoints:
+  - targetPort: 8080
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - robot-shop
+{{- end }}

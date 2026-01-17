@@ -256,7 +256,8 @@ app.get('/history/:id', (req, res) => {
 
 // connect to Redis
 var redisClient = redis.createClient({
-    host: process.env.REDIS_HOST || 'redis'
+    host: process.env.REDIS_HOST || 'redis',
+    password: process.env.REDIS_PASSWORD || undefined
 });
 
 redisClient.on('error', (e) => {
@@ -269,7 +270,20 @@ redisClient.on('ready', (r) => {
 // set up Mongo
 function mongoConnect() {
     return new Promise((resolve, reject) => {
-        var mongoURL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
+        // Build MongoDB URL with authentication
+        var mongoHost = process.env.MONGO_HOST || 'mongodb';
+        var mongoUser = process.env.MONGO_USER || 'users';
+        var mongoPassword = process.env.MONGO_PASSWORD || '';
+        var mongoURL;
+        
+        if (mongoPassword) {
+            // URL encode the password to handle special characters
+            const encodedPassword = encodeURIComponent(mongoPassword);
+            mongoURL = `mongodb://${mongoUser}:${encodedPassword}@${mongoHost}:27017/users`;
+        } else {
+            mongoURL = process.env.MONGO_URL || 'mongodb://mongo:27017/users';
+        }
+        
         mongoClient.connect(mongoURL, (error, client) => {
             if(error) {
                 reject(error);
@@ -301,3 +315,4 @@ app.listen(port, () => {
     logger.info('Started on port', port);
 });
 
+// GitOps test

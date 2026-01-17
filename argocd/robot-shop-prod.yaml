@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: robot-shop-prod
+  namespace: argocd
+  labels:
+    environment: production
+    app: robot-shop
+    tier: production
+    security-level: maximum
+    compliance: "soc2,pci-dss"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: robot-shop-prod
+    notifications.argoproj.io/subscribe.on-health-degraded.pagerduty: robot-shop-critical
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/abdihakim-said/robot-shop-azure-platform
+    targetRevision: main  # Production deploys from main branch only
+    path: helm-charts/robot-shop
+    helm:
+      valueFiles:
+        - values-prod.yaml
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: robot-shop
+  
+  syncPolicy:
+    # Manual sync for production (no automated deployments)
+    automated: {}  # Disabled for production
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true  # Only apply changes, don't recreate
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  
+  revisionHistoryLimit: 20  # More history for production

@@ -1,6 +1,8 @@
+// Test all services - secure pipeline
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
+// Test: Modern GitOps + ArgoCD credentials + SRE resources
 instana({
     tracing: {
         enabled: true
@@ -8,8 +10,10 @@ instana({
 });
 
 const redis = require('redis');
-const request = require('request');
+const axios = require('axios');
 const bodyParser = require('body-parser');
+// Test build pipeline trigger - fixed validation
+// Trigger pipeline test - AKS credentials fix
 const express = require('express');
 const pino = require('pino');
 const expPino = require('express-pino-logger');
@@ -17,16 +21,97 @@ const expPino = require('express-pino-logger');
 const promClient = require('prom-client');
 const Registry = promClient.Registry;
 const register = new Registry();
+
+// Original metric
 const counter = new promClient.Counter({
     name: 'items_added',
     help: 'running count of items added to cart',
     registers: [register]
 });
 
+// SRE Cart Service Metrics
+const cartMetrics = {
+    // Cart Operations Performance
+    cartOperationDuration: new promClient.Histogram({
+        name: 'cart_operation_duration_seconds',
+        help: 'Duration of cart operations',
+        labelNames: ['operation', 'status'],
+        buckets: [0.1, 0.3, 0.5, 1.0, 2.0, 5.0],
+        registers: [register]
+    }),
+
+    // Cart Operations Count
+    cartOperations: new promClient.Counter({
+        name: 'cart_operations_total',
+        help: 'Total cart operations',
+        labelNames: ['operation', 'status'],
+        registers: [register]
+    }),
+
+    // Cart Errors
+    cartErrors: new promClient.Counter({
+        name: 'cart_errors_total',
+        help: 'Cart operation errors',
+        labelNames: ['operation', 'error_type'],
+        registers: [register]
+    }),
+
+    // Active Carts
+    activeCarts: new promClient.Gauge({
+        name: 'cart_active_carts',
+        help: 'Number of active carts',
+        registers: [register]
+    }),
+
+    // Items per Cart
+    itemsPerCart: new promClient.Histogram({
+        name: 'cart_items_per_cart',
+        help: 'Number of items per cart',
+        buckets: [1, 2, 5, 10, 20, 50],
+        registers: [register]
+    }),
+
+    // Cart Value
+    cartValue: new promClient.Histogram({
+        name: 'cart_value_total',
+        help: 'Total value of items in cart',
+        buckets: [10, 25, 50, 100, 200, 500, 1000],
+        registers: [register]
+    }),
+
+    // Redis Connection
+    redisConnections: new promClient.Counter({
+        name: 'cart_redis_connections_total',
+        help: 'Redis connection attempts',
+        labelNames: ['status'],
+        registers: [register]
+    }),
+
+    // Cart Abandonment Tracking
+    cartAbandonment: new promClient.Counter({
+        name: 'cart_abandonment_total',
+        help: 'Cart abandonment events',
+        labelNames: ['reason'],
+        registers: [register]
+    })
+};
+
+// Helper function to track cart operations
+function trackCartOperation(operation, startTime, status = 'success', errorType = null) {
+    const duration = (Date.now() - startTime) / 1000;
+    
+    cartMetrics.cartOperationDuration.observe({ operation, status }, duration);
+    cartMetrics.cartOperations.inc({ operation, status });
+    
+    if (status === 'error' && errorType) {
+        cartMetrics.cartErrors.inc({ operation, error_type: errorType });
+    }
+}
 
 var redisConnected = false;
 
 var redisHost = process.env.REDIS_HOST || 'redis'
+var redisPassword = process.env.REDIS_PASSWORD || ''  // From Azure Key Vault
 var catalogueHost = process.env.CATALOGUE_HOST || 'catalogue'
 
 const logger = pino({
@@ -82,14 +167,34 @@ app.get('/metrics', (req, res) => {
 
 // get cart with id
 app.get('/cart/:id', (req, res) => {
+    const startTime = Date.now();
+    
     redisClient.get(req.params.id, (err, data) => {
         if(err) {
             req.log.error('ERROR', err);
+            trackCartOperation('get_cart', startTime, 'error', 'redis_error');
             res.status(500).send(err);
         } else {
             if(data == null) {
+                trackCartOperation('get_cart', startTime, 'error', 'cart_not_found');
                 res.status(404).send('cart not found');
             } else {
+                trackCartOperation('get_cart', startTime, 'success');
+                
+                // Track cart metrics
+                try {
+                    const cart = JSON.parse(data);
+                    if (cart.items && cart.items.length > 0) {
+                        cartMetrics.itemsPerCart.observe(cart.items.length);
+                        
+                        // Calculate cart value
+                        const totalValue = cart.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                        cartMetrics.cartValue.observe(totalValue);
+                    }
+                } catch (parseErr) {
+                    req.log.warn('Failed to parse cart data for metrics');
+                }
+                
                 res.set('Content-Type', 'application/json');
                 res.send(data);
             }
@@ -99,14 +204,20 @@ app.get('/cart/:id', (req, res) => {
 
 // delete cart with id
 app.delete('/cart/:id', (req, res) => {
+    const startTime = Date.now();
+    
     redisClient.del(req.params.id, (err, data) => {
         if(err) {
             req.log.error('ERROR', err);
+            trackCartOperation('delete_cart', startTime, 'error', 'redis_error');
             res.status(500).send(err);
         } else {
             if(data == 1) {
+                trackCartOperation('delete_cart', startTime, 'success');
+                cartMetrics.cartAbandonment.inc({ reason: 'checkout_completed' });
                 res.send('OK');
             } else {
+                trackCartOperation('delete_cart', startTime, 'error', 'cart_not_found');
                 res.status(404).send('cart not found');
             }
         }
@@ -137,14 +248,18 @@ app.get('/rename/:from/:to', (req, res) => {
 
 // update/create cart
 app.get('/add/:id/:sku/:qty', (req, res) => {
+    const startTime = Date.now();
+    
     // check quantity
     var qty = parseInt(req.params.qty);
     if(isNaN(qty)) {
         req.log.warn('quantity not a number');
+        trackCartOperation('add_item', startTime, 'error', 'invalid_quantity');
         res.status(400).send('quantity must be a number');
         return;
     } else if(qty < 1) {
         req.log.warn('quantity less than one');
+        trackCartOperation('add_item', startTime, 'error', 'invalid_quantity');
         res.status(400).send('quantity has to be greater than zero');
         return;
     }
@@ -153,11 +268,13 @@ app.get('/add/:id/:sku/:qty', (req, res) => {
     getProduct(req.params.sku).then((product) => {
         req.log.info('got product', product);
         if(!product) {
+            trackCartOperation('add_item', startTime, 'error', 'product_not_found');
             res.status(404).send('product not found');
             return;
         }
         // is the product in stock?
         if(product.instock == 0) {
+            trackCartOperation('add_item', startTime, 'error', 'out_of_stock');
             res.status(404).send('out of stock');
             return;
         }
@@ -165,6 +282,7 @@ app.get('/add/:id/:sku/:qty', (req, res) => {
         redisClient.get(req.params.id, (err, data) => {
             if(err) {
                 req.log.error('ERROR', err);
+                trackCartOperation('add_item', startTime, 'error', 'redis_error');
                 res.status(500).send(err);
             } else {
                 var cart;
@@ -196,9 +314,16 @@ app.get('/add/:id/:sku/:qty', (req, res) => {
                 // save the new cart
                 saveCart(req.params.id, cart).then((data) => {
                     counter.inc(qty);
+                    trackCartOperation('add_item', startTime, 'success');
+                    
+                    // Track cart metrics
+                    cartMetrics.itemsPerCart.observe(cart.items.length);
+                    cartMetrics.cartValue.observe(cart.total);
+                    
                     res.json(cart);
                 }).catch((err) => {
                     req.log.error(err);
+                    trackCartOperation('add_item', startTime, 'error', 'save_failed');
                     res.status(500).send(err);
                 });
             }
@@ -358,19 +483,14 @@ function calcTax(total) {
 }
 
 function getProduct(sku) {
-    return new Promise((resolve, reject) => {
-        request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
-            if(err) {
-                reject(err);
-            } else if(res.statusCode != 200) {
-                resolve(null);
-            } else {
-                // return object - body is a string
-                // TODO - catch parse error
-                resolve(JSON.parse(body));
+    return axios.get('http://' + catalogueHost + ':8080/product/' + sku)
+        .then(response => response.data)
+        .catch(err => {
+            if (err.response && err.response.status !== 200) {
+                return null;
             }
+            throw err;
         });
-    });
 }
 
 function saveCart(id, cart) {
@@ -388,16 +508,37 @@ function saveCart(id, cart) {
 
 // connect to Redis
 var redisClient = redis.createClient({
-    host: redisHost
+    host: redisHost,
+    password: redisPassword || undefined  // Authenticate with Azure Key Vault password
 });
 
 redisClient.on('error', (e) => {
     logger.error('Redis ERROR', e);
+    cartMetrics.redisConnections.inc({ status: 'error' });
+    redisConnected = false;
 });
+
 redisClient.on('ready', (r) => {
     logger.info('Redis READY', r);
+    cartMetrics.redisConnections.inc({ status: 'success' });
     redisConnected = true;
 });
+
+redisClient.on('connect', () => {
+    logger.info('Redis CONNECTED');
+    cartMetrics.redisConnections.inc({ status: 'connected' });
+});
+
+// Monitor active carts periodically
+setInterval(() => {
+    if (redisConnected) {
+        redisClient.keys('*', (err, keys) => {
+            if (!err && keys) {
+                cartMetrics.activeCarts.set(keys.length);
+            }
+        });
+    }
+}, 30000); // Update every 30 seconds
 
 // fire it up!
 const port = process.env.CART_SERVER_PORT || '8080';
@@ -405,3 +546,8 @@ app.listen(port, () => {
     logger.info('Started on port', port);
 });
 
+// Test automatic deployment
+// Auto-deploy test
+// Final test
+// DevSecOps pipeline test
+// GitOps test - trigger all services

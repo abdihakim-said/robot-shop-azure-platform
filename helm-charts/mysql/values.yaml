@@ -1,7 +1,7 @@
 image:
-  repository: mysql
-  tag: "5.7"
-  pullPolicy: IfNotPresent
+  repository: robotshopdevacrcq4b5l.azurecr.io/mysql
+  tag: "v20251225-75e48a2"
+  pullPolicy: Always
 
 service:
   type: ClusterIP
@@ -9,14 +9,37 @@ service:
 
 resources:
   requests:
-    cpu: 50m
-    memory: 256Mi
-  limits:
-    cpu: 500m
+    cpu: 100m
     memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
 
 env:
   - name: MYSQL_ROOT_PASSWORD
     value: "root"
   - name: MYSQL_DATABASE
     value: "cities"
+  - name: MYSQL_USER
+    value: "shipping"
+  - name: MYSQL_PASSWORD
+    value: "secret"
+
+# Security configuration
+auth:
+  rootPassword: "{{ .Values.global.mysql.rootPassword | default \"auto-generated\" }}"
+  userPassword: "{{ .Values.global.mysql.userPassword | default \"auto-generated\" }}"
+
+# Azure Key Vault integration
+keyVault:
+  enabled: true
+  secretProviderClass: mysql-secrets
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Off"  # Recommendations only for databases
+  minCpu: "10m"
+  maxCpu: "500m"
+  minMemory: "64Mi"
+  maxMemory: "1Gi"

@@ -2,5 +2,5 @@ apiVersion: v2
 name: redis
 description: Robot Shop redis Database
 type: application
-version: 1.0.0
+version: 1.0.2
 appVersion: "1.0"

@@ -1,0 +1,58 @@
+image:
+  repository: robotshopdevacrcq4b5l.azurecr.io/mongo  # Correct repository name
+  tag: "v20260108-c10790d"  # Latest available tag
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 27017
+
+# Enable authentication
+auth:
+  enabled: true
+  rootUser: admin
+  rootPassword: ""  # Retrieved from Azure Key Vault
+  # Database-specific users
+  databases:
+    - name: catalogue
+      username: catalogue
+      password: ""  # Retrieved from Azure Key Vault
+    - name: users  
+      username: users
+      password: ""  # Retrieved from Azure Key Vault
+
+# Add persistence
+persistence:
+  enabled: true
+  storageClass: "managed-csi"
+  size: 20Gi
+  accessMode: ReadWriteOnce
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  fsGroup: 999
+
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Azure Key Vault integration (following MySQL pattern)
+keyVault:
+  enabled: true
+  secretProviderClass: mongodb-secrets
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Off"  # Recommendations only for databases
+  minCpu: "10m"
+  maxCpu: "500m"
+  minMemory: "64Mi"
+  maxMemory: "1Gi"

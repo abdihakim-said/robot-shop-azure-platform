@@ -1,10 +1,28 @@
 image:
-  repository: robotshopdevacrmtttm8.azurecr.io/payment
+  repository: robotshopdevacrcq4b5l.azurecr.io/payment
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+
 service:
   type: ClusterIP
   port: 8080
+
+# Default autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 60
+
+# Vertical Pod Autoscaler
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minCpu: "5m"
+  maxCpu: "200m"
+  minMemory: "32Mi"
+  maxMemory: "128Mi"
+
 resources:
   requests:
     cpu: 30m

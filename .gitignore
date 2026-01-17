@@ -1,3 +1,10 @@
+# Documentation (keep local only, except README.md)
+*.md
+!README.md
+
+# Keep docs folder local only (contains personal preparation materials)
+docs/
+
 # Terraform
 .terraform/
 *.tfstate
@@ -30,3 +37,29 @@ secrets/
 *.pem
 *.key
 *.crt
+
+# Temporary test files
+.test
+.trigger
+
+# SRE Personal Information (DO NOT COMMIT)
+monitoring/alertmanager-email-config.yaml
+monitoring/alertmanager-oncall-config.yaml
+scripts/simulate-oncall-page.sh
+*-personal-*.yaml
+*-personal-*.sh
+
+# SRE Testing Scripts (Local only)
+scripts/generate-payment-failures.sh
+scripts/test-payment-failures.sh
+scripts/test-*-metrics.sh
+scripts/test-*.sh
+scripts/verify-dependencies.sh
+scripts/setup-demo-recording.sh
+scripts/generate-runbooks.sh
+
+# Keep only essential deployment scripts in Git
+!scripts/deploy-sre-monitoring.sh
+!scripts/setup-azure-complete.sh
+!scripts/setup-terraform-state.sh
+
