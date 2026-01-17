@@ -63,3 +63,11 @@ scripts/generate-runbooks.sh
 !scripts/setup-azure-complete.sh
 !scripts/setup-terraform-state.sh
 
+# Helm packages (auto-generated)
+*.tgz
+# Terraform cache
+.terraform/
+terraform.tfstate*
+# Documentation (keep only README)
+*.md
+!README.md
