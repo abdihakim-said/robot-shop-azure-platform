@@ -69,7 +69,7 @@ flowchart LR
 - **`lifecycle.ignore_changes` on the AKS cluster is broad** (network profile, identity, etc.), which can hide drift.
 - **Databases run in-cluster** as single-replica Deployments. For production I'd use Azure Database for MySQL, Cosmos DB (Mongo API) and Azure Cache for Redis. The `databases` module has a start on this.
 - **Only dev was run continuously.** Staging and prod configs exist but weren't kept running (cost).
-- **The latest CI runs are red** after a repo restructure. I'm fixing this before relying on the badges.
+- **The latest CI runs are red** after a repo restructure (paths moved). Next: get them green.
 - **No explicit default-deny policy is in the chart today.** Only the selected pods are restricted. Next: add default-deny ingress and egress, with an egress allow-list (DNS, Stripe, Key Vault).
 - **The cart image is still on Node 14**, so the base images need a refresh.
 
