@@ -32,7 +32,7 @@ flowchart LR
   subgraph AKS["AKS (Terraform)"]
     Argo[ArgoCD] -->|auto-sync dev<br/>manual prod| App[robot-shop namespace<br/>12 services]
     App --> KV[Key Vault via<br/>Secrets Store CSI]
-    NP[Default-deny NetworkPolicies] -.-> App
+    NP[Ingress NetworkPolicies] -.-> App
     Ing[NGINX ingress + cert-manager<br/>Let's Encrypt TLS] --> App
     Mon[kube-prometheus-stack<br/>SLO + service alerts] --> App
   end
@@ -56,7 +56,7 @@ flowchart LR
 - **Only build what changed.** A change-detection action feeds a matrix build, so touching `cart/` rebuilds one image, not twelve.
 - **Graduated security enforcement.** tfsec and Checkov soft-fail on `develop` and block elsewhere. The Trivy image gate uses `ignore-unfixed`, so it fails only on CRITICAL issues you can actually fix. Results go to GitHub code scanning as SARIF, and every image gets an SBOM.
 - **Secrets from Key Vault, not Kubernetes manifests.** Terraform generates random passwords into Key Vault, and pods mount them through the Secrets Store CSI driver. The AKS cluster has the OIDC issuer and Workload Identity enabled.
-- **Default-deny networking.** Namespace-level default-deny, with explicit allow rules for ingress, intra-app traffic and monitoring. That decision caused incident #1 in the [engineering notes](docs/engineering-notes.md).
+- **Restricted pod ingress.** NetworkPolicies in the umbrella chart allow the web tier only from ingress-nginx, and add explicit rules for intra-app traffic and Prometheus scraping. An earlier namespace-wide default-deny caused problem #1 in the [engineering notes](docs/engineering-notes.md).
 - **System vs user node pools.** The system pool runs with `only_critical_addons_enabled`; apps run on a separate autoscaling user pool.
 - **Dev auto-syncs, prod doesn't.** ArgoCD self-heals and prunes in dev. Production requires a manual sync.
 
@@ -70,6 +70,7 @@ flowchart LR
 - **Databases run in-cluster** as single-replica Deployments. For production I'd use Azure Database for MySQL, Cosmos DB (Mongo API) and Azure Cache for Redis. The `databases` module has a start on this.
 - **Only dev was run continuously.** Staging and prod configs exist but weren't kept running (cost).
 - **The latest CI runs are red** after a repo restructure. I'm fixing this before relying on the badges.
+- **No explicit default-deny policy is in the chart today.** Only the selected pods are restricted. Next: add default-deny ingress and egress, with an egress allow-list (DNS, Stripe, Key Vault).
 - **The cart image is still on Node 14**, so the base images need a refresh.
 
 ## 5. Evidence
