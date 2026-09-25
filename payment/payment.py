@@ -103,7 +103,7 @@ def stripe_webhook():
 
 @app.route('/demo/circuit-breaker', methods=['POST'])
 def demo_circuit_breaker():
-    """Demo endpoint to show circuit breaker behavior for interviews"""
+    """Demo endpoint to show circuit breaker behavior"""
     action = request.json.get('action', 'status')
     
     if action == 'trigger_failure':
