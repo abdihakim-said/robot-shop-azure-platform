@@ -1,9 +1,5 @@
-# Documentation (keep local only, except README.md)
-*.md
-!README.md
-
-# Keep docs folder local only (contains personal preparation materials)
-docs/
+# Local-only notes
+notes/
 
 # Terraform
 .terraform/

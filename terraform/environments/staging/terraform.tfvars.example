@@ -24,6 +24,6 @@ storage_replication_type = "GRS"  # Staging: geo-redundant like prod
 
 # Monitoring - Staging Configuration
 alert_emails            = ["staging-team@example.com"]
-grafana_admin_password  = "ChangeMe123!"
+grafana_admin_password  = "<set-a-strong-password>"
 prometheus_storage_size = "20Gi"  # Staging: between dev and prod
 grafana_storage_size    = "10Gi"  # Staging: between dev and prod

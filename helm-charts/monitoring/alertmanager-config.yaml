@@ -1,7 +1,7 @@
 global:
-  smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'abdihakimsaid1@gmail.com'
-  smtp_auth_username: 'abdihakimsaid1@gmail.com'
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alerts@example.com'
+  smtp_auth_username: 'alerts@example.com'
   smtp_auth_password: 'your-app-password'  # Use Gmail App Password
 
 route:
@@ -25,7 +25,7 @@ receivers:
 
 - name: 'critical-alerts'
   email_configs:
-  - to: 'abdihakimsaid1@gmail.com'
+  - to: 'alerts@example.com'
     subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }} - Robot Shop'
     body: |
       Alert: {{ .GroupLabels.alertname }}
@@ -44,7 +44,7 @@ receivers:
 
 - name: 'warning-alerts'
   email_configs:
-  - to: 'abdihakimsaid1@gmail.com'
+  - to: 'alerts@example.com'
     subject: '⚠️  WARNING: {{ .GroupLabels.alertname }} - Robot Shop'
     body: |
       Alert: {{ .GroupLabels.alertname }}

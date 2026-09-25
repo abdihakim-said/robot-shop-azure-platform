@@ -23,6 +23,6 @@ storage_replication_type = "LRS"
 
 # Monitoring - Dev Configuration
 alert_emails            = ["dev-team@example.com"]
-grafana_admin_password  = "ChangeMe123!"
+grafana_admin_password  = "<set-a-strong-password>"
 prometheus_storage_size = "10Gi"
 grafana_storage_size    = "5Gi"

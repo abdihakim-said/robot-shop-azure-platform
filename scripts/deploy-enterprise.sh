@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Robot Shop Enterprise Deployment (Netflix/Google Pattern)"
+echo "🚀 Robot Shop Enterprise Deployment"
 echo "============================================================"
 
 # Environment validation

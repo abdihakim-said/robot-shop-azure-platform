@@ -30,7 +30,8 @@ spec:
   
   syncPolicy:
     # Manual sync for production (no automated deployments)
-    automated: {}  # Disabled for production
+    # No "automated" block: production syncs are manual.
+    # (Note: "automated: {}" would ENABLE auto-sync.)
     syncOptions:
       - CreateNamespace=true
       - PrunePropagationPolicy=foreground

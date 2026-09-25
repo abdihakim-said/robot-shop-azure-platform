@@ -64,7 +64,6 @@ Both: ~$0.34
 **Perfect for:**
 - Taking screenshots
 - Recording demos
-- Testing before interviews
 - Quick validation
 
 ---

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Deploying Staging Environment for Monitoring Showcase"
+echo "🚀 Deploying Staging Environment for monitoring demo"
 echo "======================================================="
 
 # Set Stripe secrets for staging (use environment variables or Azure Key Vault)
