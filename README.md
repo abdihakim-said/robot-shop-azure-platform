@@ -112,4 +112,4 @@ kubectl apply -f argocd/robot-shop-dev.yaml
 
 ---
 
-**Abdihakim Said**, AWS Solutions Architect · CKA. I build Kubernetes platforms, GitOps delivery and DevSecOps pipelines. Contact details are on my [GitHub profile](https://github.com/abdihakim-said).
+**Abdihakim Said**, AWS Solutions Architect Associate · CKA. I build Kubernetes platforms, GitOps delivery and DevSecOps pipelines. Contact details are on my [GitHub profile](https://github.com/abdihakim-said).
