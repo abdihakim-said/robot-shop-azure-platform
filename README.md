@@ -14,6 +14,10 @@ A microservices app written in five languages (Node.js, Java, Python, Go, PHP), 
 
 ## 2. Architecture
 
+![Architecture walkthrough: CI scanning, ACR, GitOps with ArgoCD, Key Vault secrets, SLO alerting](docs/images/architecture-flow.gif)
+
+<sub>Static diagram: [docs/images/architecture.png](docs/images/architecture.png)</sub>
+
 ```mermaid
 flowchart LR
   dev[Developer push] --> GA

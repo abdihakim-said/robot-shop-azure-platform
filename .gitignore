@@ -67,3 +67,4 @@ terraform.tfstate*
 # Documentation (keep only README)
 *.md
 !README.md
+!docs/engineering-notes.md
