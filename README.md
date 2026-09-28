@@ -76,6 +76,7 @@ flowchart LR
 - **Databases run in-cluster** as single-replica Deployments. For production I'd use Azure Database for MySQL, Cosmos DB (Mongo API) and Azure Cache for Redis. The `databases` module has a start on this.
 - **Only dev was run.** The prod Terraform validates in CI, but the staging and prod Helm values files are unfinished drafts: they contain template expressions, which Helm doesn't evaluate in values files. Next: pass per-environment values from Terraform to ArgoCD as parameters, the way `argocd/monitoring.yaml.tpl` already does.
 - **The deploy pipelines last ran in January 2026**, and their final runs failed at the step that commits the new image tag back to Git. The environment has since been torn down (cost). A credential-free `validate` workflow (every Terraform layer, plus the Helm charts rendered as ArgoCD renders them for dev) runs on every push.
+- **Checkov blocks the infrastructure pipeline on `main`, as designed.** It reports 99 findings. The biggest groups: Key Vault secrets with no expiry or content type (34), NSG rules open to the internet (SSH, RDP, HTTP, UDP), storage-account hardening, and the AKS items above. The pipeline won't deploy until each finding is fixed or suppressed in code with a written reason. Next: work through them in that order.
 - **No explicit default-deny policy is in the chart today.** Only the selected pods are restricted. Next: add default-deny ingress and egress, with an egress allow-list (DNS, Stripe, Key Vault).
 - **The cart image is still on Node 14**, so the base images need a refresh.
 
