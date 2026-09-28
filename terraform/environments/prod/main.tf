@@ -228,6 +228,8 @@ module "aks" {
   max_pods_per_node               = 50
   os_disk_type                    = "Ephemeral"
 
+  name_prefix = local.name_prefix
+
   tags = local.common_tags
 
   depends_on = [module.networking]

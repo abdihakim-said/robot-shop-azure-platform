@@ -32,7 +32,7 @@ resource "helm_release" "cert_manager" {
   chart      = "cert-manager"
   version    = "v1.13.3"
   namespace  = "cert-manager"
-  
+
   create_namespace = true
 
   set {
@@ -50,7 +50,7 @@ resource "helm_release" "nginx_ingress" {
   chart      = "ingress-nginx"
   version    = "4.8.3"
   namespace  = "ingress-nginx"
-  
+
   create_namespace = true
   force_update     = true
   recreate_pods    = true
@@ -116,8 +116,8 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
 # Wait for cert-manager to be fully ready
 resource "time_sleep" "wait_for_cert_manager" {
   depends_on = [helm_release.cert_manager]
-  
-  create_duration = "60s"  # Wait for cert-manager to install CRDs and be ready
+
+  create_duration = "60s" # Wait for cert-manager to install CRDs and be ready
 }
 
 # Prometheus Operator - EXACT same version as monitoring chart
@@ -125,22 +125,22 @@ resource "helm_release" "prometheus_operator" {
   name       = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
-  version    = "80.6.0"  # EXACT match with monitoring/Chart.yaml
+  version    = "80.6.0" # EXACT match with monitoring/Chart.yaml
   namespace  = "monitoring"
-  
+
   create_namespace = true
 
   # Install ONLY the operator and CRDs, not the full stack
   values = [
     yamlencode({
       prometheus = {
-        enabled = false  # ArgoCD monitoring chart will deploy this
+        enabled = false # ArgoCD monitoring chart will deploy this
       }
       alertmanager = {
-        enabled = false  # ArgoCD monitoring chart will deploy this
+        enabled = false # ArgoCD monitoring chart will deploy this
       }
       grafana = {
-        enabled = false  # ArgoCD monitoring chart will deploy this
+        enabled = false # ArgoCD monitoring chart will deploy this
       }
       kubeStateMetrics = {
         enabled = false
@@ -149,7 +149,7 @@ resource "helm_release" "prometheus_operator" {
         enabled = false
       }
       prometheusOperator = {
-        enabled = true   # Only install the operator for CRDs
+        enabled = true # Only install the operator for CRDs
       }
     })
   ]

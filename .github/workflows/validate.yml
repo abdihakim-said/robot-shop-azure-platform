@@ -1,0 +1,53 @@
+# Static checks that need no Azure credentials: every Terraform layer, and the Helm
+# charts rendered the way ArgoCD renders them for dev.
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [bootstrap, shared, environments/dev, environments/prod]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+        working-directory: terraform
+      - run: terraform init -backend=false -input=false
+        working-directory: terraform/${{ matrix.dir }}
+      - run: terraform validate
+        working-directory: terraform/${{ matrix.dir }}
+
+  helm:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders for the values ArgoCD injects from Terraform outputs (argocd/monitoring.yaml.tpl)
+      MONITORING_PARAMS: >-
+        --set global.keyVault.name=kv-ci
+        --set global.keyVault.tenantId=00000000-0000-0000-0000-000000000000
+        --set global.managedIdentity.clientId=00000000-0000-0000-0000-000000000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      - name: robot-shop (dev)
+        working-directory: helm-charts
+        run: |
+          helm dependency build robot-shop
+          helm lint robot-shop -f robot-shop/values-dev.yaml
+          helm template rs robot-shop -f robot-shop/values-dev.yaml > /dev/null
+      - name: monitoring (dev)
+        working-directory: helm-charts
+        run: |
+          helm dependency build monitoring
+          helm lint monitoring -f monitoring/values-dev.yaml $MONITORING_PARAMS
+          helm template mon monitoring -f monitoring/values-dev.yaml $MONITORING_PARAMS > /dev/null

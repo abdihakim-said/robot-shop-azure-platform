@@ -19,7 +19,7 @@ resource "helm_release" "argocd" {
   chart      = "argo-cd"
   version    = "5.51.6"
   namespace  = "argocd"
-  
+
   create_namespace = true
 
   values = [
@@ -29,11 +29,11 @@ resource "helm_release" "argocd" {
           type = "ClusterIP"
         }
       }
-      
+
       controller = {
         replicas = 1
       }
-      
+
       # Use locally generated password (no KeyVault dependency)
       configs = {
         secret = {

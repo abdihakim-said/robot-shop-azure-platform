@@ -130,7 +130,7 @@ module "aks" {
   # Trigger pipeline after complete ArgoCD cleanup - all resources removed
 
   # Pass naming variables for KeyVault access
-  name_prefix      = local.name_prefix
+  name_prefix = local.name_prefix
 
   tags = local.common_tags
 
@@ -149,7 +149,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
 
   # Application node pool configuration
   os_disk_type = "Managed"
-  max_pods     = 50  # Match system node pool capacity (CKV_AZURE_168)
+  max_pods     = 50 # Match system node pool capacity (CKV_AZURE_168)
 
   # Network configuration
   vnet_subnet_id = module.networking.aks_subnet_id
@@ -172,8 +172,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
 # Wait for AKS cluster to be fully ready before using providers
 resource "time_sleep" "wait_for_aks" {
   depends_on = [module.aks]
-  
-  create_duration = "60s"  # Give AKS time to be fully ready
+
+  create_duration = "60s" # Give AKS time to be fully ready
 }
 
 # Helm/Kubernetes Providers for infrastructure components

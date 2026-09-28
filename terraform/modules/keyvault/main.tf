@@ -34,7 +34,7 @@ resource "azurerm_key_vault" "secrets" {
 
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
-  
+
   # Updated: Enhanced Key Vault security configuration with workload identity support
 
   # Default access policy for current user/service principal
@@ -87,14 +87,14 @@ resource "azurerm_key_vault_secret" "secrets" {
 # Missing secrets
 resource "random_password" "missing_secrets" {
   for_each = {
-    mysql_root = 20
-    mysql_user = 20
-    mongodb_root = 20
-    mongodb_catalogue = 20
-    mongodb_users = 20
-    rabbitmq = 16
-    rabbitmq_cookie = 32
-    stripe_secret = 32
+    mysql_root         = 20
+    mysql_user         = 20
+    mongodb_root       = 20
+    mongodb_catalogue  = 20
+    mongodb_users      = 20
+    rabbitmq           = 16
+    rabbitmq_cookie    = 32
+    stripe_secret      = 32
     stripe_publishable = 32
   }
 
@@ -107,14 +107,14 @@ resource "random_password" "missing_secrets" {
 
 resource "azurerm_key_vault_secret" "missing_secrets" {
   for_each = {
-    mysql_root = "mysql-root-password"
-    mysql_user = "mysql-user-password"
-    mongodb_root = "mongodb-root-password"
-    mongodb_catalogue = "mongodb-catalogue-password"
-    mongodb_users = "mongodb-users-password"
-    rabbitmq = "rabbitmq-password"
-    rabbitmq_cookie = "rabbitmq-erlang-cookie"
-    stripe_secret = "stripe-secret-key"
+    mysql_root         = "mysql-root-password"
+    mysql_user         = "mysql-user-password"
+    mongodb_root       = "mongodb-root-password"
+    mongodb_catalogue  = "mongodb-catalogue-password"
+    mongodb_users      = "mongodb-users-password"
+    rabbitmq           = "rabbitmq-password"
+    rabbitmq_cookie    = "rabbitmq-erlang-cookie"
+    stripe_secret      = "stripe-secret-key"
     stripe_publishable = "stripe-publishable-key"
   }
 

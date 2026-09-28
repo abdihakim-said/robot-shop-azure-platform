@@ -1,5 +1,7 @@
 # Robot Shop on Azure AKS: GitOps + DevSecOps Platform
 
+[![validate](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/validate.yml/badge.svg)](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/validate.yml)
+
 A production-style platform for a 12-service polyglot application on Azure Kubernetes Service. It covers layered Terraform, a build-once/promote-by-Git pipeline with security gates, ArgoCD, Key Vault-backed secrets, and Prometheus/Grafana SLO alerting.
 
 > The application is the open-source [Stan's Robot Shop](https://github.com/instana/robot-shop) by Instana; I did not write the app. **I built everything around it**: infrastructure, pipelines, Helm charts, GitOps, secrets, networking and observability.
@@ -51,7 +53,7 @@ flowchart LR
 |---|---|
 | `bootstrap/` | Local state; creates the Azure Storage backend for everything else |
 | `shared/` | Resources shared across environments |
-| `environments/{dev,staging,prod}` | Read bootstrap/shared via `terraform_remote_state` and compose modules |
+| `environments/{dev,prod}` | Read bootstrap/shared via `terraform_remote_state` and compose modules |
 | `modules/` | `aks`, `networking`, `storage` (ACR), `keyvault`, `monitoring`, `databases`, `bastion`, `backend`, `github-federated-identity` |
 
 ## 3. Key decisions and trade-offs
@@ -72,8 +74,8 @@ flowchart LR
 - **The bastion NSG allows SSH from anywhere.** It should be restricted to admin CIDRs or replaced with Azure Bastion.
 - **`lifecycle.ignore_changes` on the AKS cluster is broad** (network profile, identity, etc.), which can hide drift.
 - **Databases run in-cluster** as single-replica Deployments. For production I'd use Azure Database for MySQL, Cosmos DB (Mongo API) and Azure Cache for Redis. The `databases` module has a start on this.
-- **Only dev was run continuously.** Staging and prod configs exist but weren't kept running (cost).
-- **The latest CI runs are red** after a repo restructure (paths moved). Next: get them green.
+- **Only dev was run.** The prod Terraform validates in CI, but the staging and prod Helm values files are unfinished drafts: they contain template expressions, which Helm doesn't evaluate in values files. Next: pass per-environment values from Terraform to ArgoCD as parameters, the way `argocd/monitoring.yaml.tpl` already does.
+- **The deploy pipelines last ran in January 2026**, and their final runs failed at the step that commits the new image tag back to Git. The environment has since been torn down (cost). A credential-free `validate` workflow (every Terraform layer, plus the Helm charts rendered as ArgoCD renders them for dev) runs on every push.
 - **No explicit default-deny policy is in the chart today.** Only the selected pods are restricted. Next: add default-deny ingress and egress, with an egress allow-list (DNS, Stripe, Key Vault).
 - **The cart image is still on Node 14**, so the base images need a refresh.
 
