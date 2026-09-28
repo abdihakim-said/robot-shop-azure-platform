@@ -2,7 +2,7 @@
 
 A production-style platform for a 12-service polyglot application on Azure Kubernetes Service. It covers layered Terraform, a build-once/promote-by-Git pipeline with security gates, ArgoCD, Key Vault-backed secrets, and Prometheus/Grafana SLO alerting.
 
-> The application is the open-source [Stan's Robot Shop](https://github.com/instana/robot-shop) by Instana; I did not write the app. **I built everything around it**: infrastructure, pipelines, Helm charts, GitOps, secrets, networking and observability. The dev environment runs at [hakimdevops.art](https://hakimdevops.art).
+> The application is the open-source [Stan's Robot Shop](https://github.com/instana/robot-shop) by Instana; I did not write the app. **I built everything around it**: infrastructure, pipelines, Helm charts, GitOps, secrets, networking and observability.
 
 ![Robot Shop running on AKS](images/robot-shop-platform.png)
 
@@ -75,7 +75,6 @@ flowchart LR
 
 ## 5. Evidence
 
-- **Live dev environment:** [hakimdevops.art](https://hakimdevops.art)
 - **[Engineering notes](docs/engineering-notes.md):** five real problems and fixes:
   - A NetworkPolicy silently blocking Prometheus
   - A Helm values override breaking a DaemonSet
