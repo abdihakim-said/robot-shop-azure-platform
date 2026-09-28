@@ -2,7 +2,7 @@
 
 A production-style platform for a 12-service polyglot application on Azure Kubernetes Service. It covers layered Terraform, a build-once/promote-by-Git pipeline with security gates, ArgoCD, Key Vault-backed secrets, and Prometheus/Grafana SLO alerting.
 
-> **Reference build.** The application is the open-source [Stan's Robot Shop](https://github.com/instana/robot-shop) by Instana. I did not write the app. **I built everything around it**: infrastructure, pipelines, Helm charts, GitOps, secrets, networking and observability. The dev environment ran in my own Azure subscription at [hakimdevops.art](https://hakimdevops.art). This is not a client system.
+> The application is the open-source [Stan's Robot Shop](https://github.com/instana/robot-shop) by Instana; I did not write the app. **I built everything around it**: infrastructure, pipelines, Helm charts, GitOps, secrets, networking and observability. The dev environment runs at [hakimdevops.art](https://hakimdevops.art).
 
 ![Robot Shop running on AKS](images/robot-shop-platform.png)
 
