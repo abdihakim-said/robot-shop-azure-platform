@@ -65,6 +65,7 @@ flowchart LR
 - **Restricted pod ingress.** NetworkPolicies in the umbrella chart allow the web tier only from ingress-nginx, and add explicit rules for intra-app traffic and Prometheus scraping. An earlier namespace-wide default-deny caused problem #1 in the [engineering notes](docs/engineering-notes.md).
 - **System vs user node pools.** The system pool runs with `only_critical_addons_enabled`; apps run on a separate autoscaling user pool.
 - **Dev auto-syncs, prod doesn't.** ArgoCD self-heals and prunes in dev. Production requires a manual sync.
+- **Runs on Azure DevOps too.** `azure-pipelines.yml` repeats the Terraform and Helm checks as Azure DevOps stages, with a Checkov report in the Tests tab. An optional plan/apply path signs in through a workload-identity service connection (no stored secret) and applies the saved plan only after the `robot-shop-dev` environment approval. Setup: [docs/azure-devops.md](docs/azure-devops.md).
 
 ## 4. Known limitations / what I'd do next
 
@@ -88,7 +89,7 @@ flowchart LR
   - ArgoCD pruning an ingress
   - MongoDB OOM
   - 16 critical CVEs cleared from the cart image
-- **Pipelines:** `.github/workflows/build-and-push.yml`, `infrastructure.yml`, `security-scan.yml`, `pr-validation.yml`
+- **Pipelines:** `.github/workflows/build-and-push.yml`, `infrastructure.yml`, `security-scan.yml`, `pr-validation.yml`; Azure DevOps: `azure-pipelines.yml`, `.azure-pipelines/`
 - **GitOps:** `argocd/`, `helm-charts/robot-shop/values-*.yaml` (image tags are committed by CI)
 - **Alerting:** `helm-charts/monitoring/templates/*-alerts.yaml` (SLO, service and database alerts), Grafana dashboards in `helm-charts/monitoring/dashboards/`
 

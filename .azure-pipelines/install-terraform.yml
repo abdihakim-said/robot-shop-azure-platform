@@ -1,0 +1,15 @@
+# Installs a pinned Terraform version on the hosted agent.
+parameters:
+  - name: version
+    type: string
+
+steps:
+  - script: |
+      set -euo pipefail
+      curl -fsSLo tf.zip "https://releases.hashicorp.com/terraform/${{ parameters.version }}/terraform_${{ parameters.version }}_linux_amd64.zip"
+      unzip -oq tf.zip -d "$(Agent.ToolsDirectory)/terraform"
+      rm tf.zip
+      echo "##vso[task.prependpath]$(Agent.ToolsDirectory)/terraform"
+    displayName: Install Terraform ${{ parameters.version }}
+  - script: terraform version
+    displayName: terraform version
