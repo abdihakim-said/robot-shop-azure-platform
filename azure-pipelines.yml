@@ -92,6 +92,8 @@ stages:
       - job: checkov
         displayName: Checkov report
         steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '3.12' }
           - script: pip install --quiet checkov
             displayName: Install Checkov
           # Report only: findings show in the Tests tab. The blocking gate is in the Plan stage,
@@ -113,6 +115,8 @@ stages:
         - job: plan
           displayName: Checkov gate and terraform plan
           steps:
+            - task: UsePythonVersion@0
+              inputs: { versionSpec: '3.12' }
             - script: |
                 pip install --quiet checkov
                 checkov -d terraform --framework terraform --compact
