@@ -90,7 +90,7 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
     spec = {
       acme = {
         server = "https://acme-v02.api.letsencrypt.org/directory"
-        email  = "abdihakimsaid1@gmail.com"
+        email  = "abdihakim@humanlayer.uk"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
         }
