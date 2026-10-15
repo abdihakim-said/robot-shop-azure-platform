@@ -50,6 +50,7 @@ stages:
             bootstrap: { layer: bootstrap }
             shared: { layer: shared }
             dev: { layer: environments/dev }
+            staging: { layer: environments/staging }
             prod: { layer: environments/prod }
         steps:
           - template: .azure-pipelines/install-terraform.yml

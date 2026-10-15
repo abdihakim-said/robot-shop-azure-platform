@@ -100,6 +100,12 @@ variable "acr_sku" {
   default     = "Standard" # Same as production
 }
 
+variable "storage_account_tier" {
+  description = "Storage account tier"
+  type        = string
+  default     = "Standard"
+}
+
 variable "storage_replication_type" {
   description = "Storage replication type"
   type        = string
@@ -166,41 +172,10 @@ variable "secrets" {
   }
 }
 
-# Database Configuration (Production-Mirror for DR)
-variable "mysql_sku_name" {
-  description = "MySQL SKU name for staging (same as production)"
+# Database Configuration (SKUs are set by the databases module from the environment name)
+variable "aks_outbound_ip" {
+  description = "AKS egress IP allowed through the MySQL firewall. Set it once the cluster exists."
   type        = string
-  default     = "B_Standard_B2s" # Same as production
-}
-
-variable "mysql_storage_mb" {
-  description = "MySQL storage in MB"
-  type        = number
-  default     = 51200 # Same as production
-}
-
-variable "mysql_backup_retention" {
-  description = "MySQL backup retention days"
-  type        = number
-  default     = 35 # Same as production
-}
-
-variable "redis_sku_name" {
-  description = "Redis SKU name for staging (same as production)"
-  type        = string
-  default     = "Standard" # Same as production
-}
-
-variable "redis_capacity" {
-  description = "Redis capacity (Standard C1=1, C2=2, etc)"
-  type        = number
-  default     = 1 # Same as production
-}
-
-variable "cosmosdb_throughput" {
-  description = "CosmosDB throughput (RU/s)"
-  type        = number
-  default     = 400 # Same as production
 }
 
 # Security Configuration (Production-Mirror)
@@ -246,10 +221,4 @@ variable "compliance_frameworks" {
   description = "Compliance frameworks to enable"
   type        = list(string)
   default     = ["PCI-DSS", "SOC2", "ISO27001"] # Same as production
-}
-
-variable "private_cluster_enabled" {
-  description = "Enable private cluster"
-  type        = bool
-  default     = true # Same as production
 }

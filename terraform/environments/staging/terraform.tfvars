@@ -1,5 +1,4 @@
 # Environment-specific configuration only
-environment = "staging"
 
 # AKS Configuration
 kubernetes_version = "1.31"
@@ -11,7 +10,6 @@ max_node_count     = 8
 # Security Settings (Staging)
 private_cluster_enabled = true
 local_account_disabled  = true
-sku_tier                = "Standard"
 
 # Secrets Configuration
 secrets = {
