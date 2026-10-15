@@ -8,6 +8,8 @@ resource "azurerm_redis_cache" "main" {
   sku_name = var.environment == "production" ? "Premium" : (var.environment == "staging" ? "Standard" : "Basic")
 
   enable_non_ssl_port = false
+
+  #checkov:skip=CKV_AZURE_230:Zone-redundant replication needs the Premium SKU, which production uses (three zones). Dev uses Basic.
   minimum_tls_version = "1.2"
 
   redis_configuration {

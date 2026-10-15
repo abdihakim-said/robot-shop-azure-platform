@@ -55,7 +55,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: '1.6.0'
+          terraform_version: '1.9.8' # 1.6 can't verify current provider signatures (expired key)
 
       - name: Terraform Format Fix
         run: |
@@ -94,6 +94,9 @@ jobs:
     name: Deploy Bootstrap
     runs-on: ubuntu-latest
     needs: terraform-validate
+    # Deploys only on push, and only when the repository variable DEPLOY_ENABLED is 'true'.
+    # The environment is torn down, so PRs stop after the security scan and validate.
+    if: github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
     outputs:
       backend_storage: ${{ steps.check-bootstrap.outputs.backend_storage || steps.bootstrap.outputs.backend_storage }}
       backend_rg: ${{ steps.check-bootstrap.outputs.backend_rg || steps.bootstrap.outputs.backend_rg }}

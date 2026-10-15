@@ -23,36 +23,44 @@ resource "random_password" "argocd_bcrypt_salt" {
 
 # Store ArgoCD admin password (plain text for reference)
 resource "azurerm_key_vault_secret" "argocd_admin_password" {
-  name         = "argocd-admin-password"
-  value        = random_password.argocd_admin.result
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = "argocd-admin-password"
+  value           = random_password.argocd_admin.result
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "password"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 }
 
 # Store ArgoCD admin password (bcrypt hash for ArgoCD)
 resource "azurerm_key_vault_secret" "argocd_admin_bcrypt" {
-  name         = "argocd-admin-bcrypt"
-  value        = "$2a$10$${random_password.argocd_bcrypt_salt.result}"
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = "argocd-admin-bcrypt"
+  value           = "$2a$10$${random_password.argocd_bcrypt_salt.result}"
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "bcrypt-hash"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 }
 
 # Store Grafana admin credentials
 resource "azurerm_key_vault_secret" "grafana_admin_user" {
-  name         = "grafana-admin-user"
-  value        = "admin"
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = "grafana-admin-user"
+  value           = "admin"
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "username"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 }
 
 # Store Grafana admin password
 resource "azurerm_key_vault_secret" "grafana_admin_password" {
-  name         = "grafana-admin-password"
-  value        = random_password.grafana_admin.result
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = "grafana-admin-password"
+  value           = random_password.grafana_admin.result
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "password"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 }

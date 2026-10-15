@@ -9,10 +9,25 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }
 
 data "azurerm_client_config" "current" {}
+
+# Every secret gets an expiry date (CKV_AZURE_41). The first apply after the rotation
+# period moves the date on, and the 30 days of grace leave time to rotate the value:
+#   terraform apply -replace='module.keyvault.random_password.missing_secrets["<key>"]'
+resource "time_rotating" "secret_expiry" {
+  rotation_days = var.secret_rotation_days
+}
+
+locals {
+  secret_expiry = timeadd(time_rotating.secret_expiry.rotation_rfc3339, "720h")
+}
 
 # Generate random passwords for each secret
 resource "random_password" "secrets" {
@@ -32,10 +47,14 @@ resource "azurerm_key_vault" "secrets" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
 
-  purge_protection_enabled   = false
+  # CKV_AZURE_42 / CKV_AZURE_110. The vault name has a random suffix, so a rebuilt
+  # environment never collides with a soft-deleted vault.
+  purge_protection_enabled   = true
   soft_delete_retention_days = 7
 
-  # Updated: Enhanced Key Vault security configuration with workload identity support
+  #checkov:skip=CKV_AZURE_109:Terraform and CI write secrets from GitHub-hosted runners, which have no fixed IPs. Next step: private endpoint plus self-hosted runners (README, known limitations).
+  #checkov:skip=CKV_AZURE_189:Same reason as CKV_AZURE_109.
+  #checkov:skip=CKV2_AZURE_32:Same reason as CKV_AZURE_109.
 
   # Default access policy for current user/service principal
   access_policy {
@@ -73,9 +92,11 @@ resource "azurerm_key_vault" "secrets" {
 resource "azurerm_key_vault_secret" "secrets" {
   for_each = var.secrets
 
-  name         = each.value.name
-  value        = random_password.secrets[each.key].result
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = each.value.name
+  value           = random_password.secrets[each.key].result
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "password"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 
@@ -118,9 +139,11 @@ resource "azurerm_key_vault_secret" "missing_secrets" {
     stripe_publishable = "stripe-publishable-key"
   }
 
-  name         = each.value
-  value        = random_password.missing_secrets[each.key].result
-  key_vault_id = azurerm_key_vault.secrets.id
+  name            = each.value
+  value           = random_password.missing_secrets[each.key].result
+  key_vault_id    = azurerm_key_vault.secrets.id
+  content_type    = "password"
+  expiration_date = local.secret_expiry
 
   depends_on = [azurerm_key_vault.secrets]
 }

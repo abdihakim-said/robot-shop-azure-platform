@@ -56,3 +56,9 @@ variable "aks_kubelet_identity_object_id" {
   type        = string
   default     = ""
 }
+
+variable "secret_rotation_days" {
+  description = "Days before each secret's expiry date is renewed; the secret expires 30 days after that"
+  type        = number
+  default     = 180
+}

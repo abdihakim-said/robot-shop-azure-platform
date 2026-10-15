@@ -12,6 +12,10 @@ resource "azurerm_mysql_flexible_server" "main" {
   backup_retention_days        = var.environment == "production" ? 35 : (var.environment == "staging" ? 14 : 7)
   geo_redundant_backup_enabled = var.environment == "production" ? true : false
 
+  #checkov:skip=CKV_AZURE_94:Geo-redundant backup is on for production; Checkov cannot evaluate the condition.
+  #checkov:skip=CKV_AZURE_53:Access is limited to the AKS egress IP by a firewall rule. Next step: VNet integration (delegated subnet). This module is not deployed yet (README).
+  #checkov:skip=CKV2_AZURE_56:Same reason as CKV_AZURE_53.
+
   dynamic "high_availability" {
     for_each = var.environment == "production" ? [1] : []
     content {

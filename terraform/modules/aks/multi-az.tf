@@ -5,6 +5,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "multi_az" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
   vm_size               = var.vm_size
   node_count            = var.node_count
+  max_pods              = 50 # CKV_AZURE_168
+
+  #checkov:skip=CKV_AZURE_227:Host encryption needs the EncryptionAtHost feature registered on the subscription. OS and data disks are encrypted at rest by the platform.
 
   # Multi-AZ configuration
   zones = ["1", "2", "3"] # Deploy across all 3 availability zones
