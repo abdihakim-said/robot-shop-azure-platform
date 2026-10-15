@@ -59,6 +59,7 @@ module "aks" {
   source = "../../modules/aks"
 
   cluster_name        = "${local.name_prefix}-aks"
+  name_prefix         = local.name_prefix
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
   subnet_id           = module.networking.aks_subnet_id
@@ -172,25 +173,20 @@ resource "helm_release" "prometheus_stack" {
 module "databases" {
   source = "../../modules/databases"
 
-  name_prefix         = local.name_prefix
+  # SKUs, storage and backup retention follow from environment = "staging" in the module
+  environment         = local.environment
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # MySQL configuration
+  aks_subnet_id              = module.networking.aks_subnet_id
+  aks_outbound_ip            = var.aks_outbound_ip
+  private_endpoint_subnet_id = module.networking.private_endpoint_subnet_id
+
   mysql_admin_password = random_password.mysql_admin.result
-  mysql_sku_name       = var.mysql_sku_name
-  mysql_storage_mb     = var.mysql_storage_mb
-
-  # Redis configuration  
-  redis_sku_name = var.redis_sku_name
-  redis_capacity = var.redis_capacity
-
-  # CosmosDB configuration
-  cosmosdb_throughput = var.cosmosdb_throughput
 
   tags = local.common_tags
 
-  depends_on = [module.networking]
+  depends_on = [module.networking, module.aks]
 }
 
 # Generate database passwords

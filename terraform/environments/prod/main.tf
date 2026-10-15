@@ -240,7 +240,7 @@ module "storage" {
   source = "../../modules/storage"
 
   acr_name             = "${replace(local.name_prefix, "-", "")}acr"
-  storage_account_name = "${replace(local.name_prefix, "-", "")}storage"
+  storage_account_name = "${replace(local.name_prefix, "-", "")}st" # 24-character limit
   location             = var.location
   resource_group_name  = azurerm_resource_group.main.name
 

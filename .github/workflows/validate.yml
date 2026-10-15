@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dir: [bootstrap, shared, environments/dev, environments/prod]
+        dir: [bootstrap, shared, environments/dev, environments/staging, environments/prod]
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
