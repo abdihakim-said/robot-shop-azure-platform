@@ -42,7 +42,10 @@ resource "azurerm_cosmosdb_account" "main" {
     retention_in_hours  = var.environment == "production" ? 720 : (var.environment == "staging" ? 336 : 168)
   }
 
-  public_network_access_enabled     = false
+  public_network_access_enabled      = false
+  access_key_metadata_writes_enabled = false # CKV_AZURE_132
+
+  #checkov:skip=CKV_AZURE_100:Microsoft-managed keys; customer-managed keys need a Key Vault key and rotation process.
   is_virtual_network_filter_enabled = true
 
   virtual_network_rule {

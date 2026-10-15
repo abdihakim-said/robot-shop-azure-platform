@@ -4,6 +4,8 @@ resource "azurerm_subnet" "bastion" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = var.vnet_name
   address_prefixes     = [var.bastion_subnet_prefix]
+
+  #checkov:skip=CKV2_AZURE_31:Azure Bastion manages its own subnet. An NSG here needs Bastion's documented rule set, and a wrong rule breaks Bastion.
 }
 
 resource "azurerm_public_ip" "bastion" {
@@ -50,7 +52,7 @@ resource "azurerm_network_security_group" "vm" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = "*"
+    source_address_prefix      = var.bastion_subnet_prefix # CKV_AZURE_10: only Azure Bastion can reach SSH
     destination_address_prefix = "*"
   }
 }
@@ -82,6 +84,7 @@ resource "azurerm_linux_virtual_machine" "kubectl" {
   tags                = var.tags
 
   disable_password_authentication = true
+  allow_extension_operations      = false # CKV_AZURE_50: setup runs through cloud-init
 
   network_interface_ids = [
     azurerm_network_interface.vm.id,

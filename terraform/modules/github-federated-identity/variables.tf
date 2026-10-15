@@ -6,6 +6,12 @@ variable "application_id" {
 variable "github_repository" {
   description = "GitHub repository in format owner/repo"
   type        = string
+  default     = "abdihakim-said/robot-shop-azure-platform"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
+    error_message = "Use the owner/repo format."
+  }
 }
 
 variable "branches" {
@@ -15,9 +21,14 @@ variable "branches" {
 }
 
 variable "release_branches" {
-  description = "List of release branch patterns"
+  description = "Exact release branch names. Entra ID matches the subject exactly, so wildcards never match."
   type        = list(string)
-  default     = ["release/*"]
+  default     = []
+
+  validation {
+    condition     = alltrue([for b in var.release_branches : !strcontains(b, "*")])
+    error_message = "Entra ID federated credentials do not support wildcards; list each branch."
+  }
 }
 
 variable "environments" {

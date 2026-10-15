@@ -147,6 +147,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   max_count             = var.max_node_count
   enable_auto_scaling   = true
 
+  #checkov:skip=CKV_AZURE_227:Host encryption needs the EncryptionAtHost feature registered on the subscription. OS and data disks are encrypted at rest by the platform.
+
   # Application node pool configuration
   os_disk_type = "Managed"
   max_pods     = 50 # Match system node pool capacity (CKV_AZURE_168)

@@ -24,6 +24,14 @@ resource "azurerm_kubernetes_cluster" "main" {
   # Production-grade disk encryption (CKV_AZURE_117, CKV_AZURE_227)
   disk_encryption_set_id = var.disk_encryption_set_id
 
+  # Open items, each listed in the README under known limitations:
+  #checkov:skip=CKV_AZURE_6:Authorized IP ranges are a variable, empty by default because GitHub-hosted runners have no fixed IPs. Next step: self-hosted runners in the VNet.
+  #checkov:skip=CKV_AZURE_115:A private cluster is supported (private_cluster_enabled) but off, for the same reason as CKV_AZURE_6.
+  #checkov:skip=CKV_AZURE_141:Local accounts stay enabled until Entra ID RBAC is set up for the cluster.
+  #checkov:skip=CKV_AZURE_226:The Standard_D2s_v3 cache (50 GiB) is smaller than the OS disk, so ephemeral OS disks are a variable, Managed by default.
+  #checkov:skip=CKV_AZURE_172:Secret rotation is on in the Secrets Store CSI driver Helm release (csi-secrets-store.tf), not the AKS add-on.
+  #checkov:skip=CKV_AZURE_227:Host encryption needs the EncryptionAtHost feature registered on the subscription. OS and data disks are encrypted at rest by the platform.
+
   # PREVENT CLUSTER REPLACEMENT AND NODE POOL ROTATION
   lifecycle {
     ignore_changes = [
