@@ -1,6 +1,6 @@
 # Engineering notes: problems I hit and how I fixed them
 
-These are real issues from building and running this platform on AKS (Dec 2025 – Jan 2026). They're written short: symptom → cause → fix → what I'd change.
+These are real issues from building and running this platform on AKS (Dec 2025 – Jan 2026), plus a CI clean-up in October 2026. They're written short: symptom → cause → fix → what I'd change.
 
 ---
 
@@ -57,3 +57,17 @@ These are real issues from building and running this platform on AKS (Dec 2025 �
 **Fix.** I upgraded npm in the image and rebuilt. After that, Trivy reported 0 CRITICAL for that image.
 
 **Lesson.** A blocking gate is only useful if the fix path is quick. `ignore-unfixed` keeps the gate focused on issues you can actually fix.
+
+## 6. A failing Checkov gate hid four more problems
+
+**Symptom.** The infrastructure pipeline had failed on `main` at Checkov on every run since January (100 findings). Nothing after the gate had run for nine months.
+
+**Fix.** I worked through the 100 findings. I fixed 55 in Terraform: Key Vault secret expiry and content types, purge protection, the ACR admin user off, SSH to the kubectl VM only from the Bastion subnet, storage hardening, and an NSG on every subnet. I suppressed 44 in code with a written reason each, mostly Premium-SKU features and private networking that needs self-hosted runners first. One finding went with a `release/*` OIDC credential that could never match, because Entra ID has no wildcards.
+
+**What the gate had been hiding.** Once Checkov passed, the next jobs ran for the first time and failed in turn:
+1. **Terraform Validate** used Terraform 1.6.0, which can't verify current provider releases (`openpgp: key expired`). I moved it to 1.9.8, the same version as the Azure DevOps pipeline.
+2. **Deploy Bootstrap** ran on every PR and failed at Azure login (`AADSTS5000225`: tenant blocked for inactivity). Deploys now need a push to the branch and the `DEPLOY_ENABLED` repository variable.
+3. **`environments/staging`** no longer validated. It wasn't in the CI matrix, so it had drifted from the modules: a duplicate variable, a missing module argument, and an old databases interface. I fixed it and added staging to both validate matrices.
+4. **Prod** would have failed at apply: the storage account name was 26 characters, over Azure's limit of 24.
+
+**Lesson.** A gate that's always red hides everything behind it. Keep the pipeline green so new failures show up, and validate every environment in CI, not only the one you deploy.

@@ -22,4 +22,4 @@ Validate needs only step 1: it runs with no service connection. Plan and Apply s
 
 - **Credential-free by default.** The Plan and Apply stages are only added to the run at compile time when `deploy` is true, the same idea as `DEPLOY_ENABLED` in the GitHub workflows.
 - **Plan once, apply that plan.** Apply uses the saved `tfplan` artifact, so what was approved is what gets applied.
-- **Checkov.** Validate reports findings without failing. The Plan stage blocks on any finding, so nothing deploys until the 99 open findings (see README, known limitations) are fixed or suppressed with a reason.
+- **Checkov.** Validate reports findings without failing. The Plan stage blocks on any new finding. All 100 findings from October 2026 are resolved: 55 fixed, and 44 suppressed in the Terraform with a `#checkov:skip` reason (see README, known limitations).

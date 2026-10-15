@@ -1,6 +1,7 @@
 # Robot Shop on Azure AKS: GitOps + DevSecOps Platform
 
 [![validate](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/validate.yml/badge.svg)](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/validate.yml)
+[![infrastructure](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/infrastructure.yml/badge.svg?branch=main)](https://github.com/abdihakim-said/robot-shop-azure-platform/actions/workflows/infrastructure.yml)
 
 A production-style platform for a 12-service polyglot application on Azure Kubernetes Service. It covers layered Terraform, a build-once/promote-by-Git pipeline with security gates, ArgoCD, Key Vault-backed secrets, and Prometheus/Grafana SLO alerting.
 
@@ -53,7 +54,7 @@ flowchart LR
 |---|---|
 | `bootstrap/` | Local state; creates the Azure Storage backend for everything else |
 | `shared/` | Resources shared across environments |
-| `environments/{dev,prod}` | Read bootstrap/shared via `terraform_remote_state` and compose modules |
+| `environments/{dev,staging,prod}` | Compose the modules for each environment; dev reads bootstrap/shared through `terraform_remote_state` |
 | `modules/` | `aks`, `networking`, `storage` (ACR), `keyvault`, `monitoring`, `databases`, `bastion`, `backend`, `github-federated-identity` |
 
 ## 3. Key decisions and trade-offs
@@ -81,13 +82,15 @@ flowchart LR
 
 ## 5. Evidence
 
-- **[Engineering notes](docs/engineering-notes.md):** five real problems and fixes:
+- **[Engineering notes](docs/engineering-notes.md):** six real problems and fixes:
   - A NetworkPolicy silently blocking Prometheus
   - A Helm values override breaking a DaemonSet
   - ArgoCD pruning an ingress
   - MongoDB OOM
   - 16 critical CVEs cleared from the cart image
-- **Pipelines:** `.github/workflows/build-and-push.yml`, `infrastructure.yml`, `security-scan.yml`, `pr-validation.yml`; Azure DevOps: `azure-pipelines.yml`, `.azure-pipelines/`
+  - A failing Checkov gate that hid four more problems
+- **Pipelines:** `.github/workflows/build-and-push.yml`, `infrastructure.yml`, `security-scan.yml`, `pr-validation.yml`, `validate.yml`; Azure DevOps: `azure-pipelines.yml`, `.azure-pipelines/`
+- **Policy as code:** `checkov -d terraform --framework terraform` reports 0 failed. Each accepted finding has its reason next to it: `grep -rn checkov:skip terraform`
 - **GitOps:** `argocd/`, `helm-charts/robot-shop/values-*.yaml` (image tags are committed by CI)
 - **Alerting:** `helm-charts/monitoring/templates/*-alerts.yaml` (SLO, service and database alerts), Grafana dashboards in `helm-charts/monitoring/dashboards/`
 
