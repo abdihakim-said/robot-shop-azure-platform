@@ -1,0 +1,188 @@
+# Azure DevOps pipeline: the same platform checks as the GitHub Actions workflows,
+# run as Azure DevOps stages. Setup: docs/azure-devops.md.
+#
+#   Validate  (always, no Azure credentials)  Terraform fmt/validate per layer, Helm
+#             lint/render as ArgoCD renders dev, Checkov report in the Tests tab.
+#   Plan      (deploy=true)  Checkov gate, then terraform plan for dev with a
+#             workload-identity service connection. The plan is saved as an artifact.
+#   Apply     (deploy=true, main only)  Deployment job on the robot-shop-dev
+#             environment, so its approvals run before the saved plan is applied.
+
+trigger:
+  branches:
+    include: [main, develop]
+  paths:
+    include: [terraform, helm-charts, azure-pipelines.yml]
+
+pr:
+  branches:
+    include: [main, develop]
+  paths:
+    include: [terraform, helm-charts, azure-pipelines.yml]
+
+parameters:
+  - name: deploy
+    displayName: Plan and apply dev infrastructure (needs the Azure service connection)
+    type: boolean
+    default: false
+  - name: serviceConnection
+    displayName: Azure Resource Manager service connection (workload identity federation)
+    type: string
+    default: robot-shop-azure
+
+variables:
+  terraformVersion: 1.9.8
+  backendResourceGroup: robot-shop-tfstate-rg
+  backendContainer: tfstate
+  devStateKey: dev/terraform.tfstate
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Validate
+    displayName: Validate (no credentials)
+    jobs:
+      - job: terraform
+        displayName: Terraform
+        strategy:
+          matrix:
+            bootstrap: { layer: bootstrap }
+            shared: { layer: shared }
+            dev: { layer: environments/dev }
+            prod: { layer: environments/prod }
+        steps:
+          - template: .azure-pipelines/install-terraform.yml
+            parameters: { version: $(terraformVersion) }
+          - script: terraform fmt -check -recursive
+            workingDirectory: terraform
+            displayName: terraform fmt
+          - script: |
+              terraform init -backend=false -input=false
+              terraform validate
+            workingDirectory: terraform/$(layer)
+            displayName: terraform validate ($(layer))
+
+      - job: helm
+        displayName: Helm charts (dev)
+        variables:
+          # Placeholders for the values ArgoCD injects from Terraform outputs (argocd/monitoring.yaml.tpl)
+          monitoringParams: >-
+            --set global.keyVault.name=kv-ci
+            --set global.keyVault.tenantId=00000000-0000-0000-0000-000000000000
+            --set global.managedIdentity.clientId=00000000-0000-0000-0000-000000000000
+        steps:
+          - task: HelmInstaller@1
+            inputs: { helmVersionToInstall: latest }
+          - script: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            displayName: helm repo add
+          - script: |
+              helm dependency build robot-shop
+              helm lint robot-shop -f robot-shop/values-dev.yaml
+              helm template rs robot-shop -f robot-shop/values-dev.yaml > /dev/null
+            workingDirectory: helm-charts
+            displayName: robot-shop chart
+          - script: |
+              helm dependency build monitoring
+              helm lint monitoring -f monitoring/values-dev.yaml $(monitoringParams)
+              helm template mon monitoring -f monitoring/values-dev.yaml $(monitoringParams) > /dev/null
+            workingDirectory: helm-charts
+            displayName: monitoring chart
+
+      - job: checkov
+        displayName: Checkov report
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '3.12' }
+          - script: pip install --quiet checkov
+            displayName: Install Checkov
+          # Report only: findings show in the Tests tab. The blocking gate is in the Plan stage,
+          # so nothing is deployed while findings are open (see README, known limitations).
+          - script: checkov -d terraform --framework terraform --soft-fail -o junitxml > checkov.xml
+            displayName: Run Checkov
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: checkov.xml
+              testRunTitle: Checkov (Terraform)
+
+  - ${{ if eq(parameters.deploy, true) }}:
+    - stage: Plan
+      displayName: Plan dev
+      dependsOn: Validate
+      jobs:
+        - job: plan
+          displayName: Checkov gate and terraform plan
+          steps:
+            - task: UsePythonVersion@0
+              inputs: { versionSpec: '3.12' }
+            - script: |
+                pip install --quiet checkov
+                checkov -d terraform --framework terraform --compact
+              displayName: Checkov gate (blocks on any finding)
+            - template: .azure-pipelines/install-terraform.yml
+              parameters: { version: $(terraformVersion) }
+            - task: AzureCLI@2
+              displayName: terraform plan (dev)
+              inputs:
+                azureSubscription: ${{ parameters.serviceConnection }}
+                scriptType: bash
+                scriptLocation: inlineScript
+                addSpnToEnvironment: true
+                workingDirectory: terraform/environments/dev
+                inlineScript: |
+                  set -euo pipefail
+                  source $(Build.SourcesDirectory)/.azure-pipelines/arm-oidc-env.sh
+                  STORAGE=$(az storage account list -g $(backendResourceGroup) --query "[0].name" -o tsv)
+                  terraform init -input=false \
+                    -backend-config="resource_group_name=$(backendResourceGroup)" \
+                    -backend-config="storage_account_name=$STORAGE" \
+                    -backend-config="container_name=$(backendContainer)" \
+                    -backend-config="key=$(devStateKey)" \
+                    -backend-config="use_oidc=true"
+                  terraform plan -input=false -out=tfplan \
+                    -var="backend_storage_account_name=$STORAGE"
+                  echo "##vso[task.setvariable variable=backendStorage;isOutput=true]$STORAGE"
+              name: tf
+            - publish: terraform/environments/dev/tfplan
+              artifact: tfplan-dev
+              displayName: Save plan
+
+    - stage: Apply
+      displayName: Apply dev
+      dependsOn: Plan
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      variables:
+        backendStorage: $[ stageDependencies.Plan.plan.outputs['tf.backendStorage'] ]
+      jobs:
+        - deployment: apply
+          displayName: terraform apply (dev)
+          environment: robot-shop-dev   # add approvals and checks to this environment
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - checkout: self
+                  - download: current
+                    artifact: tfplan-dev
+                  - template: .azure-pipelines/install-terraform.yml
+                    parameters: { version: $(terraformVersion) }
+                  - task: AzureCLI@2
+                    displayName: terraform apply (saved plan)
+                    inputs:
+                      azureSubscription: ${{ parameters.serviceConnection }}
+                      scriptType: bash
+                      scriptLocation: inlineScript
+                      addSpnToEnvironment: true
+                      workingDirectory: terraform/environments/dev
+                      inlineScript: |
+                        set -euo pipefail
+                        source $(Build.SourcesDirectory)/.azure-pipelines/arm-oidc-env.sh
+                        terraform init -input=false \
+                          -backend-config="resource_group_name=$(backendResourceGroup)" \
+                          -backend-config="storage_account_name=$(backendStorage)" \
+                          -backend-config="container_name=$(backendContainer)" \
+                          -backend-config="key=$(devStateKey)" \
+                          -backend-config="use_oidc=true"
+                        terraform apply -input=false $(Pipeline.Workspace)/tfplan-dev/tfplan
